@@ -7,7 +7,6 @@ using api.Exceptions;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace api.Services
 {

@@ -7,7 +7,6 @@ using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using SQLitePCL;
 
 namespace api.Services

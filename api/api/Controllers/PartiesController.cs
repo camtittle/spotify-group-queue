@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace api.Controllers
 {
