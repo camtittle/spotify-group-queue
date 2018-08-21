@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,32 +33,23 @@ namespace api.Controllers
             return _context.Users;
         }
 
-        
-        [HttpGet("check")]
+        [Route("me")]
+        [HttpGet]
         [Authorize]
-        public string Get()
+        public async Task<IActionResult> GetUser()
         {
-            return $"username: {User.Identity.Name}";
+            return Ok(await GetAuthorizedUser());
         }
 
-        // GET: api/Users/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser([FromRoute] string id)
+        // Helper method to get the user from the current user's auth token. Assumed user is authorized
+        private async Task<User> GetAuthorizedUser()
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(user);
+            var userId = User.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
+            var user = await _userService.Find(userId);
+            await _context.Entry(user).Reference(u => u.CurrentParty).LoadAsync();
+            await _context.Entry(user).Reference(u => u.PendingParty).LoadAsync();
+            return user;
         }
-        
+
     }
 }

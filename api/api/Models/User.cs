@@ -13,7 +13,7 @@ namespace api.Models
 
         public Party CurrentParty { get; set; }
 
-        public bool RequestPending { get; set; }
+        public Party PendingParty { get; set; }
 
         public bool Admin { get; set; }
 

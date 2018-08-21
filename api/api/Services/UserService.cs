@@ -7,6 +7,7 @@ using api.Exceptions;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace api.Services
 {
@@ -28,9 +29,11 @@ namespace api.Services
             if (_context.Users.Any(x => x.Username == username))
                 throw new APIException($"Username {username} is already taken");
 
-            User user = new User();
-            user.Username = username;
-            user.Id = Guid.NewGuid().ToString();
+            var user = new User
+            {
+                Username = username,
+                Id = Guid.NewGuid().ToString()
+            };
 
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -40,12 +43,12 @@ namespace api.Services
 
         public async Task<User> Find(string id)
         {
-            return await _context.Users.Where(u => u.Id == id).Include(u => u.CurrentParty).FirstOrDefaultAsync();
+            return await _context.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
         }
 
         public async Task<User> FindByUsername(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+            return await _context.Users.Where(u => u.Username == username).FirstOrDefaultAsync();
         }
     }
 }

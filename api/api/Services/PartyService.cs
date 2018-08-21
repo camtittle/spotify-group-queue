@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using api.Exceptions;
 using api.Models;
 using api.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using SQLitePCL;
@@ -53,20 +54,24 @@ namespace api.Services
             return party;
         }
 
+        public async Task<List<Party>> GetAll()
+        {
+            return await _context.Parties.ToListAsync();
+        }
+
         public async Task<Party> Find(string id)
         {
-            return await _context.Parties.FindAsync(id);
+            return await _context.Parties.Where(p => p.Id == id).Include(p => p.Members).Include(p => p.PendingMembers).FirstOrDefaultAsync();
         }
 
         public async Task<Party> FindByUser(string userId)
         {
-            var user = await _context.Users.FindAsync(userId);
-            return user.CurrentParty;
+            return await _context.Users.Where(u => u.Id == userId).Select(u => u.CurrentParty).Include(p => p.Members).FirstOrDefaultAsync();
         }
 
         public async Task Delete(string partyId)
         {
-            var party = await _context.Parties.Where(p => p.Id == partyId).Include(p => p.Members).FirstOrDefaultAsync();
+            var party = await Find(partyId);
             // Remove reference from all members
             party.Members.ForEach(u =>
             {
@@ -78,9 +83,28 @@ namespace api.Services
             _context.SaveChanges();
         }
 
-        public async Task RequestToJoin(Party party, User user)
+        public async Task Leave(string userId)
         {
-            // TODO
+            var user = await _userService.Find(userId);
+            user.CurrentParty = null;
+            user.Admin = false;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RequestToJoin(string partyId, User user)
+        {
+            // TODO: check not already in party
+            //if 
+            var party = await Find(partyId);
+            user.PendingParty = party ?? throw new ResourceNotFoundException("Party doesn't exist");
+            await _context.SaveChangesAsync();
+
+            // TODO: send notification to admin
+        }
+
+        public async Task<bool> Exists(string id)
+        {
+            return await _context.Parties.AnyAsync(e => e.Id == id);
         }
     }
 }

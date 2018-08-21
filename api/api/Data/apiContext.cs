@@ -17,16 +17,28 @@ namespace api.Models
         public DbSet<api.Models.User> Users { get; set; }
         public DbSet<api.Models.Party> Parties { get; set; }
 
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
-        //    base.OnModelCreating(modelBuilder);
-        //    modelBuilder.Entity("api.Models.User", b =>
-        //    {
-        //        b.HasOne("api.Models.Party", "CurrentParty")
-        //            .WithMany("Members")
-        //            .HasForeignKey("CurrentPartyId");
-        //    });
-        //}
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            /*
+             *  Members <--> Parties relationship
+             */
+            modelBuilder.Entity("api.Models.User", b =>
+            {
+                b.HasOne("api.Models.Party", "CurrentParty")
+                    .WithMany("Members")
+                    .HasForeignKey("CurrentPartyId");
+            });
+
+            modelBuilder.Entity("api.Models.User", b =>
+            {
+                b.HasOne("api.Models.Party", "PendingParty")
+                    .WithMany("PendingMembers")
+                    .HasForeignKey("PendingPartyId");
+            });
+
+        }
     }
 
     

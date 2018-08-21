@@ -12,7 +12,7 @@ namespace api.Controllers.Models
         public string Username;
 
         [Required]
-        public string developerPassword;
+        public string DeveloperPassword;
     }
 
     public class RegisterRequest

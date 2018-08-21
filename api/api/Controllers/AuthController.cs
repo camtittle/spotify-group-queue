@@ -91,7 +91,7 @@ namespace api.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (request.developerPassword != _configuration["developerPassword"])
+            if (request.DeveloperPassword != _configuration["developerPassword"])
             {
                 return BadRequest("Incorrect password");
             }

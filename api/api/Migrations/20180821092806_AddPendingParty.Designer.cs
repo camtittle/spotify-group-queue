@@ -11,9 +11,10 @@ using System;
 namespace api.Migrations
 {
     [DbContext(typeof(apiContext))]
-    partial class apiContextModelSnapshot : ModelSnapshot
+    [Migration("20180821092806_add_pending_party")]
+    partial class AddPendingParty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
