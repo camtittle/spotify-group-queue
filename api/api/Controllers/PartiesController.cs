@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using api.Controllers.Models;
 using api.Exceptions;
+using api.Hubs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,14 @@ namespace api.Controllers
         public async Task<IActionResult> GetAllParties()
         {
             return Ok(await _partyService.GetAll());
+        }
+
+        [Route("testhub")]
+        [HttpGet]
+        public async Task<IActionResult> TestHub()
+        {
+            await PartyHub.SendMessageStatic("Cameron", "hello");
+            return Ok();
         }
 
         // Get user's current party

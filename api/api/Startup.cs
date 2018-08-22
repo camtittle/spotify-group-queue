@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using api.Hubs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -51,6 +52,8 @@ namespace api
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
             });
 
+            services.AddSignalR();
+
             services.AddSingleton<IConfiguration>(Configuration);
             services.RegisterServices(); // Register all our API servies
 
@@ -66,7 +69,15 @@ namespace api
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors(builder =>
+                builder.WithOrigins("http://localhost:4200")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials());
+
             app.UseAuthentication();
+
+            app.UseSignalR(routes => { routes.MapHub<PartyHub>("/partyHub"); });
 
             app.UseMvc();
         }
