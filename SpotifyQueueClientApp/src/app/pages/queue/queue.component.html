@@ -1,0 +1,11 @@
+<h3>Login</h3>
+Username:
+<input type=text placeholder="Username" [(ngModel)]="usernameInput" />
+<button (click)="onLoginClick($event)">Log in</button>
+<div>{{ loginResult }}</div>
+
+<h3>Get /me</h3>
+
+<button (click)="onButtonClick($event)">Get /me</button>
+
+<div>{{ result }}</div>
