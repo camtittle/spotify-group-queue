@@ -8,7 +8,7 @@ namespace api.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<User> Create(string username);
+        User Create(string username);
         Task<User> FindByUsername(string username);
         Task<User> Find(string id);
 

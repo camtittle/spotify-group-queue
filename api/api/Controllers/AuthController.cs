@@ -36,7 +36,7 @@ namespace api.Controllers
         [Route("register")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        public IActionResult Register([FromBody] RegisterRequest request)
         {
             // TODO: add a CAPTCHA to prevent spamming
             if (!ModelState.IsValid)
@@ -47,7 +47,7 @@ namespace api.Controllers
             // Attempt to create the new user
             try
             {
-                User user = await _userService.Create(request.Username);
+                var user = _userService.Create(request.Username);
 
                 // TODO: verification eg different IP and user agent? (prevent spamming)
 
@@ -68,14 +68,11 @@ namespace api.Controllers
                     expires: DateTime.Now.AddHours(6),
                     signingCredentials: creds);
 
-                return Ok(new
-                {
-                    token = new JwtSecurityTokenHandler().WriteToken(token)
-                });
+                return Ok(new RegisterResponse(user.Username, new JwtSecurityTokenHandler().WriteToken(token)));
             }
-            catch (APIException e)
+            catch (ArgumentException e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e);
+                return BadRequest(e.Message);
             }
         }
 

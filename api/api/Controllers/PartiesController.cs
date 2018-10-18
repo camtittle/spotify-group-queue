@@ -80,14 +80,18 @@ namespace api.Controllers
             var user = await GetAuthorizedUser();
             if (user.Owner || user.CurrentParty != null || user.Admin)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, "Already admin or own a party. Delete or leave that party first");
+                return BadRequest("Already admin or own a party. Delete or leave that party first");
             }
-            
+
             try
             {
                 return Ok(await _partyService.Create(user.Id, request.Name));
             }
-            catch (APIException e)
+            catch (Exception e) when (e is ArgumentNullException || e is ArgumentException)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, e);
             }

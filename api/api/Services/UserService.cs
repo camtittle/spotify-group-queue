@@ -19,14 +19,14 @@ namespace api.Services
             _context = context;
         }
 
-        public async Task<User> Create(string username)
+        public User Create(string username)
         {
             // validation
             if (string.IsNullOrWhiteSpace(username))
-                throw new APIException("Username required");
-
+                throw new ArgumentNullException(nameof(username));
+            
             if (_context.Users.Any(x => x.Username == username))
-                throw new APIException($"Username {username} is already taken");
+                throw new ArgumentException($"Username {username} is already taken");
 
             var user = new User
             {
@@ -34,8 +34,8 @@ namespace api.Services
                 Id = Guid.NewGuid().ToString()
             };
 
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+            _context.Users.Add(user);
+            _context.SaveChanges();
 
             return user;
         }

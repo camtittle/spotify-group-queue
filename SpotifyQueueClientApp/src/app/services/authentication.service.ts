@@ -1,24 +1,23 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
+import { ApiService } from './api.service';
+import { RegisterResponse } from '../models';
+import { HttpErrorResponse } from '@angular/common/http';
+import { throwError, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthenticationService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private apiService: ApiService) { }
 
-  register(username: string) {
-    return this.http.post<any>('${BASE_API_URL}/auth/register', {username: username})
-      .pipe(map(user => {
-        // register succesful if there's a jwt token in response
-        if (user && user.token) {
-          // Store token in local storage to keep logged in between refreshes
-          localStorage.setItem('currentUser', JSON.stringify(user));
-        }
-
-        return user;
-      }));
+  register(username: string): Observable<RegisterResponse> {
+    return this.apiService.post<RegisterResponse>('/auth/register', {username: username})
+      .pipe(map(response => {
+          localStorage.setItem('currentUser', JSON.stringify(response));
+          return response;
+        })
+      );
   }
 }

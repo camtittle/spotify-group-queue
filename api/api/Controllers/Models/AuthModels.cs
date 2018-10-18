@@ -8,11 +8,8 @@ namespace api.Controllers.Models
 {
     public class TokenRequest
     {
-        [Required]
-        public string Username;
-
-        [Required]
-        public string DeveloperPassword;
+        [Required] public string Username;
+        [Required] public string DeveloperPassword;
     }
 
     public class RegisterRequest
@@ -20,5 +17,17 @@ namespace api.Controllers.Models
         [Required]
         [StringLength(30)]
         public string Username;
+    }
+
+    public class RegisterResponse
+    {
+        [Required] public string AuthToken;
+        [Required] public string Username;
+
+        public RegisterResponse(string username, string authToken)
+        {
+            AuthToken = authToken;
+            Username = username;
+        }
     }
 }

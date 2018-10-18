@@ -27,15 +27,19 @@ namespace api.Services
         {
             if (String.IsNullOrWhiteSpace(name))
             {
-                throw new APIException("Party name cannot be empty");
+                throw new ArgumentNullException(name);
             }
 
             if (_context.Parties.Any(p => p.Name == name))
             {
-                throw new APIException("Party name taken");
+                throw new ArgumentException("Party name taken");
             }
 
             var owner = await _userService.Find(ownerUserId);
+            if (owner == null)
+            {
+                throw new ArgumentException("User does not exist");
+            }
 
             var party = new Party
             {
@@ -48,7 +52,7 @@ namespace api.Services
             owner.Owner = true;
             owner.CurrentParty = party;
 
-            await _context.Parties.AddAsync(party);
+            _context.Parties.Add(party);
             await _context.SaveChangesAsync();
             return party;
         }

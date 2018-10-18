@@ -1,0 +1,7 @@
+<div class="create-container">
+  <h3>Create a Party</h3>
+    Name your Party
+    <input type=text placeholder="Party Name" [(ngModel)]="nameInput" />
+    <button (click)="onCreateClick()">Create</button>
+    <div>{{ creationError }}</div>
+</div>

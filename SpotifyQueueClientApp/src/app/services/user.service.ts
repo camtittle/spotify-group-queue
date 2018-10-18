@@ -1,25 +1,16 @@
+import { ApiService } from './api.service';
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { AppSettings } from '../app-settings';
-import { Observable } from 'rxjs';
+import { User } from '../models';
 
-
-//model
-export class User {
-    id: string;
-    username: string;
-}
-
-@Injectable ({
-    providedIn: 'root'
+@Injectable({
+  providedIn: 'root'
 })
 export class UserService {
 
-    constructor(private http: HttpClient) { }
+  constructor(private apiService: ApiService) { }
 
-    public getMe(): Observable<any> {
-        console.log("getme");
-        return this.http.get<any>(`${ AppSettings.BASE_API_URL }/users/me`);
-    }
+  public getMe() {
+    return this.apiService.get('/users/me');
+  }
 
 }

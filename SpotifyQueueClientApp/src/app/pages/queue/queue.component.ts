@@ -9,7 +9,9 @@ import { AuthenticationService } from '../../services/authentication.service';
 })
 export class QueueComponent implements OnInit {
 
-  private result: any;
+  public username: string;
+  public registrationError = '';
+
   private usernameInput: string;
 
   constructor(private userService: UserService,
@@ -18,16 +20,12 @@ export class QueueComponent implements OnInit {
   ngOnInit() {
   }
 
-  onLoginButtonClick(event: any) {
+  onRegisterClick() {
     this.authenticationService.register(this.usernameInput).subscribe(result => {
-
-    });
-  }
-
-  onButtonClick(event: any) {
-    this.userService.getMe().subscribe(x => {
-      this.result = JSON.stringify(x);
-    });
+      this.username = result.username;
+      console.log(`Auth token: ${result.authToken}`);
+    },
+    err => this.registrationError = err);
   }
 
 }
