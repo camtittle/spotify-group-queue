@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService, AuthenticationService } from '../../services';
+import { AuthenticationService, HubConnectionService } from '../../services';
 import { Router } from '@angular/router';
 
 @Component({
@@ -12,12 +12,23 @@ export class IndexComponent implements OnInit {
   public username: string;
   public registrationError = '';
 
+  public tempMessageOutput = '';
+
   private usernameInput: string;
 
   constructor(private authenticationService: AuthenticationService,
-              private router: Router) { }
+              private router: Router,
+              private hubConnectionService: HubConnectionService) { }
 
   ngOnInit() {
+
+    // Test
+    const conn = this.hubConnectionService.connection;
+    // Subscribe to message event
+    this.hubConnectionService.receieveMessage$.subscribe(message => {
+      this.tempMessageOutput = `${message.user}: ${message.message}`;
+    });
+
   }
 
   onRegisterClick() {
