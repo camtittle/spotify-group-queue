@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import {Party} from '../../models';
+import {PartyService} from '../../services';
 
 @Component({
   selector: 'app-find',
@@ -7,9 +9,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class FindComponent implements OnInit {
 
-  constructor() { }
+  public parties: Party[];
 
-  ngOnInit() {
+  constructor(private partyService: PartyService) { }
+
+  async ngOnInit() {
+    this.parties = await this.partyService.getAllParties();
   }
 
 }

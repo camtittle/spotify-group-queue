@@ -4,6 +4,8 @@
   <a routerLink="/create">Create new Party</a>
   <br>
   <div class="party-list">
-    <p>List of parties will be here</p>
+    <ul>
+      <li *ngFor="let party of parties">{{ party.name }}</li>
+    </ul>
   </div>
 </div>

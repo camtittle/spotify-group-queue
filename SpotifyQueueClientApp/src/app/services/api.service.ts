@@ -12,9 +12,9 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
 
-  public get(endpoint: string): Observable<any> {
+  public get<T>(endpoint: string): Observable<any> {
     console.log('GET: ' + endpoint);
-    return this.http.get<any>(this.getUrl(endpoint))
+    return this.http.get<T>(this.getUrl(endpoint))
       .pipe(catchError(this.handleError));
   }
 
