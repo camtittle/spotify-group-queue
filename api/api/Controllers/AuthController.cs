@@ -116,10 +116,7 @@ namespace api.Controllers
                     expires: DateTime.Now.AddHours(6),
                     signingCredentials: creds);
 
-                return Ok(new
-                {
-                    token = new JwtSecurityTokenHandler().WriteToken(token)
-                });
+                return Ok(new RegisterResponse(user.Username, new JwtSecurityTokenHandler().WriteToken(token)));
             }
             catch (APIException e)
             {

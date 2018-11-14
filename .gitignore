@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 SpotifyQueueClientApp/.editorconfig
 SpotifyQueueClientApp/package-lock.json
+SpotifyQueueClientApp/src/environments/secrets.ts

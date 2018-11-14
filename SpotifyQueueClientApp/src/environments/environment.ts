@@ -2,11 +2,14 @@
 // `ng build ---prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
+import {secrets} from './secrets';
+
 export const environment = {
   production: false,
-  BASE_API_URL: 'http://localhost:58953/api/v1',
-
-  SIGNALR_HUB_URL: 'http://localhost:58953/partyHub'
+  useDevRegisterEndpoint: true,
+  baseApiUrl: 'http://localhost:58953/api/v1',
+  signalRHubUrl: 'http://localhost:58953/partyHub',
+  devPassword: secrets.DEV_PASSWORD
 };
 
 /*
