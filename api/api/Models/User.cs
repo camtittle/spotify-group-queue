@@ -11,13 +11,17 @@ namespace api.Models
 
         public string Username { get; set; }
 
+        public Party OwnedParty { get; set; }
+
+        public bool IsOwner { get; set; }
+
         public Party CurrentParty { get; set; }
+
+        public bool IsMember { get; set; }
 
         public Party PendingParty { get; set; }
 
-        public bool Admin { get; set; }
-
-        public bool Owner { get; set; }
+        public bool IsPendingMember { get; set; }
 
     }
 }

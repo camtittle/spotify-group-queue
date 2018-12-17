@@ -1,6 +1,6 @@
-export interface Party {
+export interface PartyListItem {
   name: string;
   id: string;
-
-  // TODO Add members
+  owner: string;
+  memberCount: number;
 }

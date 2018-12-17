@@ -32,12 +32,22 @@ namespace api.Controllers
             _userService = userService;
         }
 
-        [Route("all")]
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAllParties()
         {
-            return Ok(await _partyService.GetAll());
+            // For nwo we just return all the active parties
+            var parties = await _partyService.GetAll();
+
+            var response = parties.Select(x => new GetPartiesResponse
+            {
+                Id = x.Id,
+                MemberCount = x.Members?.Count ?? 0,
+                Name = x.Name,
+                Owner = x.Owner?.Username
+            }).ToList();
+
+            return Ok(response);
         }
 
         [Route("testhub")]
@@ -49,22 +59,31 @@ namespace api.Controllers
         }
 
         // Get user's current party
-        [HttpGet]
+        [HttpGet("current")]
         [Authorize]
         public async Task<IActionResult> GetParty()
         {
             var userId = User.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
-            var party = await _partyService.FindByUser(userId);
-            
+            var user = await _userService.Find(userId);
+            var party = _userService.GetParty(user);
+
             if (party == null)
             {
-                return NotFound();
+                return NoContent();
             }
 
+            await _context.Entry(party).Reference(p => p.Owner).LoadAsync();
             await _context.Entry(party).Collection(p => p.Members).LoadAsync();
-            await _context.Entry(party).Collection(p => p.PendingMembers).LoadAsync();
 
-            return Ok(party);
+            var response = new GetCurrentPartyResponse
+            {
+                Id = party.Id,
+                Name = party.Name,
+                Owner = party.Owner.Username,
+                Members = party.Members.Select(member => member.Username).ToArray()
+            };
+
+            return Ok(response);
         }
 
         // Create party with current user as owner
@@ -78,14 +97,14 @@ namespace api.Controllers
             }
 
             var user = await GetAuthorizedUser();
-            if (user.Owner || user.CurrentParty != null || user.Admin)
+            if (user.IsOwner)
             {
-                return BadRequest("Already admin or own a party. Delete or leave that party first");
+                return BadRequest("Already member of a party. Leave that party first");
             }
 
             try
             {
-                return Ok(await _partyService.Create(user.Id, request.Name));
+                return Ok(await _partyService.Create(user, request.Name));
             }
             catch (Exception e) when (e is ArgumentNullException || e is ArgumentException)
             {
@@ -105,39 +124,34 @@ namespace api.Controllers
             var user = await GetAuthorizedUser();
 
             // User is owner of party
-            if (user.Owner && user.CurrentParty != null)
+            if (user.IsOwner)
             {
-                await _partyService.Delete(user.CurrentParty.Id);
+                await _partyService.Delete(user.OwnedParty);
             }
             return Ok();
         }
 
-        [Route("leave")]
-        [HttpPost]
+        [HttpPost("leave")]
         [Authorize]
         public async Task<IActionResult> LeaveParty()
         {
             var user = await GetAuthorizedUser();
+            var party = _userService.GetParty(user);
 
             // If user is owner, this is same as deleting the party
-            if (user.CurrentParty != null)
+            if (user.IsOwner)
             {
-                if (user.Owner)
-                {
-                    await _partyService.Delete(user.CurrentParty.Id);
-                }
-                else
-                {
-                    await _partyService.Leave(user.Id);
-                }
+                await _partyService.Delete(party);
+            } else if (party != null)
+            {
+                await _partyService.Leave(user);
             }
 
             return Ok();
         }
 
         // Request to join a party
-        [Route("join")]
-        [HttpPost]
+        [HttpPost("join")]
         [Authorize]
         public async Task<IActionResult> JoinParty([FromBody] JoinPartyRequest request)
         {
@@ -147,42 +161,40 @@ namespace api.Controllers
             }
 
             var user = await GetAuthorizedUser();
-            try
+
+            var party = await _partyService.Find(request.PartyId);
+            if (party == null)
             {
-                await _partyService.RequestToJoin(request.PartyId, user);
-                return Ok();
+                return BadRequest("Party not found");
             }
-            catch (ResourceNotFoundException e)
-            {
-                return NotFound(e);
-            }
+
+            await _partyService.RequestToJoin(party, user);
+            return Ok();
         }
 
-        // For the user's current party, get the pending members
-        [Route("members/pending")]
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> GetPendingMembers()
-        {
-            var user = await GetAuthorizedUser();
+        //// For the user's current party, get the pending members
+        //[Route("members/pending")]
+        //[HttpGet]
+        //[Authorize]
+        //public async Task<IActionResult> GetPendingMembers()
+        //{
+        //    var user = await GetAuthorizedUser();
 
-            if (user.CurrentParty != null)
-            {
-                // TODO: make this not include the pendingparty field of each member (all the same)
-                var party = await _partyService.Find(user.CurrentParty.Id);
-                return Ok(user.CurrentParty.PendingMembers);
-            }
+        //    if (user.IsMember)
+        //    {
+        //        // TODO: make this not include the pendingparty field of each member (all the same)
+        //        var party = await _partyService.Find(user.CurrentParty.Id);
+        //        return Ok(user.CurrentParty.PendingMembers);
+        //    }
 
-            return NotFound();
-        }
+        //    return NotFound();
+        //}
 
         // Helper method to get the user from the current user's auth token. Assumed user is authorized
         private async Task<User> GetAuthorizedUser()
         {
             var userId = User.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
             var user = await _userService.Find(userId);
-            await _context.Entry(user).Reference(u => u.CurrentParty).LoadAsync();
-            await _context.Entry(user).Reference(u => u.PendingParty).LoadAsync();
             return user;
         }
 

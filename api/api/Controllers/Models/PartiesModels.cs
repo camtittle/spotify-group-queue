@@ -18,4 +18,26 @@ namespace api.Controllers.Models
         [Required]
         public string PartyId;
     }
+
+    public class GetPartiesResponse
+    {
+        public string Id;
+
+        public string Name;
+
+        public string Owner;
+
+        public int MemberCount;
+    }
+
+    public class GetCurrentPartyResponse
+    {
+        public string Id;
+
+        public string Name;
+
+        public string Owner;
+
+        public string[] Members;
+    }
 }

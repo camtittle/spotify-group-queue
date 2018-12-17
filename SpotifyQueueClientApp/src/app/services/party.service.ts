@@ -1,7 +1,7 @@
 import { map } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { Injectable } from '@angular/core';
-import { Party } from '../models';
+import { PartyListItem } from '../models';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 @Injectable({
@@ -9,7 +9,7 @@ import {BehaviorSubject, Observable} from 'rxjs';
 })
 export class PartyService {
 
-  $currentParty = new BehaviorSubject<Party>(null);
+  $currentParty = new BehaviorSubject<PartyListItem>(null);
 
   constructor(private apiService: ApiService) { }
 
@@ -17,10 +17,10 @@ export class PartyService {
     const body = {
       name: name
     };
-    return this.apiService.post<Party>('/parties', body);
+    return this.apiService.post<PartyListItem>('/parties', body);
   }
 
-  public async getAllParties(): Promise<Party[]> {
-    return this.apiService.get<Party[]>('/parties/all').toPromise();
+  public async getAllParties(): Promise<PartyListItem[]> {
+    return this.apiService.get<PartyListItem[]>('/parties').toPromise();
   }
 }

@@ -13,25 +13,22 @@ import { Subject } from 'rxjs';
 export class HubConnectionService implements OnDestroy {
 
   private _connection: HubConnection;
-
-  // Connection closed observable, emits the error that caused disconnection (if there is one)
-  public connectionClosed$ = new Subject<any>();
-
-  public receieveMessage$ = new Subject<{user: string, message: string}>();
+  private _connectionClosed$: Subject<any>;
+  private _receiveMessage$: Subject<{user: string, message: string}>;
 
   constructor() { }
-
-  public get connection() {
-    if (!this._connection) {
-      this.initConnection();
-    }
-    return this._connection;
-  }
 
   public ngOnDestroy() {
     if (this._connection) {
       this._connection.stop();
     }
+  }
+
+  private async getConnection(): Promise<HubConnection> {
+    if (!this._connection) {
+      await this.initConnection();
+    }
+    return this._connection;
   }
 
   public closeConnection() {
@@ -43,17 +40,27 @@ export class HubConnectionService implements OnDestroy {
 
   private async initConnection() {
     this._connection = new HubConnectionBuilder()
-      .withUrl(environment.SIGNALR_HUB_URL)
+      .withUrl(environment.signalRHubUrl)
       .build();
 
-    this._connection.onclose(err => this.connectionClosed$.next(err));
-
-    // Listen for hub events
-    this._connection.on('receiveMessage', (user, message) => {
-      console.log('yo');
-      this.receieveMessage$.next({user, message});
+    this._connection.onclose(err => {
+      this._connectionClosed$.next(err);
+      this._connection = null;
     });
 
+    console.log('starting connection');
     await this._connection.start();
+    console.log('connection started');
+  }
+
+  public async receiveMessage$() {
+    if (!this._receiveMessage$) {
+      this._receiveMessage$ = new Subject<{user: string, message: string}>();
+      const conn = await this.getConnection();
+      conn.on('receiveMessage', (user, message) => {
+        this._receiveMessage$.next({user, message});
+      });
+    }
+    return this._receiveMessage$;
   }
 }

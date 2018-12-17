@@ -12,8 +12,6 @@ export class IndexComponent implements OnInit {
   public username: string;
   public registrationError = '';
 
-  public tempMessageOutput = '';
-
   private usernameInput: string;
 
   constructor(private authenticationService: AuthenticationService,
@@ -21,14 +19,6 @@ export class IndexComponent implements OnInit {
               private hubConnectionService: HubConnectionService) { }
 
   ngOnInit() {
-
-    // Test
-    const conn = this.hubConnectionService.connection;
-    // Subscribe to message event
-    this.hubConnectionService.receieveMessage$.subscribe(message => {
-      this.tempMessageOutput = `${message.user}: ${message.message}`;
-    });
-
   }
 
   onRegisterClick() {

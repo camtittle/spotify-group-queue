@@ -10,11 +10,10 @@ namespace api.Services.Interfaces
     {
         Task<List<Party>> GetAll();
         Task<Party> Find(string id);
-        Task<Party> FindByUser(string userId);
-        Task<Party> Create(string ownerUserId, string name);
-        Task RequestToJoin(string partyId, User user);
-        Task Delete(string partyId);
-        Task Leave(string userId);
+        Task<Party> Create(User owner, string name);
+        Task RequestToJoin(Party party, User user);
+        Task Delete(Party party);
+        Task Leave(User user);
         Task<bool> Exists(string id);
 
     }

@@ -11,6 +11,7 @@ namespace api.Services.Interfaces
         User Create(string username);
         Task<User> FindByUsername(string username);
         Task<User> Find(string id);
+        Party GetParty(User user);
 
     }
 }

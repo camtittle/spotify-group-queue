@@ -23,7 +23,7 @@ namespace api.Services
             _userService = userService;
         }
 
-        public async Task<Party> Create(string ownerUserId, string name)
+        public async Task<Party> Create(User owner, string name)
         {
             if (String.IsNullOrWhiteSpace(name))
             {
@@ -34,24 +34,23 @@ namespace api.Services
             {
                 throw new ArgumentException("Party name taken");
             }
-
-            var owner = await _userService.Find(ownerUserId);
+            
             if (owner == null)
             {
-                throw new ArgumentException("User does not exist");
+                throw new ArgumentNullException(nameof(owner));
             }
+
+            // Leave any exisiting parties
+            await Leave(owner);
 
             var party = new Party
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = name,
-                Members = new List<User>()
+                Members = new List<User>(),
+                PendingMembers = new List<User>(),
+                Owner = owner
             };
-            party.Members.Add(owner);
-
-            owner.Owner = true;
-            owner.CurrentParty = party;
-
             _context.Parties.Add(party);
             await _context.SaveChangesAsync();
             return party;
@@ -59,47 +58,52 @@ namespace api.Services
 
         public async Task<List<Party>> GetAll()
         {
-            return await _context.Parties.ToListAsync();
+            return await _context.Parties.Include(p => p.Members).Include(p => p.PendingMembers).Include(p => p.Owner).ToListAsync();
         }
 
         public async Task<Party> Find(string id)
         {
-            return await _context.Parties.Where(p => p.Id == id).Include(p => p.Members).Include(p => p.PendingMembers).FirstOrDefaultAsync();
+            return await _context.Parties.Where(p => p.Id == id).Include(p => p.Owner).Include(p => p.Members).Include(p => p.PendingMembers).FirstOrDefaultAsync();
         }
 
-        public async Task<Party> FindByUser(string userId)
+        public async Task Delete(Party party)
         {
-            return await _context.Users.Where(u => u.Id == userId).Select(u => u.CurrentParty).Include(p => p.Members).FirstOrDefaultAsync();
-        }
-
-        public async Task Delete(string partyId)
-        {
-            var party = await Find(partyId);
-            // Remove reference from all members
-            party.Members.ForEach(u =>
+            if (party == null)
             {
-                u.CurrentParty = null;
-                u.Owner = false;
-                u.Admin = false;
-            });
+                throw new ArgumentNullException(nameof(party));
+            }
+
+            // Remove reference from all members
+            party.Members?.ForEach(u => u.CurrentParty = null);
+            party.PendingMembers?.ForEach(u => u.PendingParty = null);
+            party.Owner.OwnedParty = null;
+
             _context.Parties.Remove(party);
             _context.SaveChanges();
         }
 
-        public async Task Leave(string userId)
+        public async Task Leave(User user)
         {
-            var user = await _userService.Find(userId);
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             user.CurrentParty = null;
-            user.Admin = false;
+            user.PendingParty = null;
+            user.OwnedParty = null;
             await _context.SaveChangesAsync();
         }
 
-        public async Task RequestToJoin(string partyId, User user)
+        public async Task RequestToJoin(Party party, User user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             // TODO: check not already in party
-            //if 
-            var party = await Find(partyId);
-            user.PendingParty = party ?? throw new ResourceNotFoundException("Party doesn't exist");
+            user.PendingParty = party ?? throw new ArgumentNullException(nameof(party));
             await _context.SaveChangesAsync();
 
             // TODO: send notification to admin

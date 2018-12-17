@@ -24,19 +24,32 @@ namespace api.Models
             /*
              *  Members <--> Parties relationship
              */
-            modelBuilder.Entity("api.Models.User", b =>
-            {
-                b.HasOne("api.Models.Party", "CurrentParty")
-                    .WithMany("Members")
-                    .HasForeignKey("CurrentPartyId");
-            });
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.CurrentParty)
+                .WithMany(p => p.Members)
+                .HasForeignKey("CurrentPartyId");
 
-            modelBuilder.Entity("api.Models.User", b =>
-            {
-                b.HasOne("api.Models.Party", "PendingParty")
-                    .WithMany("PendingMembers")
-                    .HasForeignKey("PendingPartyId");
-            });
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.PendingParty)
+                .WithMany(p => p.PendingMembers)
+                .HasForeignKey("PendingPartyId");
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.OwnedParty)
+                .WithOne(p => p.Owner)
+                .HasForeignKey(typeof(User).ToString(), "OwnedPartyId");
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.IsOwner)
+                .HasComputedColumnSql("CAST(CASE WHEN OwnedPartyId IS NULL THEN 0 ELSE 1 END AS BIT)");
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.IsMember)
+                .HasComputedColumnSql("CAST(CASE WHEN CurrentPartyId IS NULL THEN 0 ELSE 1 END AS BIT)");
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.IsPendingMember)
+                .HasComputedColumnSql("CAST(CASE WHEN PendingPartyId IS NULL THEN 0 ELSE 1 END AS BIT)");
 
         }
     }

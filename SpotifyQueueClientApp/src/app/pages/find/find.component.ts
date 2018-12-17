@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {Party} from '../../models';
+import {PartyListItem} from '../../models';
 import {PartyService} from '../../services';
 
 @Component({
@@ -9,7 +9,7 @@ import {PartyService} from '../../services';
 })
 export class FindComponent implements OnInit {
 
-  public parties: Party[];
+  public parties: PartyListItem[];
 
   constructor(private partyService: PartyService) { }
 

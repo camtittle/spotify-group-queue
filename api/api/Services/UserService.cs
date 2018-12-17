@@ -42,12 +42,32 @@ namespace api.Services
 
         public async Task<User> Find(string id)
         {
-            return await _context.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+            return await _context.Users.Where(u => u.Id == id).Include(u => u.CurrentParty).Include(u => u.OwnedParty).Include(u => u.PendingParty).FirstOrDefaultAsync();
         }
 
         public async Task<User> FindByUsername(string username)
         {
             return await _context.Users.Where(u => u.Username == username).FirstOrDefaultAsync();
+        }
+
+        public Party GetParty(User user)
+        {
+            if (user.IsMember)
+            {
+                return user.CurrentParty;
+            }
+
+            if (user.IsOwner)
+            {
+                return user.OwnedParty;
+            }
+
+            if (user.IsPendingMember)
+            {
+                return user.PendingParty;
+            }
+
+            return null;
         }
     }
 }
