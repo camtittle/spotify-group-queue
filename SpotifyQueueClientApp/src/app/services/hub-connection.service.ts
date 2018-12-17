@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@aspnet/signalr';
 import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
+import { AuthenticationService } from './authentication.service';
 
 /*
  * Manages a singleton SignalR Hub connection
@@ -16,11 +17,11 @@ export class HubConnectionService implements OnDestroy {
   private _connectionClosed$: Subject<any>;
   private _receiveMessage$: Subject<{user: string, message: string}>;
 
-  constructor() { }
+  constructor(private authenticationService: AuthenticationService) { }
 
-  public ngOnDestroy() {
+  public async ngOnDestroy() {
     if (this._connection) {
-      this._connection.stop();
+      await this._connection.stop();
     }
   }
 
@@ -31,16 +32,16 @@ export class HubConnectionService implements OnDestroy {
     return this._connection;
   }
 
-  public closeConnection() {
+  public async closeConnection() {
     if (this._connection) {
-      this._connection.stop();
+      await this._connection.stop();
       this._connection = null;
     }
   }
 
   private async initConnection() {
     this._connection = new HubConnectionBuilder()
-      .withUrl(environment.signalRHubUrl)
+      .withUrl(environment.signalRHubUrl, {accessTokenFactory: () => this.getAccessToken()})
       .build();
 
     this._connection.onclose(err => {
@@ -62,5 +63,9 @@ export class HubConnectionService implements OnDestroy {
       });
     }
     return this._receiveMessage$;
+  }
+
+  private getAccessToken(): string {
+    return this.authenticationService.getAccessToken();
   }
 }

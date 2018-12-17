@@ -11,14 +11,17 @@ import {environment} from '../../environments/environment';
 })
 export class AuthenticationService {
 
+  public currentUser: RegisterResponse;
+
   constructor(private apiService: ApiService) { }
 
-  register(username: string): Observable<RegisterResponse> {
+  public register(username: string): Observable<RegisterResponse> {
     if (!environment.production && environment.useDevRegisterEndpoint && environment.devPassword) {
       console.warn('Using dev token endpoint --> can register as anyone! Disable before deploying.');
       return this.apiService.post<RegisterResponse>('/auth/token', {username: username, developerPassword: environment.devPassword})
         .pipe(map(response => {
-            localStorage.setItem('currentUser', JSON.stringify(response));
+          this.currentUser = response;
+          localStorage.setItem('currentUser', JSON.stringify(response));
             return response;
           })
         );
@@ -26,8 +29,16 @@ export class AuthenticationService {
     return this.apiService.post<RegisterResponse>('/auth/register', {username: username})
       .pipe(map(response => {
           localStorage.setItem('currentUser', JSON.stringify(response));
+          this.currentUser = response;
           return response;
         })
       );
+  }
+
+  public getAccessToken(): string {
+    if (this.currentUser) {
+      return this.currentUser.authToken;
+    }
+    return null;
   }
 }
