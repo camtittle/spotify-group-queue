@@ -7,6 +7,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JwtInterceptor } from './helpers/jwt-interceptor';
+import { ModalsModule } from './modals/modals.module';
+import { ModalModule } from 'ngx-bootstrap/modal';
 
 
 @NgModule({
@@ -17,7 +19,9 @@ import { JwtInterceptor } from './helpers/jwt-interceptor';
     BrowserModule,
     PagesModule,
     AppRoutingModule,
-    ServicesModule
+    ServicesModule,
+    ModalModule.forRoot(),
+    ModalsModule
   ],
   exports: [
   ],

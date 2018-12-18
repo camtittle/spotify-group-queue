@@ -3,3 +3,7 @@
   Queue loaded
   <br> {{ message }}
 </div>
+
+<div *ngIf="pendingMember" class="pending-member-dialog">
+  <div>{{ pendingMember }} wants to join the party.</div>
+</div>

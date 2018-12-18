@@ -25,4 +25,11 @@ export class PartyService {
   public async getCurrentParty(): Promise<CurrentParty> {
     return this.apiService.get<CurrentParty>('/parties/current').toPromise();
   }
+
+  public async requestToJoinParty(party: PartyListItem): Promise<void> {
+    const body = {
+      partyId: party.id
+    }
+    return this.apiService.post<void>('/parties/join', body).toPromise();
+  }
 }

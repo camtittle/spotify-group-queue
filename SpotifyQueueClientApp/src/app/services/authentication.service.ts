@@ -21,6 +21,7 @@ export class AuthenticationService {
       return this.apiService.post<RegisterResponse>('/auth/token', {username: username, developerPassword: environment.devPassword})
         .pipe(map(response => {
           this.currentUser = response;
+          console.log(this.currentUser);
           localStorage.setItem('currentUser', JSON.stringify(response));
             return response;
           })
@@ -36,8 +37,9 @@ export class AuthenticationService {
   }
 
   public getAccessToken(): string {
-    if (this.currentUser) {
-      return this.currentUser.authToken;
+    const user = <RegisterResponse>JSON.parse(localStorage.getItem('currentUser'));
+    if (user) {
+      return user.authToken;
     }
     return null;
   }

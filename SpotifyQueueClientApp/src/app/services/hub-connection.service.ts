@@ -3,6 +3,7 @@ import { HubConnection, HubConnectionBuilder } from '@aspnet/signalr';
 import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
+import { PendingMemberRequest } from '../models/pending-member-request.model';
 
 /*
  * Manages a singleton SignalR Hub connection
@@ -15,7 +16,9 @@ export class HubConnectionService implements OnDestroy {
 
   private _connection: HubConnection;
   private _connectionClosed$: Subject<any>;
+
   private _receiveMessage$: Subject<{user: string, message: string}>;
+  private _pendingMemberRequest$: Subject<PendingMemberRequest>;
 
   constructor(private authenticationService: AuthenticationService) { }
 
@@ -54,18 +57,22 @@ export class HubConnectionService implements OnDestroy {
     console.log('connection started');
   }
 
-  public async receiveMessage$() {
-    if (!this._receiveMessage$) {
-      this._receiveMessage$ = new Subject<{user: string, message: string}>();
+  public async pendingMemberRequest$() {
+    if (!this._pendingMemberRequest$) {
+      this._pendingMemberRequest$ = new Subject<PendingMemberRequest>();
       const conn = await this.getConnection();
-      conn.on('receiveMessage', (user, message) => {
-        this._receiveMessage$.next({user, message});
+      conn.on('onPendingMemberRequest', (user: PendingMemberRequest) => {
+        console.log(user);
+        this._pendingMemberRequest$.next(user);
       });
     }
-    return this._receiveMessage$;
+    return this._pendingMemberRequest$;
   }
 
+
+
   private getAccessToken(): string {
-    return this.authenticationService.getAccessToken();
+    const token = this.authenticationService.getAccessToken();
+    return token;
   }
 }

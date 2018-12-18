@@ -2,6 +2,9 @@ import { HubConnectionService } from './../../services/hub-connection.service';
 import { Component, OnInit } from '@angular/core';
 import { PartyService } from '../../services';
 import { CurrentParty } from '../../models/current-party.model';
+import { BsModalService } from 'ngx-bootstrap';
+import { PendingMemberRequest } from '../../models/pending-member-request.model';
+import { PendingMemberRequestComponent } from '../../modals/pending-member-request/pending-member-request.component';
 
 @Component({
   selector: 'app-queue',
@@ -15,8 +18,12 @@ export class QueueComponent implements OnInit {
 
   public currentParty: CurrentParty;
 
+  // TODO remove this
+  public pendingMember: string;
+
   constructor(private hubConnectionService: HubConnectionService,
-              private partyService: PartyService) { }
+              private partyService: PartyService,
+              private modalService: BsModalService) { }
 
   async ngOnInit() {
     await this.checkPartyMembership();
@@ -30,9 +37,11 @@ export class QueueComponent implements OnInit {
     // Establish connection to hub
     this.loading = true;
     console.log('loading');
-    const receiveMessage = await this.hubConnectionService.receiveMessage$();
-    receiveMessage.subscribe(data => {
-      this.message = data.message;
+
+    const pendingMemberRequest = await this.hubConnectionService.pendingMemberRequest$();
+    pendingMemberRequest.subscribe(request => {
+      console.log('pending member request: ' + request.username);
+      this.onPendingMemberRequest(request);
     });
     console.log('not loading');
     this.loading = false;
@@ -43,5 +52,11 @@ export class QueueComponent implements OnInit {
     this.currentParty = await this.partyService.getCurrentParty();
   }
 
+  private onPendingMemberRequest(request: PendingMemberRequest) {
+    const initialState = {
+      request: request
+    };
+    this.modalService.show(PendingMemberRequestComponent, {initialState});
+  }
 
 }

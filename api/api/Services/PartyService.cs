@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Exceptions;
+using api.Hubs;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -106,7 +107,8 @@ namespace api.Services
             user.PendingParty = party ?? throw new ArgumentNullException(nameof(party));
             await _context.SaveChangesAsync();
 
-            // TODO: send notification to admin
+            // Notify admin of pending request
+            await PartyHub.NotifyAdminNewPendingMember(user, party);
         }
 
         public async Task<bool> Exists(string id)

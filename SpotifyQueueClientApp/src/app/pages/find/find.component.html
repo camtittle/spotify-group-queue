@@ -4,7 +4,7 @@
   <br>
   <div class="party-list">
     <ul>
-      <li *ngFor="let party of parties">{{ party.name }} - {{ party.owner}} ({{party.memberCount}} members)</li>
+      <li *ngFor="let party of parties" (click)="joinParty(party)">{{ party.name }} - {{ party.owner}} ({{party.memberCount}} members)</li>
     </ul>
   </div>
 </div>

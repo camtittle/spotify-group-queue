@@ -17,4 +17,8 @@ export class FindComponent implements OnInit {
     this.parties = await this.partyService.getAllParties();
   }
 
+  public async joinParty(party: PartyListItem) {
+    await this.partyService.requestToJoinParty(party);
+  }
+
 }
