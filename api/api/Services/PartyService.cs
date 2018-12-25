@@ -74,10 +74,14 @@ namespace api.Services
                 throw new ArgumentNullException(nameof(party));
             }
 
+            _context.Parties.Include(p => p.Members).ThenInclude(m => m.CurrentParty);
+            _context.Parties.Include(p => p.PendingMembers).ThenInclude(m => m.PendingParty);
+            _context.Parties.Include(p => p.Owner).ThenInclude(m => m.OwnedParty);
+
             // Remove reference from all members
-            party.Members?.ForEach(u => u.CurrentParty = null);
-            party.PendingMembers?.ForEach(u => u.PendingParty = null);
-            party.Owner.OwnedParty = null;
+            party.Members = new List<User>();
+            party.PendingMembers = new List<User>();
+            party.Owner = null;
 
             _context.Parties.Remove(party);
             _context.SaveChanges();
@@ -103,12 +107,59 @@ namespace api.Services
                 throw new ArgumentNullException(nameof(user));
             }
 
-            // TODO: check not already in party
+            // Verify not an owner of a party
+            if (user.IsOwner || user.IsMember)
+            {
+                throw new JoiningPartyException("User already in a party - cannot join another party");
+            }
+
             user.PendingParty = party ?? throw new ArgumentNullException(nameof(party));
             await _context.SaveChangesAsync();
 
             // Notify admin of pending request
             await PartyHub.NotifyAdminNewPendingMember(user, party);
+        }
+
+        public async Task AddPendingMember(Party party, User user)
+        {
+            if (party == null)
+            {
+                throw new ArgumentNullException(nameof(party));
+            }
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            // Verify they are not already in the party
+            if (user.CurrentParty?.Id == party.Id)
+            {
+                return;
+            }
+
+            user.CurrentParty = party;
+            user.PendingParty = null;
+            user.OwnedParty = null;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemovePendingMember(Party party, User user)
+        {
+            if (party == null)
+            {
+                throw new ArgumentNullException(nameof(party));
+            }
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            user.PendingParty = null;
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task<bool> Exists(string id)

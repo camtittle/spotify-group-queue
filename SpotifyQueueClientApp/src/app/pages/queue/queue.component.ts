@@ -1,5 +1,5 @@
 import { HubConnectionService } from './../../services/hub-connection.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PartyService } from '../../services';
 import { CurrentParty } from '../../models/current-party.model';
 import { BsModalService } from 'ngx-bootstrap';
@@ -11,7 +11,7 @@ import { PendingMemberRequestComponent } from '../../modals/pending-member-reque
   templateUrl: './queue.component.html',
   styleUrls: ['./queue.component.css']
 })
-export class QueueComponent implements OnInit {
+export class QueueComponent implements OnInit, OnDestroy {
 
   public loading = true;
   public message = '';
@@ -43,8 +43,16 @@ export class QueueComponent implements OnInit {
       console.log('pending member request: ' + request.username);
       this.onPendingMemberRequest(request);
     });
+
+    const pendingMemberResponse = await this.hubConnectionService.pendingMemberResponse$();
+    pendingMemberResponse.subscribe(accepted => {
+      this.onPendingMemberResponse(accepted);
+    })
     console.log('not loading');
     this.loading = false;
+  }
+
+  ngOnDestroy() {
 
   }
 
@@ -52,11 +60,29 @@ export class QueueComponent implements OnInit {
     this.currentParty = await this.partyService.getCurrentParty();
   }
 
+  /**
+   * Called on admin users when a user requests to join their party
+   * @param request
+   */
   private onPendingMemberRequest(request: PendingMemberRequest) {
     const initialState = {
       request: request
     };
     this.modalService.show(PendingMemberRequestComponent, {initialState});
+  }
+
+  /**
+   * Called on a pending user when the admin accepts/declines their request to join
+   * @param response
+   */
+  private onPendingMemberResponse(accepted: boolean) {
+    if (accepted) {
+      // Update current queue
+      console.log('Admin ACCEPTED your request to join');
+    } else {
+      // Show rejection message
+      console.log('Admin DECLINED your request to join');
+    }
   }
 
 }

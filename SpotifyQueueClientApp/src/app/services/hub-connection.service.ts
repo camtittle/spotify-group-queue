@@ -19,6 +19,7 @@ export class HubConnectionService implements OnDestroy {
 
   private _receiveMessage$: Subject<{user: string, message: string}>;
   private _pendingMemberRequest$: Subject<PendingMemberRequest>;
+  private _pendingMemberResponse$: Subject<boolean>;
 
   constructor(private authenticationService: AuthenticationService) { }
 
@@ -57,7 +58,7 @@ export class HubConnectionService implements OnDestroy {
     console.log('connection started');
   }
 
-  public async pendingMemberRequest$() {
+  public async pendingMemberRequest$(): Promise<Subject<PendingMemberRequest>> {
     if (!this._pendingMemberRequest$) {
       this._pendingMemberRequest$ = new Subject<PendingMemberRequest>();
       const conn = await this.getConnection();
@@ -69,10 +70,28 @@ export class HubConnectionService implements OnDestroy {
     return this._pendingMemberRequest$;
   }
 
+  public async pendingMemberResponse$(): Promise<Subject<boolean>> {
+    if (!this._pendingMemberResponse$) {
+      this._pendingMemberResponse$ = new Subject<boolean>();
+      const conn = await this.getConnection();
+      console.log('--> pendingMemberResponse initialised');
+      conn.on('pendingMembershipResponse', (accepted: boolean) => {
+        console.log('response');
+        console.log(accepted);
+        this._pendingMemberResponse$.next(accepted);
+      });
+    }
+    return this._pendingMemberResponse$;
+  }
+
+  public async acceptPendingMember(pendingUserId: string, accept: boolean) {
+    const conn = await this.getConnection();
+    await conn.invoke('acceptPendingMember', pendingUserId, accept);
+  }
 
 
   private getAccessToken(): string {
     const token = this.authenticationService.getAccessToken();
-    return token;
+    return token.authToken;
   }
 }

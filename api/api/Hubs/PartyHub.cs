@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using api.Hubs.Models;
 using api.Models;
 using api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 
@@ -15,13 +16,15 @@ namespace api.Hubs
     {
         private static IHubContext<PartyHub> _hubContext;
         private IUserService _userService;
+        private IPartyService _partyService;
 
         private static readonly string ADMIN_GROUP_SUFFIX = "ADMIN";
 
-        public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService)
+        public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService)
         {
             _hubContext = hubContext;
             _userService = userService;
+            _partyService = partyService;
         }
 
         public override async Task OnConnectedAsync()
@@ -55,16 +58,6 @@ namespace api.Hubs
             }
         }
 
-        public async Task SendMessage(string user, string message)
-        {
-            await Clients.All.SendAsync("receiveMessage", user, message);
-        }
-
-        public static async Task SendMessageStatic(string user, string message)
-        {
-            await _hubContext.Clients.All.SendAsync("receiveMessage", user, message);
-        }
-
         public static async Task NotifyAdminNewPendingMember(User user, Party party)
         {
             var userModel = new OtherUserModel
@@ -73,7 +66,49 @@ namespace api.Hubs
                 Username = user.Username
             };
             var adminGroupName = party.Id + ADMIN_GROUP_SUFFIX;
-            await _hubContext.Clients.Group(adminGroupName).SendCoreAsync("onPendingMemberRequest", new [] {(object)userModel});
+            await _hubContext.Clients.Group(adminGroupName).SendAsync("onPendingMemberRequest", userModel);
+        }
+
+        // TODO add admin policy?
+        [Authorize]
+        public async Task AcceptPendingMember(string pendingUserId, bool accept)
+        {
+            if (string.IsNullOrWhiteSpace(pendingUserId))
+            {
+                throw new ArgumentNullException(nameof(pendingUserId));
+            }
+
+            var pendingUser = await _userService.Find(pendingUserId);
+            if (pendingUser == null)
+            {
+                throw new ArgumentException("User does not exist", nameof(pendingUserId));
+            }
+
+            var party = pendingUser.PendingParty;
+            if (party == null)
+            {
+                throw new ArgumentException("User does not have a pending party", nameof(pendingUserId));
+            }
+
+            // Verify that the authorized user is the owner of the party, and user is a pending member of the party
+            var owner = await GetCurrentUser();
+            if (!owner.IsOwner || party.Owner.Id != owner.Id)
+            {
+                // TODO throw an exception?
+                return;
+            }
+
+            if (accept)
+            {
+                await _partyService.AddPendingMember(party, pendingUser);
+            }
+            else
+            {
+                await _partyService.RemovePendingMember(party, pendingUser);
+            }
+
+            // Notify pending member
+            await Clients.User(pendingUserId).SendAsync("pendingMembershipResponse", accept);
         }
 
         public async Task<User> GetCurrentUser()

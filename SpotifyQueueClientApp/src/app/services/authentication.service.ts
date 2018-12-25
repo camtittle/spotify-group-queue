@@ -5,6 +5,7 @@ import { RegisterResponse } from '../models';
 import { HttpErrorResponse } from '@angular/common/http';
 import { throwError, Observable } from 'rxjs';
 import {environment} from '../../environments/environment';
+import { Register } from 'ts-node';
 
 @Injectable({
   providedIn: 'root'
@@ -20,27 +21,27 @@ export class AuthenticationService {
       console.warn('Using dev token endpoint --> can register as anyone! Disable before deploying.');
       return this.apiService.post<RegisterResponse>('/auth/token', {username: username, developerPassword: environment.devPassword})
         .pipe(map(response => {
-          this.currentUser = response;
-          console.log(this.currentUser);
-          localStorage.setItem('currentUser', JSON.stringify(response));
+            this.currentUser = response;
+            console.log(this.currentUser);
+            this.saveAccessToken(response);
             return response;
           })
         );
     }
     return this.apiService.post<RegisterResponse>('/auth/register', {username: username})
       .pipe(map(response => {
-          localStorage.setItem('currentUser', JSON.stringify(response));
+          this.saveAccessToken(response);
           this.currentUser = response;
           return response;
         })
       );
   }
 
-  public getAccessToken(): string {
-    const user = <RegisterResponse>JSON.parse(localStorage.getItem('currentUser'));
-    if (user) {
-      return user.authToken;
-    }
-    return null;
+  private saveAccessToken(token: RegisterResponse) {
+    sessionStorage.setItem('currentUser', JSON.stringify(token));
+  }
+
+  public getAccessToken(): RegisterResponse {
+    return <RegisterResponse>JSON.parse(sessionStorage.getItem('currentUser'));
   }
 }

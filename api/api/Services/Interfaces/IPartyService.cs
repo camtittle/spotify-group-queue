@@ -14,7 +14,8 @@ namespace api.Services.Interfaces
         Task RequestToJoin(Party party, User user);
         Task Delete(Party party);
         Task Leave(User user);
-        Task<bool> Exists(string id);
+        Task AddPendingMember(Party party, User user);
+        Task RemovePendingMember(Party party, User user);
 
     }
 }

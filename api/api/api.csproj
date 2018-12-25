@@ -8,6 +8,8 @@
   <ItemGroup>
     <Compile Remove="Migrations\20181117113013_IsOwnerBoolean.cs" />
     <Compile Remove="Migrations\20181117113013_IsOwnerBoolean.Designer.cs" />
+    <Compile Remove="Migrations\20181225194759_PartiesOnDelete.cs" />
+    <Compile Remove="Migrations\20181225194759_PartiesOnDelete.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

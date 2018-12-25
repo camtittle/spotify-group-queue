@@ -50,14 +50,6 @@ namespace api.Controllers
             return Ok(response);
         }
 
-        [Route("testhub")]
-        [HttpGet]
-        public async Task<IActionResult> TestHub()
-        {
-            await PartyHub.SendMessageStatic("Cameron", "hello");
-            return Ok();
-        }
-
         // Get user's current party
         [HttpGet("current")]
         [Authorize]

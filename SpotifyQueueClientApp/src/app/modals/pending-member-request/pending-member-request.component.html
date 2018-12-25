@@ -8,6 +8,6 @@
   {{ request.username }} wants to join your party
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-outline-dark" (click)="modalRef.hide()">Decline</button>
-  <button type="button" class="btn btn-success" (click)="modalRef.hide()">Accept</button>
+  <button type="button" class="btn btn-outline-dark" (click)="onActionClick(false)">Decline</button>
+  <button type="button" class="btn btn-success" (click)="onActionClick(true)">Accept</button>
 </div>

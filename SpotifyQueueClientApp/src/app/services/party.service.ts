@@ -1,7 +1,6 @@
 import { ApiService } from './api.service';
 import { Injectable } from '@angular/core';
 import { PartyListItem } from '../models';
-import { BehaviorSubject } from 'rxjs';
 import { CurrentParty } from '../models/current-party.model';
 
 @Injectable({
