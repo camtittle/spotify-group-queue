@@ -1,7 +1,7 @@
 import { HubConnectionService } from './../../services/hub-connection.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PartyService } from '../../services';
-import { CurrentParty } from '../../models/current-party.model';
+import { CurrentParty, PartyMembershipStatus } from '../../models/current-party.model';
 import { BsModalService } from 'ngx-bootstrap';
 import { PendingMemberRequest } from '../../models/pending-member-request.model';
 import { PendingMemberRequestComponent } from '../../modals/pending-member-request/pending-member-request.component';
@@ -16,6 +16,7 @@ export class QueueComponent implements OnInit, OnDestroy {
   public loading = true;
   public message = '';
 
+  public partyMembershipStatus = PartyMembershipStatus;
   public currentParty: CurrentParty;
 
   // TODO remove this

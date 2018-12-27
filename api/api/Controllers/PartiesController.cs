@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
 
 namespace api.Controllers
 {
@@ -64,16 +66,7 @@ namespace api.Controllers
                 return NoContent();
             }
 
-            await _context.Entry(party).Reference(p => p.Owner).LoadAsync();
-            await _context.Entry(party).Collection(p => p.Members).LoadAsync();
-
-            var response = new GetCurrentPartyResponse
-            {
-                Id = party.Id,
-                Name = party.Name,
-                Owner = party.Owner.Username,
-                Members = party.Members.Select(member => member.Username).ToArray()
-            };
+            var response = await _partyService.GetCurrentParty(party);
 
             return Ok(response);
         }
@@ -118,9 +111,12 @@ namespace api.Controllers
             // User is owner of party
             if (user.IsOwner)
             {
-                await _partyService.Delete(user.OwnedParty);
+                var ownedParty = _userService.GetParty(user);
+                await _partyService.Delete(ownedParty);
+                return Ok();
             }
-            return Ok();
+
+            return Forbid();
         }
 
         [HttpPost("leave")]
@@ -163,24 +159,6 @@ namespace api.Controllers
             await _partyService.RequestToJoin(party, user);
             return Ok();
         }
-
-        //// For the user's current party, get the pending members
-        //[Route("members/pending")]
-        //[HttpGet]
-        //[Authorize]
-        //public async Task<IActionResult> GetPendingMembers()
-        //{
-        //    var user = await GetAuthorizedUser();
-
-        //    if (user.IsMember)
-        //    {
-        //        // TODO: make this not include the pendingparty field of each member (all the same)
-        //        var party = await _partyService.Find(user.CurrentParty.Id);
-        //        return Ok(user.CurrentParty.PendingMembers);
-        //    }
-
-        //    return NotFound();
-        //}
 
         // Helper method to get the user from the current user's auth token. Assumed user is authorized
         private async Task<User> GetAuthorizedUser()

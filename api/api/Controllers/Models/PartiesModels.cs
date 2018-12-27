@@ -29,15 +29,4 @@ namespace api.Controllers.Models
 
         public int MemberCount;
     }
-
-    public class GetCurrentPartyResponse
-    {
-        public string Id;
-
-        public string Name;
-
-        public string Owner;
-
-        public string[] Members;
-    }
 }

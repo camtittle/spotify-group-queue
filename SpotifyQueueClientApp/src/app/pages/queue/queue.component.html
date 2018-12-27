@@ -4,6 +4,14 @@
   <br> {{ message }}
 </div>
 
-<div *ngIf="pendingMember" class="pending-member-dialog">
-  <div>{{ pendingMember }} wants to join the party.</div>
+<div class="membership-status">
+  <div *ngIf="currentParty?.membershipStatus == partyMembershipStatus.pendingMember">
+    Waiting for {{currentParty.owner}} to respond to your request to join {{currentParty.name}}
+  </div>
+  <div *ngIf="currentParty?.membershipStatus == partyMembershipStatus.member">
+    You are a member of {{currentParty.name}}
+  </div>
+  <div *ngIf="currentParty?.membershipStatus == partyMembershipStatus.owner">
+    You are the owner of {{currentParty.name}}
+  </div>
 </div>

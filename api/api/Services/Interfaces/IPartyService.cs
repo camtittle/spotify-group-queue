@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using api.Controllers.Models;
 using api.Models;
 
 namespace api.Services.Interfaces
@@ -16,6 +17,8 @@ namespace api.Services.Interfaces
         Task Leave(User user);
         Task AddPendingMember(Party party, User user);
         Task RemovePendingMember(Party party, User user);
+        Task<CurrentParty> GetCurrentParty(Party party);
+        Task<Party> LoadFull(Party party);
 
     }
 }

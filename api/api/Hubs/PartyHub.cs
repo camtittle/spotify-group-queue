@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using api.Hubs.Models;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -60,11 +59,7 @@ namespace api.Hubs
 
         public static async Task NotifyAdminNewPendingMember(User user, Party party)
         {
-            var userModel = new OtherUserModel
-            {
-                Id = user.Id,
-                Username = user.Username
-            };
+            var userModel = new OtherUser(user);
             var adminGroupName = party.Id + ADMIN_GROUP_SUFFIX;
             await _hubContext.Clients.Group(adminGroupName).SendAsync("onPendingMemberRequest", userModel);
         }
@@ -109,6 +104,17 @@ namespace api.Hubs
 
             // Notify pending member
             await Clients.User(pendingUserId).SendAsync("pendingMembershipResponse", accept);
+
+            // Notify all users of status update
+            await SendPartyStatusUpdate(party);
+        }
+
+        private async Task SendPartyStatusUpdate(Party party)
+        {
+            // Create model
+            //var users = Clients.Group(party.Id).
+
+            //await Clients.Group(party.Id).SendAsync("onPartyStatusUpdate");
         }
 
         public async Task<User> GetCurrentUser()

@@ -10,10 +10,13 @@
     <Compile Remove="Migrations\20181117113013_IsOwnerBoolean.Designer.cs" />
     <Compile Remove="Migrations\20181225194759_PartiesOnDelete.cs" />
     <Compile Remove="Migrations\20181225194759_PartiesOnDelete.Designer.cs" />
+    <Compile Remove="Migrations\20181225195146_PartiesOnDeleteBehavior.cs" />
+    <Compile Remove="Migrations\20181225195146_PartiesOnDeleteBehavior.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Enums\" />
+    <Folder Include="Hubs\Models\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
