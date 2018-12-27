@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { map, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
-import { RegisterResponse } from '../models';
+import { AccessToken } from '../models';
 import { HttpErrorResponse } from '@angular/common/http';
-import { throwError, Observable } from 'rxjs';
+import { throwError, Observable, BehaviorSubject } from 'rxjs';
 import {environment} from '../../environments/environment';
 import { Register } from 'ts-node';
 
@@ -12,36 +12,44 @@ import { Register } from 'ts-node';
 })
 export class AuthenticationService {
 
-  public currentUser: RegisterResponse;
+  public currentUser$ = new BehaviorSubject<AccessToken>(null);
 
-  constructor(private apiService: ApiService) { }
+  constructor(private apiService: ApiService) {
+    // Initialise current user observable using stored credentials
+    const user = this.getAccessToken();
+    console.log('init auth service');
+    console.log(user);
+    if (user) {
+      this.currentUser$.next(user);
+    }
+  }
 
-  public register(username: string): Observable<RegisterResponse> {
+  public register(username: string): Observable<AccessToken> {
     if (!environment.production && environment.useDevRegisterEndpoint && environment.devPassword) {
       console.warn('Using dev token endpoint --> can register as anyone! Disable before deploying.');
-      return this.apiService.post<RegisterResponse>('/auth/token', {username: username, developerPassword: environment.devPassword})
+      return this.apiService.post<AccessToken>('/auth/token', {username: username, developerPassword: environment.devPassword})
         .pipe(map(response => {
-            this.currentUser = response;
-            console.log(this.currentUser);
+            this.currentUser$.next(response);
+            console.log(this.currentUser$.getValue());
             this.saveAccessToken(response);
             return response;
           })
         );
     }
-    return this.apiService.post<RegisterResponse>('/auth/register', {username: username})
+    return this.apiService.post<AccessToken>('/auth/register', {username: username})
       .pipe(map(response => {
           this.saveAccessToken(response);
-          this.currentUser = response;
+          this.currentUser$.next(response);
           return response;
         })
       );
   }
 
-  private saveAccessToken(token: RegisterResponse) {
+  private saveAccessToken(token: AccessToken) {
     sessionStorage.setItem('currentUser', JSON.stringify(token));
   }
 
-  public getAccessToken(): RegisterResponse {
-    return <RegisterResponse>JSON.parse(sessionStorage.getItem('currentUser'));
+  private getAccessToken(): AccessToken {
+    return <AccessToken>JSON.parse(sessionStorage.getItem('currentUser'));
   }
 }

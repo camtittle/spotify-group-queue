@@ -1,10 +1,11 @@
 import { HubConnectionService } from './../../services/hub-connection.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { PartyService } from '../../services';
-import { CurrentParty, PartyMembershipStatus } from '../../models/current-party.model';
+import { AuthenticationService, PartyService } from '../../services';
+import { CurrentParty } from '../../models/current-party.model';
 import { BsModalService } from 'ngx-bootstrap';
 import { PendingMemberRequest } from '../../models/pending-member-request.model';
 import { PendingMemberRequestComponent } from '../../modals/pending-member-request/pending-member-request.component';
+import { AccessToken } from '../../models';
 
 @Component({
   selector: 'app-queue',
@@ -16,15 +17,13 @@ export class QueueComponent implements OnInit, OnDestroy {
   public loading = true;
   public message = '';
 
-  public partyMembershipStatus = PartyMembershipStatus;
+  public currentUser: AccessToken;
   public currentParty: CurrentParty;
-
-  // TODO remove this
-  public pendingMember: string;
 
   constructor(private hubConnectionService: HubConnectionService,
               private partyService: PartyService,
-              private modalService: BsModalService) { }
+              private modalService: BsModalService,
+              private authService: AuthenticationService) { }
 
   async ngOnInit() {
     await this.checkPartyMembership();
@@ -34,6 +33,11 @@ export class QueueComponent implements OnInit, OnDestroy {
       this.message = 'Not a member of a party';
       return;
     }
+
+    // Access token subscription
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
 
     // Establish connection to hub
     this.loading = true;
@@ -48,6 +52,11 @@ export class QueueComponent implements OnInit, OnDestroy {
     const pendingMemberResponse = await this.hubConnectionService.pendingMemberResponse$();
     pendingMemberResponse.subscribe(accepted => {
       this.onPendingMemberResponse(accepted);
+    });
+
+    const partyStatusUpdate = await this.hubConnectionService.partyStatusUpdate$();
+    partyStatusUpdate.subscribe(statusUpdate => {
+      this.onPartyStatusUpdate(statusUpdate);
     })
     console.log('not loading');
     this.loading = false;
@@ -84,6 +93,36 @@ export class QueueComponent implements OnInit, OnDestroy {
       // Show rejection message
       console.log('Admin DECLINED your request to join');
     }
+  }
+
+  /**
+   * Called on all users in a party when status of party changes
+   * @param statusUpdate
+   */
+  private onPartyStatusUpdate(statusUpdate: CurrentParty) {
+    console.log('party status update');
+    this.currentParty = statusUpdate;
+  }
+
+  public isPendingMember(): boolean {
+    if (this.currentParty && this.currentUser) {
+      return this.currentParty.pendingMembers.findIndex(x => x.id === this.currentUser.id) >= 0;
+    }
+    return false;
+  }
+
+  public isMember(): boolean {
+    if (this.currentParty && this.currentUser) {
+      return this.currentParty.members.findIndex(x => x.id === this.currentUser.id) >= 0;
+    }
+    return false;
+  }
+
+  public isOwner(): boolean {
+    if (this.currentParty && this.currentUser) {
+      return this.currentParty.owner.id === this.currentUser.id;
+    }
+    return false;
   }
 
 }

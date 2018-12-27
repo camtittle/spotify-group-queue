@@ -111,10 +111,10 @@ namespace api.Hubs
 
         private async Task SendPartyStatusUpdate(Party party)
         {
-            // Create model
-            //var users = Clients.Group(party.Id).
+            var model = await _partyService.GetCurrentParty(party);
 
-            //await Clients.Group(party.Id).SendAsync("onPartyStatusUpdate");
+            var groupName = party.Id;
+            await Clients.Group(groupName).SendAsync("partyStatusUpdate", model);
         }
 
         public async Task<User> GetCurrentUser()

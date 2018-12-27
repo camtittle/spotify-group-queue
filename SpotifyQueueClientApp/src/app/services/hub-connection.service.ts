@@ -4,6 +4,8 @@ import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
 import { PendingMemberRequest } from '../models/pending-member-request.model';
+import { AccessToken } from '../models';
+import { CurrentParty } from '../models/current-party.model';
 
 /*
  * Manages a singleton SignalR Hub connection
@@ -14,14 +16,21 @@ import { PendingMemberRequest } from '../models/pending-member-request.model';
 })
 export class HubConnectionService implements OnDestroy {
 
+  private currentUser: AccessToken;
+
   private _connection: HubConnection;
   private _connectionClosed$: Subject<any>;
 
-  private _receiveMessage$: Subject<{user: string, message: string}>;
+  // Observables wrapping hub events
   private _pendingMemberRequest$: Subject<PendingMemberRequest>;
   private _pendingMemberResponse$: Subject<boolean>;
+  private _partyStatusUpdate$: Subject<CurrentParty>;
 
-  constructor(private authenticationService: AuthenticationService) { }
+  constructor(private authService: AuthenticationService) {
+    authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
 
   public async ngOnDestroy() {
     if (this._connection) {
@@ -58,6 +67,9 @@ export class HubConnectionService implements OnDestroy {
     console.log('connection started');
   }
 
+  /**
+   * Admin clients receive incoming pending membership requests
+   */
   public async pendingMemberRequest$(): Promise<Subject<PendingMemberRequest>> {
     if (!this._pendingMemberRequest$) {
       this._pendingMemberRequest$ = new Subject<PendingMemberRequest>();
@@ -70,6 +82,9 @@ export class HubConnectionService implements OnDestroy {
     return this._pendingMemberRequest$;
   }
 
+  /**
+   * Pending membership request was accepted/declined
+   */
   public async pendingMemberResponse$(): Promise<Subject<boolean>> {
     if (!this._pendingMemberResponse$) {
       this._pendingMemberResponse$ = new Subject<boolean>();
@@ -84,14 +99,33 @@ export class HubConnectionService implements OnDestroy {
     return this._pendingMemberResponse$;
   }
 
+  public async partyStatusUpdate$(): Promise<Subject<CurrentParty>> {
+    if (!this._partyStatusUpdate$) {
+      this._partyStatusUpdate$ = new Subject<CurrentParty>();
+      const conn = await this.getConnection();
+      console.log('init party status update');
+      conn.on('partyStatusUpdate', (partyStatus: CurrentParty) => {
+        console.log('party status');
+        this._partyStatusUpdate$.next(partyStatus);
+      });
+    }
+    return this._partyStatusUpdate$;
+  }
+
+  /**
+   * Calls method in Hub to accept/decline a pending membership request
+   * @param pendingUserId
+   * @param accept
+   */
   public async acceptPendingMember(pendingUserId: string, accept: boolean) {
     const conn = await this.getConnection();
     await conn.invoke('acceptPendingMember', pendingUserId, accept);
   }
 
-
   private getAccessToken(): string {
-    const token = this.authenticationService.getAccessToken();
-    return token.authToken;
+    if (this.currentUser) {
+      return this.currentUser.authToken;
+    }
+    return null;
   }
 }

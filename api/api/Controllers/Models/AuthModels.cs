@@ -23,11 +23,13 @@ namespace api.Controllers.Models
     {
         [Required] public string AuthToken;
         [Required] public string Username;
+        [Required] public string Id;
 
-        public RegisterResponse(string username, string authToken)
+        public RegisterResponse(string id, string username, string authToken)
         {
             AuthToken = authToken;
             Username = username;
+            Id = id;
         }
     }
 }

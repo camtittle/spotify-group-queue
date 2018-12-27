@@ -79,13 +79,6 @@ namespace api.Services
 
             party = await LoadFull(party);
 
-            //_context.Entry(party).Collection(p => p.Members).Query().Include(u => u.CurrentParty).Load();
-            //_context.Entry(party).Collection(p => p.PendingMembers).Query().Include(u => u.PendingParty).Load();
-            //_context.Entry(party).Reference(p => p.Owner).Query().Include(u => u.OwnedParty).Load();
-
-            // Remove reference from all members
-            //party.Members = new List<User>();
-            //party.PendingMembers = new List<User>();
             party.Owner = null;
             party.Members?.ForEach(m => m.CurrentParty = null);
             party.PendingMembers?.ForEach(m => m.PendingParty = null);

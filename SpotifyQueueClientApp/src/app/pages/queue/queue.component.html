@@ -5,13 +5,13 @@
 </div>
 
 <div class="membership-status">
-  <div *ngIf="currentParty?.membershipStatus == partyMembershipStatus.pendingMember">
-    Waiting for {{currentParty.owner}} to respond to your request to join {{currentParty.name}}
+  <div *ngIf="isPendingMember()">
+    Waiting for {{currentParty.owner.username}} to respond to your request to join {{currentParty.name}}
   </div>
-  <div *ngIf="currentParty?.membershipStatus == partyMembershipStatus.member">
+  <div *ngIf="isMember()">
     You are a member of {{currentParty.name}}
   </div>
-  <div *ngIf="currentParty?.membershipStatus == partyMembershipStatus.owner">
+  <div *ngIf="isOwner()">
     You are the owner of {{currentParty.name}}
   </div>
 </div>
