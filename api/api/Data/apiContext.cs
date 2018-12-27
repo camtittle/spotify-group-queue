@@ -16,6 +16,7 @@ namespace api.Models
 
         public DbSet<api.Models.User> Users { get; set; }
         public DbSet<api.Models.Party> Parties { get; set; }
+        public DbSet<api.Models.QueueItem> QueueItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,6 +40,9 @@ namespace api.Models
                 .WithOne(p => p.Owner)
                 .HasForeignKey(typeof(User).ToString(), "OwnedPartyId");
 
+            /*
+             * User membership computed columns
+             */
             modelBuilder.Entity<User>()
                 .Property(u => u.IsOwner)
                 .HasComputedColumnSql("CAST(CASE WHEN OwnedPartyId IS NULL THEN 0 ELSE 1 END AS BIT)");
@@ -51,6 +55,25 @@ namespace api.Models
                 .Property(u => u.IsPendingMember)
                 .HasComputedColumnSql("CAST(CASE WHEN PendingPartyId IS NULL THEN 0 ELSE 1 END AS BIT)");
 
+            /*
+             * Party <--> Queue relationship
+             */
+            modelBuilder.Entity<QueueItem>()
+                .HasOne(q => q.ForParty)
+                .WithMany(p => p.QueueItems)
+                .HasForeignKey("ForPartyId");
+
+            modelBuilder.Entity<QueueItem>()
+                .HasOne(q => q.AddedByUser)
+                .WithOne()
+                .HasForeignKey(typeof(QueueItem).ToString(), "AddedByUserId")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QueueItem>()
+                .HasOne(q => q.ForParty)
+                .WithOne()
+                .HasForeignKey(typeof(QueueItem).ToString(), "ForPartyId")
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 

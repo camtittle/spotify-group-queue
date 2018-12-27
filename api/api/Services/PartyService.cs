@@ -51,7 +51,8 @@ namespace api.Services
                 Name = name,
                 Members = new List<User>(),
                 PendingMembers = new List<User>(),
-                Owner = owner
+                Owner = owner,
+                QueueItems = new List<QueueItem>()
             };
             _context.Parties.Add(party);
             await _context.SaveChangesAsync();

@@ -18,5 +18,7 @@ namespace api.Models
 
         public List<User> PendingMembers { get; set; }
 
+        public List<QueueItem> QueueItems { get; set; }
+
     }
 }
