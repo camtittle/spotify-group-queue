@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using api.Controllers.Models;
 using api.Exceptions;
 using api.Hubs;
+using api.Hubs.Models;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -189,7 +190,40 @@ namespace api.Services
         {
             return await _context.Parties.Where(p => p.Id == party.Id).Include(p => p.Members)
                 .ThenInclude(u => u.CurrentParty).Include(p => p.PendingMembers).ThenInclude(u => u.PendingParty)
-                .Include(p => p.Owner).ThenInclude(u => u.OwnedParty).FirstOrDefaultAsync();
+                .Include(p => p.Owner).ThenInclude(u => u.OwnedParty)
+                .Include(p => p.QueueItems)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<QueueItem> AddQueueItem(User user, AddQueueTrack track)
+        {
+            if (!user.IsOwner && !user.IsMember)
+            {
+                throw new PartyQueueException("Cannot add track to queue - not a member of a party");
+            }
+
+            var party = await LoadFull(_userService.GetParty(user));
+            if (party == null)
+            {
+                throw new PartyQueueException("Cannot add track to queue - party not found");
+            }
+
+            // TODO: limit number of tracks in queue per user
+            var queueItem = new QueueItem()
+            {
+                AddedByUser = user,
+                ForParty = party,
+                SpotifyUri = track.SpotifyUri,
+                Title = track.Title,
+                Artist = track.Artist,
+                DurationMillis = track.DurationMillis,
+            };
+
+            party.QueueItems.Add(queueItem);
+
+            await _context.SaveChangesAsync();
+
+            return queueItem;
         }
     }
 }

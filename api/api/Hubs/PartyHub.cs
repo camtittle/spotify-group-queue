@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using api.Exceptions;
+using api.Hubs.Models;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -64,6 +66,9 @@ namespace api.Hubs
             await _hubContext.Clients.Group(adminGroupName).SendAsync("onPendingMemberRequest", userModel);
         }
 
+        /*
+         * Called from client to accept/decline pending membership request
+         */
         // TODO add admin policy?
         [Authorize]
         public async Task AcceptPendingMember(string pendingUserId, bool accept)
@@ -109,6 +114,32 @@ namespace api.Hubs
             await SendPartyStatusUpdate(party);
         }
 
+        /*
+         * Called on client to add a song to the queue
+         */
+        [Authorize]
+        public async Task AddTrackToQueue(AddQueueTrack trackModel)
+        {
+            if (trackModel == null)
+            {
+                throw new ArgumentNullException(nameof(trackModel));
+            }
+
+            if (string.IsNullOrWhiteSpace(trackModel.SpotifyUri) || string.IsNullOrWhiteSpace(trackModel.Artist) ||
+                string.IsNullOrWhiteSpace(trackModel.Title) || trackModel.DurationMillis < 0)
+            {
+                throw new ArgumentException("Missing track paramaters", nameof(trackModel));
+            }
+
+            // Determine party of user
+            var user = await GetCurrentUser();
+
+            var queueItem = await _partyService.AddQueueItem(user, trackModel);
+        }
+
+        /*
+         ********************** Utility methods **************************
+         */
         private async Task SendPartyStatusUpdate(Party party)
         {
             var model = await _partyService.GetCurrentParty(party);

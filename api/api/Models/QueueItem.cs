@@ -1,4 +1,6 @@
-﻿namespace api.Models
+﻿using System;
+
+namespace api.Models
 {
     public class QueueItem
     {
@@ -15,5 +17,10 @@
         public string Artist { get; set; }
 
         public long DurationMillis { get; set; }
+
+        public QueueItem()
+        {
+            Id = Guid.NewGuid().ToString();
+        }
     }
 }
