@@ -117,6 +117,7 @@ namespace api.Services
             }
 
             user.PendingParty = party ?? throw new ArgumentNullException(nameof(party));
+            user.JoinedPartyDateTime = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             // Notify admin of pending request
@@ -144,6 +145,7 @@ namespace api.Services
             user.CurrentParty = party;
             user.PendingParty = null;
             user.OwnedParty = null;
+            user.JoinedPartyDateTime = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
         }

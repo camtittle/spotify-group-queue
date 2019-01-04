@@ -23,8 +23,8 @@ namespace api.Models
             Id = party.Id;
             Name = party.Name;
             Owner = new OtherUser(party.Owner);
-            Members = party.Members?.Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>();
-            PendingMembers = party.PendingMembers?.Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>();
+            Members = party.Members?.OrderBy(x => x.JoinedPartyDateTime).Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>();
+            PendingMembers = party.PendingMembers?.OrderBy(x => x.JoinedPartyDateTime).Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>();
             QueueItems = party.QueueItems.OrderBy(x => x.Index).Select(item => new CurrentPartyQueueItem(item)).ToList();
 
         }
