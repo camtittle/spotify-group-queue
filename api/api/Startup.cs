@@ -73,7 +73,7 @@ namespace api
             services.AddSignalR();
 
             services.AddSingleton<IConfiguration>(Configuration);
-            services.RegisterServices(); // Register all our API servies
+            services.RegisterServices(Configuration); // Register all our API servies
 
             services.AddDbContext<apiContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("apiContext")));

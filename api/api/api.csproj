@@ -30,4 +30,8 @@
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Spotify\Spotify.csproj" />
+  </ItemGroup>
+
 </Project>
