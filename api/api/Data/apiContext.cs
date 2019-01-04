@@ -61,18 +61,13 @@ namespace api.Models
             modelBuilder.Entity<QueueItem>()
                 .HasOne(q => q.ForParty)
                 .WithMany(p => p.QueueItems)
-                .HasForeignKey("ForPartyId");
-
-            modelBuilder.Entity<QueueItem>()
-                .HasOne(q => q.AddedByUser)
-                .WithOne()
-                .HasForeignKey(typeof(QueueItem).ToString(), "AddedByUserId")
+                .HasForeignKey("ForPartyId")
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<QueueItem>()
-                .HasOne(q => q.ForParty)
-                .WithOne()
-                .HasForeignKey(typeof(QueueItem).ToString(), "ForPartyId")
+                .HasOne(q => q.AddedByUser)
+                .WithMany(u => u.QueueItems)
+                .HasForeignKey("AddedByUserId")
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

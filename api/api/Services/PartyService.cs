@@ -172,18 +172,9 @@ namespace api.Services
 
         public async Task<CurrentParty> GetCurrentParty(Party party)
         {
-            await _context.Entry(party).Reference(p => p.Owner).LoadAsync();
-            await _context.Entry(party).Collection(p => p.Members).LoadAsync();
-            await _context.Entry(party).Collection(p => p.PendingMembers).LoadAsync();
+            party = await LoadFull(party);
 
-            return new CurrentParty
-            {
-                Id = party.Id,
-                Name = party.Name,
-                Owner = new OtherUser(party.Owner),
-                Members = party.Members?.Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>(),
-                PendingMembers = party.PendingMembers?.Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>()
-            };
+            return new CurrentParty(party);
         }
 
         public async Task<Party> LoadFull(Party party)
@@ -217,9 +208,10 @@ namespace api.Services
                 Title = track.Title,
                 Artist = track.Artist,
                 DurationMillis = track.DurationMillis,
+                Index = party.QueueItems.Count
             };
 
-            party.QueueItems.Add(queueItem);
+            _context.QueueItems.Add(queueItem);
 
             await _context.SaveChangesAsync();
 

@@ -6,6 +6,8 @@ namespace api.Models
     {
         public string Id { get; set; }
 
+        public int Index { get; set; }
+
         public User AddedByUser { get; set; }
 
         public Party ForParty { get; set; }

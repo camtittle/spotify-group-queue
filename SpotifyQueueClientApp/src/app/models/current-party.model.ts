@@ -6,4 +6,14 @@ export interface CurrentParty {
   owner: User;
   members: User[];
   pendingMembers: User[];
+  queueItems: CurrentPartyQueueItem[];
+}
+
+export interface CurrentPartyQueueItem {
+  id: string;
+  username: string;
+  title: string;
+  artist: string;
+  spotifyUri: string;
+  durationMillis: string;
 }

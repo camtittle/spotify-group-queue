@@ -6,6 +6,7 @@ import { AuthenticationService } from './authentication.service';
 import { PendingMemberRequest } from '../models/pending-member-request.model';
 import { AccessToken } from '../models';
 import { CurrentParty } from '../models/current-party.model';
+import { QueueTrack } from '../models/add-queue-track.model';
 
 /*
  * Manages a singleton SignalR Hub connection
@@ -120,6 +121,16 @@ export class HubConnectionService implements OnDestroy {
   public async acceptPendingMember(pendingUserId: string, accept: boolean) {
     const conn = await this.getConnection();
     await conn.invoke('acceptPendingMember', pendingUserId, accept);
+  }
+
+  /**
+   * Calls method in Hub to add the given track to the current user's party's queue
+   * @param track
+   */
+  public async addTrackToQueue(track: QueueTrack) {
+    console.log('conn hub --> add track to queue');
+    const conn = await this.getConnection();
+    await conn.invoke('addTrackToQueue', track);
   }
 
   private getAccessToken(): string {

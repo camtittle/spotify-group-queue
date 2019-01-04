@@ -134,7 +134,12 @@ namespace api.Hubs
             // Determine party of user
             var user = await GetCurrentUser();
 
+            // TODO: do something with the result?
             var queueItem = await _partyService.AddQueueItem(user, trackModel);
+
+            // Notify other users
+            var party = _userService.GetParty(user);
+            await SendPartyStatusUpdate(party);
         }
 
         /*

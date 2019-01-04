@@ -11,13 +11,13 @@ namespace api.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(nullable: false),
+                    Index = table.Column<int>(nullable: false),
                     AddedByUserId = table.Column<string>(nullable: true),
                     ForPartyId = table.Column<string>(nullable: true),
                     SpotifyUri = table.Column<string>(nullable: true),
                     Title = table.Column<string>(nullable: true),
                     Artist = table.Column<string>(nullable: true),
-                    DurationMillis = table.Column<long>(nullable: false),
-                    PartyId = table.Column<string>(nullable: true)
+                    DurationMillis = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -34,32 +34,17 @@ namespace api.Migrations
                         principalTable: "Parties",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_QueueItems_Parties_PartyId",
-                        column: x => x.PartyId,
-                        principalTable: "Parties",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_QueueItems_AddedByUserId",
                 table: "QueueItems",
-                column: "AddedByUserId",
-                unique: true,
-                filter: "[AddedByUserId] IS NOT NULL");
+                column: "AddedByUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_QueueItems_ForPartyId",
                 table: "QueueItems",
-                column: "ForPartyId",
-                unique: true,
-                filter: "[ForPartyId] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_QueueItems_PartyId",
-                table: "QueueItems",
-                column: "PartyId");
+                column: "ForPartyId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

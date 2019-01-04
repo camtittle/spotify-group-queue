@@ -23,5 +23,7 @@ namespace api.Models
 
         public bool IsPendingMember { get; set; }
 
+        public List<QueueItem> QueueItems { get; set; }
+
     }
 }

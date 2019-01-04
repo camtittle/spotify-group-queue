@@ -9,21 +9,19 @@ import { Router } from '@angular/router';
 })
 export class IndexComponent implements OnInit {
 
-  public username: string;
   public registrationError = '';
 
-  private usernameInput: string;
+  public usernameInput: string;
 
   constructor(private authenticationService: AuthenticationService,
-              private router: Router,
-              private hubConnectionService: HubConnectionService) { }
+              private router: Router) { }
 
   ngOnInit() {
   }
 
-  onRegisterClick() {
-    this.authenticationService.register(this.usernameInput).subscribe(result => {
-      this.router.navigate(['/find']);
+  public onRegisterClick() {
+    this.authenticationService.register(this.usernameInput).subscribe(async result => {
+      await this.router.navigate(['/find']);
     },
     err => this.registrationError = err);
   }

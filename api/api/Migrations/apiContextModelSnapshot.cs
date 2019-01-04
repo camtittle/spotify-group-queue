@@ -43,7 +43,7 @@ namespace api.Migrations
 
                     b.Property<string>("ForPartyId");
 
-                    b.Property<string>("PartyId");
+                    b.Property<int>("Index");
 
                     b.Property<string>("SpotifyUri");
 
@@ -51,15 +51,9 @@ namespace api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddedByUserId")
-                        .IsUnique()
-                        .HasFilter("[AddedByUserId] IS NOT NULL");
+                    b.HasIndex("AddedByUserId");
 
-                    b.HasIndex("ForPartyId")
-                        .IsUnique()
-                        .HasFilter("[ForPartyId] IS NOT NULL");
-
-                    b.HasIndex("PartyId");
+                    b.HasIndex("ForPartyId");
 
                     b.ToTable("QueueItems");
                 });
@@ -105,18 +99,14 @@ namespace api.Migrations
             modelBuilder.Entity("api.Models.QueueItem", b =>
                 {
                     b.HasOne("api.Models.User", "AddedByUser")
-                        .WithOne()
-                        .HasForeignKey("api.Models.QueueItem", "AddedByUserId")
+                        .WithMany("QueueItems")
+                        .HasForeignKey("AddedByUserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("api.Models.Party", "ForParty")
-                        .WithOne()
-                        .HasForeignKey("api.Models.QueueItem", "ForPartyId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("api.Models.Party")
                         .WithMany("QueueItems")
-                        .HasForeignKey("PartyId");
+                        .HasForeignKey("ForPartyId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("api.Models.User", b =>
