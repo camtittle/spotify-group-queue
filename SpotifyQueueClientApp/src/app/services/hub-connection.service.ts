@@ -1,12 +1,13 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@aspnet/signalr';
 import { environment } from '../../environments/environment';
-import { Subject } from 'rxjs';
+import { from, Observable, Subject } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
 import { PendingMemberRequest } from '../models/pending-member-request.model';
 import { AccessToken } from '../models';
 import { CurrentParty } from '../models/current-party.model';
 import { QueueTrack } from '../models/add-queue-track.model';
+import { fromPromise } from 'rxjs/internal-compatibility';
 
 /*
  * Manages a singleton SignalR Hub connection
@@ -131,6 +132,16 @@ export class HubConnectionService implements OnDestroy {
     console.log('conn hub --> add track to queue');
     const conn = await this.getConnection();
     await conn.invoke('addTrackToQueue', track);
+  }
+
+  /**
+   * Calls method in Hub to search for Spotify tracks using given query
+   * TODO change return type to use a model
+   * @param query
+   */
+  public async searchSpotify(query: string): Promise<any> {
+    const conn = await this.getConnection();
+    return await conn.invoke('searchSpotifyTracks', query);
   }
 
   private getAccessToken(): string {

@@ -188,17 +188,17 @@ namespace api.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<QueueItem> AddQueueItem(User user, AddQueueTrack track)
+        public async Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request)
         {
             if (!user.IsOwner && !user.IsMember)
             {
-                throw new PartyQueueException("Cannot add track to queue - not a member of a party");
+                throw new PartyQueueException("Cannot add request to queue - not a member of a party");
             }
 
             var party = await LoadFull(_userService.GetParty(user));
             if (party == null)
             {
-                throw new PartyQueueException("Cannot add track to queue - party not found");
+                throw new PartyQueueException("Cannot add request to queue - party not found");
             }
 
             // TODO: limit number of tracks in queue per user
@@ -206,10 +206,10 @@ namespace api.Services
             {
                 AddedByUser = user,
                 ForParty = party,
-                SpotifyUri = track.SpotifyUri,
-                Title = track.Title,
-                Artist = track.Artist,
-                DurationMillis = track.DurationMillis,
+                SpotifyUri = request.SpotifyUri,
+                Title = request.Title,
+                Artist = request.Artist,
+                DurationMillis = request.DurationMillis,
                 Index = party.QueueItems.Count
             };
 

@@ -2,7 +2,7 @@
 
 namespace api.Hubs.Models
 {
-    public class AddQueueTrack
+    public class AddTrackToQueueRequest
     {
         [Required]
         public string SpotifyUri { get; set; }

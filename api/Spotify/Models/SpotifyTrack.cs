@@ -8,9 +8,8 @@ namespace Spotify.Models
         public string Uri;
 
         public List<SpotifyArtistSimplified> Artists;
-
-        [JsonProperty("name")]
-        public string Title;
+        
+        public string Name;
 
         [JsonProperty("duration_ms")]
         public int DurationMillis;

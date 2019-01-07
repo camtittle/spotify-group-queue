@@ -7,6 +7,7 @@ import { PendingMemberRequest } from '../../models/pending-member-request.model'
 import { PendingMemberRequestComponent } from '../../modals/pending-member-request/pending-member-request.component';
 import { AccessToken } from '../../models';
 import { QueueTrack } from '../../models/add-queue-track.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-queue',
@@ -24,7 +25,8 @@ export class QueueComponent implements OnInit, OnDestroy {
   constructor(private hubConnectionService: HubConnectionService,
               private partyService: PartyService,
               private modalService: BsModalService,
-              private authService: AuthenticationService) { }
+              private authService: AuthenticationService,
+              private router: Router) { }
 
   async ngOnInit() {
     await this.checkPartyMembership();
@@ -111,21 +113,7 @@ export class QueueComponent implements OnInit, OnDestroy {
    * TODO: Spotify implementation
    */
   public async onClickAddTrack() {
-    console.log('add track to queue');
-    if (!this.currentUser || !this.currentUser.username) {
-      console.error('Cannot add track to queue - no current user');
-      return;
-    }
-
-    const date = new Date();
-    const track = <QueueTrack> {
-      spotifyUri: 'a-made-up-uri',
-      title: `${this.currentUser.username}:${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
-      artist: `DJ ${this.currentUser.username}`,
-      durationMillis: 30000
-    };
-
-    await this.hubConnectionService.addTrackToQueue(track);
+    await this.router.navigateByUrl('/search');
   }
 
   public isPendingMember(): boolean {

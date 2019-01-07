@@ -7,18 +7,22 @@ import { FormsModule } from '@angular/forms';
 import { IndexComponent } from './index/index.component';
 import { CreateComponent } from './create/create.component';
 import { FindComponent } from './find/find.component';
+import { SearchComponent } from './search/search.component';
+import { PipesModule } from '../pipes/pipes.module';
 
 @NgModule({
   imports: [
     CommonModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    PipesModule
   ],
   declarations: [
     QueueComponent,
     IndexComponent,
     CreateComponent,
-    FindComponent
+    FindComponent,
+    SearchComponent
   ],
   exports: [
     QueueComponent,

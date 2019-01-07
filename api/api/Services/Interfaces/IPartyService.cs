@@ -20,6 +20,6 @@ namespace api.Services.Interfaces
         Task RemovePendingMember(Party party, User user);
         Task<CurrentParty> GetCurrentParty(Party party);
         Task<Party> LoadFull(Party party);
-        Task<QueueItem> AddQueueItem(User user, AddQueueTrack track);
+        Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request);
     }
 }

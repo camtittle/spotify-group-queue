@@ -4,8 +4,6 @@
     {
         public string Name;
 
-        public string Type;
-
         public string Uri;
     }
 }

@@ -9,6 +9,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JwtInterceptor } from './helpers/jwt-interceptor';
 import { ModalsModule } from './modals/modals.module';
 import { ModalModule } from 'ngx-bootstrap/modal';
+import { PipesModule } from './pipes/pipes.module';
 
 
 @NgModule({
@@ -21,7 +22,8 @@ import { ModalModule } from 'ngx-bootstrap/modal';
     AppRoutingModule,
     ServicesModule,
     ModalModule.forRoot(),
-    ModalsModule
+    ModalsModule,
+    PipesModule
   ],
   exports: [
   ],

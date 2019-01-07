@@ -1,0 +1,22 @@
+<div class="search-container">
+  <h3>Search for tracks</h3>
+
+  <div class="form-group mx-2">
+    <input #searchInput
+           [(ngModel)]="searchInputValue"
+           type="text" class="form-control" id="searchInput"
+           placeholder="Search for tracks...">
+  </div>
+
+  <ul *ngIf="results" class="results list-group list-group-flush">
+    <button *ngFor="let track of results"
+            class="track list-group-item list-group-item-action"
+            (click)="onTrackClick(track)">
+      <div>{{ track.name }}</div>
+      <div class="track-subheading d-flex justify-content-between">
+        {{ track.artists | joinArtistNames }}
+        <span>{{ track.duration_ms | formatMillisDuration }}</span>
+      </div>
+    </button>
+  </ul>
+</div>

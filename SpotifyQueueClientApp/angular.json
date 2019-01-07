@@ -123,5 +123,10 @@
       }
     }
   },
-  "defaultProject": "SpotifyQueueClientApp"
+  "defaultProject": "SpotifyQueueClientApp",
+  "schematics": {
+    "@schematics/angular:component": {
+      "styleext": "scss"
+    }
+  }
 }

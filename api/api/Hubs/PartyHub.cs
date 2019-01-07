@@ -9,6 +9,8 @@ using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Spotify.Interfaces;
+using Spotify.Models;
 
 
 namespace api.Hubs
@@ -16,16 +18,18 @@ namespace api.Hubs
     public class PartyHub : Hub
     {
         private static IHubContext<PartyHub> _hubContext;
-        private IUserService _userService;
-        private IPartyService _partyService;
+        private readonly IUserService _userService;
+        private readonly IPartyService _partyService;
+        private readonly ISpotifyClient _spotifyClient;
 
         private static readonly string ADMIN_GROUP_SUFFIX = "ADMIN";
 
-        public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService)
+        public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService, ISpotifyClient spotifyClient)
         {
             _hubContext = hubContext;
             _userService = userService;
             _partyService = partyService;
+            _spotifyClient = spotifyClient;
         }
 
         public override async Task OnConnectedAsync()
@@ -118,28 +122,38 @@ namespace api.Hubs
          * Called on client to add a song to the queue
          */
         [Authorize]
-        public async Task AddTrackToQueue(AddQueueTrack trackModel)
+        public async Task AddTrackToQueue(AddTrackToQueueRequest requestModel)
         {
-            if (trackModel == null)
+            if (requestModel == null)
             {
-                throw new ArgumentNullException(nameof(trackModel));
+                throw new ArgumentNullException(nameof(requestModel));
             }
 
-            if (string.IsNullOrWhiteSpace(trackModel.SpotifyUri) || string.IsNullOrWhiteSpace(trackModel.Artist) ||
-                string.IsNullOrWhiteSpace(trackModel.Title) || trackModel.DurationMillis < 0)
+            if (string.IsNullOrWhiteSpace(requestModel.SpotifyUri) || string.IsNullOrWhiteSpace(requestModel.Artist) ||
+                string.IsNullOrWhiteSpace(requestModel.Title) || requestModel.DurationMillis < 0)
             {
-                throw new ArgumentException("Missing track paramaters", nameof(trackModel));
+                throw new ArgumentException("Missing request paramaters", nameof(requestModel));
             }
 
             // Determine party of user
             var user = await GetCurrentUser();
 
             // TODO: do something with the result?
-            var queueItem = await _partyService.AddQueueItem(user, trackModel);
+            var queueItem = await _partyService.AddQueueItem(user, requestModel);
 
             // Notify other users
             var party = _userService.GetParty(user);
             await SendPartyStatusUpdate(party);
+        }
+
+        /**
+         * Called on client to search for tracks on Spotify based on a query string
+         */
+        public async Task<SpotifyTrackSearchResponse> SearchSpotifyTracks(string query)
+        {
+            var result = await _spotifyClient.Search(query);
+
+            return result;
         }
 
         /*
