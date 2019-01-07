@@ -60,7 +60,7 @@ export class QueueComponent implements OnInit, OnDestroy {
     const partyStatusUpdate = await this.hubConnectionService.partyStatusUpdate$();
     partyStatusUpdate.subscribe(statusUpdate => {
       this.onPartyStatusUpdate(statusUpdate);
-    })
+    });
     console.log('not loading');
     this.loading = false;
   }
@@ -107,11 +107,6 @@ export class QueueComponent implements OnInit, OnDestroy {
     this.currentParty = statusUpdate;
   }
 
-  /**
-   * Demo implementation of adding track to queue
-   * Currently adds a track with title "username:time" and artist "DJ username", 30s duration
-   * TODO: Spotify implementation
-   */
   public async onClickAddTrack() {
     await this.router.navigateByUrl('/search');
   }
