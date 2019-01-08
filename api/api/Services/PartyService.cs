@@ -206,6 +206,8 @@ namespace api.Services
                 throw new PartyQueueException("Cannot add request to queue - party not found");
             }
 
+            var newIndex = party.QueueItems.Count > 0 ? party.QueueItems.Max(x => x.Index) + 1 : 1;
+
             // TODO: limit number of tracks in queue per user
             var queueItem = new QueueItem()
             {
@@ -215,7 +217,7 @@ namespace api.Services
                 Title = request.Title,
                 Artist = request.Artist,
                 DurationMillis = request.DurationMillis,
-                Index = party.QueueItems.Max(x => x.Index) + 1
+                Index = newIndex
         };
 
             _context.QueueItems.Add(queueItem);
