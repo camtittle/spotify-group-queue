@@ -1,7 +1,7 @@
 import { HubConnectionService } from './../../services/hub-connection.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AuthenticationService, PartyService } from '../../services';
-import { CurrentParty } from '../../models/current-party.model';
+import { CurrentParty, CurrentPartyQueueItem } from '../../models/current-party.model';
 import { BsModalService } from 'ngx-bootstrap';
 import { PendingMemberRequest } from '../../models/pending-member-request.model';
 import { PendingMemberRequestComponent } from '../../modals/pending-member-request/pending-member-request.component';
@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-queue',
   templateUrl: './queue.component.html',
-  styleUrls: ['./queue.component.css']
+  styleUrls: ['./queue.component.scss']
 })
 export class QueueComponent implements OnInit, OnDestroy {
 
@@ -109,6 +109,10 @@ export class QueueComponent implements OnInit, OnDestroy {
 
   public async onClickAddTrack() {
     await this.router.navigateByUrl('/search');
+  }
+
+  public async onClickRemoveTrack(queueItem: CurrentPartyQueueItem) {
+    await this.hubConnectionService.removeTrackFromQueue(queueItem.id);
   }
 
   public isPendingMember(): boolean {

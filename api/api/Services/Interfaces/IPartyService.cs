@@ -21,5 +21,6 @@ namespace api.Services.Interfaces
         Task<CurrentParty> GetCurrentParty(Party party);
         Task<Party> LoadFull(Party party);
         Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request);
+        Task RemoveQueueItem(User user, string queueItemId);
     }
 }

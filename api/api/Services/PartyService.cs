@@ -219,5 +219,28 @@ namespace api.Services
 
             return queueItem;
         }
+        public async Task RemoveQueueItem(User user, string queueItemId)
+        {
+            if (!user.IsOwner)
+            {
+                throw new PartyQueueException("Cannot remove from queue - not owner of party");
+            }
+
+            var party = await LoadFull(_userService.GetParty(user));
+            if (party == null)
+            {
+                throw new PartyQueueException("Cannot remove track from queue - party not found");
+            }
+
+            var queueItem = await _context.QueueItems.FindAsync(queueItemId);
+            if (queueItem == null)
+            {
+                throw new PartyQueueException("Cannot remove reack from queue - queue item with ID not found");
+            }
+
+            _context.QueueItems.Remove(queueItem);
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

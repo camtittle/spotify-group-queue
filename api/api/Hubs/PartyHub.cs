@@ -134,12 +134,27 @@ namespace api.Hubs
             {
                 throw new ArgumentException("Missing request paramaters", nameof(requestModel));
             }
-
-            // Determine party of user
+            
             var user = await GetCurrentUser();
 
             // TODO: do something with the result?
             var queueItem = await _partyService.AddQueueItem(user, requestModel);
+
+            // Notify other users
+            var party = _userService.GetParty(user);
+            await SendPartyStatusUpdate(party);
+        }
+
+        public async Task RemoveTrackFromQueue(string queueItemId)
+        {
+            if (string.IsNullOrWhiteSpace(queueItemId))
+            {
+                throw new ArgumentException("Missing request paramaters", nameof(queueItemId));
+            }
+            
+            var user = await GetCurrentUser();
+
+            await _partyService.RemoveQueueItem(user, queueItemId);
 
             // Notify other users
             var party = _userService.GetParty(user);

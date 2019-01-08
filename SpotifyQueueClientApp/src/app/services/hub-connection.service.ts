@@ -8,6 +8,7 @@ import { AccessToken } from '../models';
 import { CurrentParty } from '../models/current-party.model';
 import { QueueTrack } from '../models/add-queue-track.model';
 import { fromPromise } from 'rxjs/internal-compatibility';
+import { TrackSearchResult } from '../models/track-search-result.model';
 
 /*
  * Manages a singleton SignalR Hub connection
@@ -135,11 +136,21 @@ export class HubConnectionService implements OnDestroy {
   }
 
   /**
+   * Calls method in hub to remove the queue item with given ID from current user's party's queue
+   * @param queueItemId
+   */
+  public async removeTrackFromQueue(queueItemId: string) {
+    console.log('conn hub --> remove track from queue');
+    const conn = await this.getConnection();
+    await conn.invoke('removeTrackFromQueue', queueItemId);
+  }
+
+  /**
    * Calls method in Hub to search for Spotify tracks using given query
    * TODO change return type to use a model
    * @param query
    */
-  public async searchSpotify(query: string): Promise<any> {
+  public async searchSpotify(query: string): Promise<TrackSearchResult> {
     const conn = await this.getConnection();
     return await conn.invoke('searchSpotifyTracks', query);
   }

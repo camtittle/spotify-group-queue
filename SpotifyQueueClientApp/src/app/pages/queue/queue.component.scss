@@ -1,0 +1,25 @@
+.queue-container {
+
+  .queue {
+
+    .track {
+
+      .track-subheading {
+        font-size: 12px;
+      }
+
+      &:not(.expanded) {
+        .track-title {
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+      }
+
+      .remove-track {
+        cursor: pointer;
+        color: gray;
+      }
+    }
+  }
+}

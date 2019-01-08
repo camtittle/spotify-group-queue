@@ -2,42 +2,47 @@
 <div *ngIf="!loading" class="queue-container">
   Queue loaded
   <br> {{ message }}
+
+  <div class="membership-status">
+    <div *ngIf="isPendingMember()">
+      Waiting for {{currentParty.owner.username}} to respond to your request to join {{currentParty.name}}
+    </div>
+    <div *ngIf="isMember()">
+      You are a member of {{currentParty.name}}
+    </div>
+    <div *ngIf="isOwner()">
+      You are the owner of {{currentParty.name}}
+    </div>
+  </div>
+
+
+  <ul class="list-group mx-2 mt-2">
+    <li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
+      {{ currentParty.owner.username }}
+      <span class="badge badge-primary badge-pill">Owner</span>
+    </li>
+    <li *ngFor="let member of currentParty?.members" class="list-group-item">
+      {{ member.username }}
+    </li>
+    <li *ngFor="let pendingMember of currentParty?.pendingMembers" class="list-group-item list-group-item-light">
+      {{ pendingMember.username }}
+    </li>
+  </ul>
+
+
+  <ul class="queue list-group mx-2 mt-2">
+    <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
+      Song Queue
+      <button type="button" class="btn btn-sm btn-success" (click)="onClickAddTrack()">Add track</button>
+    </li>
+    <li *ngFor="let queueItem of currentParty?.queueItems" class="track list-group-item">
+      <div class="track-title">{{ queueItem.title }}</div>
+      <div class="track-subheading d-flex justify-content-between">
+        <span>{{ queueItem.artist }}</span>
+        <span class="remove-track" (click)="onClickRemoveTrack(queueItem)">Remove</span>
+      </div>
+    </li>
+  </ul>
 </div>
 
-<div class="membership-status">
-  <div *ngIf="isPendingMember()">
-    Waiting for {{currentParty.owner.username}} to respond to your request to join {{currentParty.name}}
-  </div>
-  <div *ngIf="isMember()">
-    You are a member of {{currentParty.name}}
-  </div>
-  <div *ngIf="isOwner()">
-    You are the owner of {{currentParty.name}}
-  </div>
-</div>
 
-
-<ul class="list-group mx-2 mt-2">
-  <li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
-    {{ currentParty.owner.username }}
-    <span class="badge badge-primary badge-pill">Owner</span>
-  </li>
-  <li *ngFor="let member of currentParty?.members" class="list-group-item">
-    {{ member.username }}
-  </li>
-  <li *ngFor="let pendingMember of currentParty?.pendingMembers" class="list-group-item list-group-item-light">
-    {{ pendingMember.username }}
-  </li>
-</ul>
-
-
-<ul class="list-group mx-2 mt-2">
-  <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
-    Song Queue
-    <button type="button" class="btn btn-sm btn-success" (click)="onClickAddTrack()">Add track</button>
-  </li>
-  <li *ngFor="let queueItem of currentParty?.queueItems" class="list-group-item d-flex justify-content-between align-items-center">
-    {{ queueItem.title }}
-    <span>{{ queueItem.username }}</span>
-  </li>
-</ul>
