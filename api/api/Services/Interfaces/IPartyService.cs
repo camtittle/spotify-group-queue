@@ -18,7 +18,7 @@ namespace api.Services.Interfaces
         Task Leave(User user);
         Task AddPendingMember(Party party, User user);
         Task RemovePendingMember(Party party, User user);
-        Task<CurrentParty> GetCurrentParty(Party party);
+        Task<CurrentParty> GetCurrentParty(Party party, bool partial = false);
         Task<Party> LoadFull(Party party);
         Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request);
         Task RemoveQueueItem(User user, string queueItemId);

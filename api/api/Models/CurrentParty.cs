@@ -18,14 +18,23 @@ namespace api.Models
 
         public List<CurrentPartyQueueItem> QueueItems;
 
-        public CurrentParty(Party party)
+        public CurrentParty(Party party, bool partial = false)
         {
             Id = party.Id;
             Name = party.Name;
             Owner = new OtherUser(party.Owner);
-            Members = party.Members?.OrderBy(x => x.JoinedPartyDateTime).Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>();
             PendingMembers = party.PendingMembers?.OrderBy(x => x.JoinedPartyDateTime).Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>();
-            QueueItems = party.QueueItems.OrderBy(x => x.Index).Select(item => new CurrentPartyQueueItem(item)).ToList();
+
+            if (!partial)
+            {
+                Members = party.Members?.OrderBy(x => x.JoinedPartyDateTime).Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>();
+                QueueItems = party.QueueItems.OrderBy(x => x.Index).Select(item => new CurrentPartyQueueItem(item)).ToList();
+            }
+            else
+            {
+                Members = new List<OtherUser>();
+                QueueItems = new List<CurrentPartyQueueItem>();
+            }
 
         }
     }

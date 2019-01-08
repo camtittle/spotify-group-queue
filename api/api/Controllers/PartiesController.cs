@@ -66,7 +66,8 @@ namespace api.Controllers
                 return NoContent();
             }
 
-            var response = await _partyService.GetCurrentParty(party);
+            var partialResponse = user.IsPendingMember;
+            var response = await _partyService.GetCurrentParty(party, partialResponse);
 
             return Ok(response);
         }

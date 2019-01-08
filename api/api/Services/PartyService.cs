@@ -172,7 +172,7 @@ namespace api.Services
             return await _context.Parties.AnyAsync(e => e.Id == id);
         }
 
-        public async Task<CurrentParty> GetCurrentParty(Party party)
+        public async Task<CurrentParty> GetCurrentParty(Party party, bool partial = false)
         {
             if (party == null)
             {
@@ -181,7 +181,7 @@ namespace api.Services
 
             party = await LoadFull(party);
 
-            return new CurrentParty(party);
+            return new CurrentParty(party, partial);
         }
 
         public async Task<Party> LoadFull(Party party)

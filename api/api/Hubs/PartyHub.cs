@@ -23,6 +23,7 @@ namespace api.Hubs
         private readonly ISpotifyClient _spotifyClient;
 
         private static readonly string ADMIN_GROUP_SUFFIX = "ADMIN";
+        private static readonly string PENDING_GROUP_SUFFIX = "PENDING";
 
         public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService, ISpotifyClient spotifyClient)
         {
@@ -37,17 +38,15 @@ namespace api.Hubs
             var user = await GetCurrentUser();
             var party = _userService.GetParty(user);
 
-            // Add user to a Group with the party ID as its name
-            await Groups.AddToGroupAsync(Context.ConnectionId, party.Id);
+            // Add user to a Group with members
+            Groups.AddToGroupAsync(Context.ConnectionId, party.Id);
 
-            // If the user is the owner of the party, add to a group with name {partyID}ADMIN
+            // If the user is the owner of the party, add to an Admin Group
             var groupName = party.Id + ADMIN_GROUP_SUFFIX;
             if (user.IsOwner)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+                Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             }
-
-            // TODO: notify clients of new member
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
@@ -55,11 +54,11 @@ namespace api.Hubs
             var user = await GetCurrentUser();
             var party = _userService.GetParty(user);
 
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, party.Id);
+            Groups.RemoveFromGroupAsync(Context.ConnectionId, party.Id);
             if (user.IsOwner)
             {
                 var groupName = party.Id + ADMIN_GROUP_SUFFIX;
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+                Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
             }
         }
 
@@ -112,7 +111,7 @@ namespace api.Hubs
             }
 
             // Notify pending member
-            await Clients.User(pendingUserId).SendAsync("pendingMembershipResponse", accept);
+            Clients.User(pendingUserId).SendAsync("pendingMembershipResponse", accept);
 
             // Notify all users of status update
             await SendPartyStatusUpdate(party);
@@ -176,10 +175,13 @@ namespace api.Hubs
          */
         private async Task SendPartyStatusUpdate(Party party)
         {
-            var model = await _partyService.GetCurrentParty(party);
+            party = await _partyService.LoadFull(party);
+            var fullModel = await _partyService.GetCurrentParty(party);
+            var partialModel = await _partyService.GetCurrentParty(party, true);
 
-            var groupName = party.Id;
-            await Clients.Group(groupName).SendAsync("partyStatusUpdate", model);
+            Clients.Users(party.Members.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", fullModel);
+            Clients.Users(party.PendingMembers.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", partialModel);
+            Clients.User(party.Owner.Id).SendAsync("partyStatusUpdate", fullModel);
         }
 
         public async Task<User> GetCurrentUser()
