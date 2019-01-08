@@ -1,7 +1,6 @@
 import { ApiService } from './api.service';
 import { Injectable } from '@angular/core';
-import { PartyListItem } from '../models';
-import { CurrentParty } from '../models/current-party.model';
+import { PartyListItem, CurrentParty } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -28,7 +27,7 @@ export class PartyService {
   public async requestToJoinParty(party: PartyListItem): Promise<void> {
     const body = {
       partyId: party.id
-    }
+    };
     return this.apiService.post<void>('/parties/join', body).toPromise();
   }
 }

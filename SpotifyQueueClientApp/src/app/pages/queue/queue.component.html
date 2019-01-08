@@ -1,7 +1,5 @@
 <div *ngIf="loading" class="loading-spinner">Loading....</div>
 <div *ngIf="!loading" class="queue-container">
-  Queue loaded
-  <br> {{ message }}
 
   <div class="membership-status">
     <div *ngIf="isPendingMember()">
@@ -13,36 +11,40 @@
     <div *ngIf="isOwner()">
       You are the owner of {{currentParty.name}}
     </div>
+    <div *ngIf="!currentParty">
+      Please join a party
+    </div>
   </div>
 
+  <ng-container *ngIf="currentParty">
+    <ul class="list-group mx-2 mt-2">
+      <li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
+        {{ currentParty.owner.username }}
+        <span class="badge badge-primary badge-pill">Owner</span>
+      </li>
+      <li *ngFor="let member of currentParty?.members" class="list-group-item">
+        {{ member.username }}
+      </li>
+      <li *ngFor="let pendingMember of currentParty?.pendingMembers" class="list-group-item list-group-item-light">
+        {{ pendingMember.username }}
+      </li>
+    </ul>
 
-  <ul class="list-group mx-2 mt-2">
-    <li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
-      {{ currentParty.owner.username }}
-      <span class="badge badge-primary badge-pill">Owner</span>
-    </li>
-    <li *ngFor="let member of currentParty?.members" class="list-group-item">
-      {{ member.username }}
-    </li>
-    <li *ngFor="let pendingMember of currentParty?.pendingMembers" class="list-group-item list-group-item-light">
-      {{ pendingMember.username }}
-    </li>
-  </ul>
 
-
-  <ul class="queue list-group mx-2 mt-2">
-    <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
-      Song Queue
-      <button type="button" class="btn btn-sm btn-success" (click)="onClickAddTrack()">Add track</button>
-    </li>
-    <li *ngFor="let queueItem of currentParty?.queueItems" class="track list-group-item">
-      <div class="track-title">{{ queueItem.title }}</div>
-      <div class="track-subheading d-flex justify-content-between">
-        <span>{{ queueItem.artist }}</span>
-        <span class="remove-track" (click)="onClickRemoveTrack(queueItem)">Remove</span>
-      </div>
-    </li>
-  </ul>
+    <ul class="queue list-group mx-2 mt-2">
+      <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
+        Song Queue
+        <button type="button" class="btn btn-sm btn-success" (click)="onClickAddTrack()">Add track</button>
+      </li>
+      <li *ngFor="let queueItem of currentParty?.queueItems" class="track list-group-item">
+        <div class="track-title">{{ queueItem.title }}</div>
+        <div class="track-subheading d-flex justify-content-between">
+          <span>{{ queueItem.artist }}</span>
+          <span class="remove-track" (click)="onClickRemoveTrack(queueItem)">Remove</span>
+        </div>
+      </li>
+    </ul>
+  </ng-container>
 </div>
 
 

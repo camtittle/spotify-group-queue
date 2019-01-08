@@ -13,7 +13,6 @@ import { Router } from '@angular/router';
 export class QueueComponent implements OnInit, OnDestroy {
 
   public loading = true;
-  public message = '';
 
   public currentUser: AccessToken;
   public currentParty: CurrentParty;
@@ -27,21 +26,17 @@ export class QueueComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     await this.checkPartyMembership();
     if (!this.currentParty) {
-      console.log('Error: not member of any party');
       this.loading = false;
-      this.message = 'Not a member of a party';
+      this.currentParty = null;
       return;
     }
 
-    // Access token subscription
+    // Current user subscription
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
     });
 
     // Establish connection to hub
-    this.loading = true;
-    console.log('loading');
-
     const pendingMemberRequest = await this.hubConnectionService.pendingMemberRequest$();
     pendingMemberRequest.subscribe(request => {
       console.log('pending member request: ' + request.username);
@@ -57,7 +52,6 @@ export class QueueComponent implements OnInit, OnDestroy {
     partyStatusUpdate.subscribe(statusUpdate => {
       this.onPartyStatusUpdate(statusUpdate);
     });
-    console.log('not loading');
     this.loading = false;
   }
 

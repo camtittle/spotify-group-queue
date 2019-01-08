@@ -22,7 +22,11 @@ export class IndexComponent implements OnInit {
   public onRegisterClick() {
     this.loading = true;
     this.authenticationService.register(this.usernameInput).subscribe(async result => {
-      await this.router.navigate(['/find']);
+      if (result.currentParty) {
+        await this.router.navigate(['/queue']);
+      } else {
+        await this.router.navigate(['/find']);
+      }
     },
     err => {
       this.loading = false;

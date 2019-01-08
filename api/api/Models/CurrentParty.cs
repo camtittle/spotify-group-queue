@@ -47,7 +47,7 @@ namespace api.Models
         public CurrentPartyQueueItem(QueueItem queueItem)
         {
             Id = queueItem.Id;
-            Username = queueItem.AddedByUser.Username;
+            Username = queueItem.AddedByUser?.Username;
             Title = queueItem.Title;
             Artist = queueItem.Artist;
             SpotifyUri = queueItem.SpotifyUri;
