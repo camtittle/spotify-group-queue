@@ -174,6 +174,11 @@ namespace api.Services
 
         public async Task<CurrentParty> GetCurrentParty(Party party)
         {
+            if (party == null)
+            {
+                return null;
+            }
+
             party = await LoadFull(party);
 
             return new CurrentParty(party);

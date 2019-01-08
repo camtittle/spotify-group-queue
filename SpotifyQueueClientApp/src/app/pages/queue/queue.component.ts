@@ -1,12 +1,8 @@
-import { HubConnectionService } from './../../services/hub-connection.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AuthenticationService, PartyService } from '../../services';
-import { CurrentParty, CurrentPartyQueueItem } from '../../models/current-party.model';
+import { AuthenticationService, PartyService, HubConnectionService } from '../../services';
 import { BsModalService } from 'ngx-bootstrap';
-import { PendingMemberRequest } from '../../models/pending-member-request.model';
 import { PendingMemberRequestComponent } from '../../modals/pending-member-request/pending-member-request.component';
-import { AccessToken } from '../../models';
-import { QueueTrack } from '../../models/add-queue-track.model';
+import { AccessToken, PendingMemberRequest, CurrentParty, CurrentPartyQueueItem } from '../../models';
 import { Router } from '@angular/router';
 
 @Component({

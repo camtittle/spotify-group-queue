@@ -2,10 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AuthenticationService, HubConnectionService } from '../../services';
 import { from, fromEvent, Observable } from 'rxjs';
 import { distinctUntilChanged, filter, map, switchMap, tap, throttleTime } from 'rxjs/operators';
-import { SpotifyTrack } from '../../models/spotify-track.model';
-import { TrackSearchResult } from '../../models/track-search-result.model';
-import { QueueTrack } from '../../models/add-queue-track.model';
-import { AccessToken } from '../../models';
+import { AccessToken, QueueTrack, TrackSearchResult, SpotifyTrack } from '../../models';
 
 @Component({
   selector: 'app-search',

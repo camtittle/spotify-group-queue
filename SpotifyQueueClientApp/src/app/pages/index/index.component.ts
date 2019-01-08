@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthenticationService, HubConnectionService } from '../../services';
+import { AuthenticationService } from '../../services';
 import { Router } from '@angular/router';
 
 @Component({
@@ -9,8 +9,8 @@ import { Router } from '@angular/router';
 })
 export class IndexComponent implements OnInit {
 
+  public loading = false;
   public registrationError = '';
-
   public usernameInput: string;
 
   constructor(private authenticationService: AuthenticationService,
@@ -20,10 +20,14 @@ export class IndexComponent implements OnInit {
   }
 
   public onRegisterClick() {
+    this.loading = true;
     this.authenticationService.register(this.usernameInput).subscribe(async result => {
       await this.router.navigate(['/find']);
     },
-    err => this.registrationError = err);
+    err => {
+      this.loading = false;
+      this.registrationError = err;
+    });
   }
 
 }

@@ -3,3 +3,4 @@ Username:
 <input type=text placeholder="Username" [(ngModel)]="usernameInput" />
 <button (click)="onRegisterClick()">Register</button>
 <div>{{ registrationError }}</div>
+<div *ngIf="loading">Loading...</div>

@@ -47,7 +47,7 @@ namespace api.Services
 
         public async Task<User> FindByUsername(string username)
         {
-            return await _context.Users.Where(u => u.Username == username).FirstOrDefaultAsync();
+            return await _context.Users.Where(u => u.Username == username).Include(u => u.CurrentParty).Include(u => u.OwnedParty).Include(u => u.PendingParty).FirstOrDefaultAsync();
         }
 
         public Party GetParty(User user)

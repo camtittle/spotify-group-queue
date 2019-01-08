@@ -161,7 +161,7 @@ namespace api.Hubs
             await SendPartyStatusUpdate(party);
         }
 
-        /**
+        /*
          * Called on client to search for tracks on Spotify based on a query string
          */
         public async Task<SpotifyTrackSearchResponse> SearchSpotifyTracks(string query)

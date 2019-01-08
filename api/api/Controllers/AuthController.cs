@@ -36,7 +36,7 @@ namespace api.Controllers
         [Route("register")]
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult Register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             // TODO: add a CAPTCHA to prevent spamming
             if (!ModelState.IsValid)
@@ -68,7 +68,12 @@ namespace api.Controllers
                     expires: DateTime.Now.AddHours(6),
                     signingCredentials: creds);
 
-                return Ok(new RegisterResponse(user.Id, user.Username, new JwtSecurityTokenHandler().WriteToken(token)));
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                var party = _userService.GetParty(user);
+                var currentPartyModel = await _partyService.GetCurrentParty(party);
+
+                return Ok(new RegisterResponse(user.Id, user.Username, tokenString, currentPartyModel));
             }
             catch (ArgumentException e)
             {
@@ -116,7 +121,12 @@ namespace api.Controllers
                     expires: DateTime.Now.AddHours(6),
                     signingCredentials: creds);
 
-                return Ok(new RegisterResponse(user.Id, user.Username, new JwtSecurityTokenHandler().WriteToken(token)));
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                var party = _userService.GetParty(user);
+                var currentPartyModel = await _partyService.GetCurrentParty(party);
+
+                return Ok(new RegisterResponse(user.Id, user.Username, tokenString, currentPartyModel));
             }
             catch (APIException e)
             {
