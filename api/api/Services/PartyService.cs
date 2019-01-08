@@ -210,8 +210,8 @@ namespace api.Services
                 Title = request.Title,
                 Artist = request.Artist,
                 DurationMillis = request.DurationMillis,
-                Index = party.QueueItems.Count
-            };
+                Index = party.QueueItems.Max(x => x.Index) + 1
+        };
 
             _context.QueueItems.Add(queueItem);
 
