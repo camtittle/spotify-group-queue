@@ -2,6 +2,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { IndexComponent, QueueComponent, FindComponent, CreateComponent, SearchComponent } from './pages';
+import { PartyMembershipGuardGuard } from './guards/party-membership-guard.guard';
 
 const appRoutes: Routes = [
   { path: '', component: IndexComponent },
@@ -10,12 +11,12 @@ const appRoutes: Routes = [
   {
     path: 'search',
     component: SearchComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, PartyMembershipGuardGuard]
   },
   {
     path: 'queue',
     component: QueueComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, PartyMembershipGuardGuard]
   }
 ];
 

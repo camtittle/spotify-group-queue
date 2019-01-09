@@ -14,6 +14,7 @@ export class SignalRConnectionService {
   public connected$ = new BehaviorSubject<boolean>(false);
 
   private connection: HubConnection;
+  private connecting = false;
 
   // Observables wrapping hub events
   private hubEvents: { [methodName: string]: Subject<any> } = {};
@@ -22,13 +23,14 @@ export class SignalRConnectionService {
   }
 
   public async openConnection() {
-    if (this.connection.state !== HubConnectionState.Connected) {
+    if (this.connection.state !== HubConnectionState.Connected && !this.connecting) {
       console.log('Establishing hub connection');
-
+      this.connecting = true;
       await this.connection.start();
       this.connected$.next(true);
     }
 
+    this.connecting = false;
     console.log('Hub connection established');
   }
 
@@ -40,6 +42,10 @@ export class SignalRConnectionService {
   }
 
   public setupConnection(url: string, accessTokenProvider: () => string) {
+    if (this.connection) {
+      return;
+    }
+
     this.connection = new HubConnectionBuilder()
       .withUrl(url, {accessTokenFactory: () => accessTokenProvider()})
       .build();

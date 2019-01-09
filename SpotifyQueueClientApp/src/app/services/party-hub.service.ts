@@ -25,16 +25,20 @@ export class PartyHubService {
 
     // Check if currently in a party before attempting hub connection
     this.getCurrentParty().then(party => {
-      if (party) {
-        this.currentParty$.next(party);
-        this.signalRConnectionService.openConnection();
-      }
+      this.updateCurrentParty(party);
     });
 
     this.signalRConnectionService.observe<CurrentParty>('partyStatusUpdate').subscribe(party => {
       console.log('party hub service status update');
       this.currentParty$.next(party);
     });
+  }
+
+  public updateCurrentParty(party: CurrentParty) {
+    this.currentParty$.next(party);
+    if (party) {
+      this.signalRConnectionService.openConnection();
+    }
   }
 
   private async getCurrentParty(): Promise<CurrentParty> {
