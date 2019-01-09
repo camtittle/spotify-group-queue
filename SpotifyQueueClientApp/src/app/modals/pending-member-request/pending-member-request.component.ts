@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap';
-import { PendingMemberRequest } from '../../models/pending-member-request.model';
+import { PendingMemberRequest } from '../../models';
 import { SignalRService } from '../../services';
 
 @Component({
