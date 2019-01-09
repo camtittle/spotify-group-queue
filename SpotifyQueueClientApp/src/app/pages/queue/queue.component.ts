@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AuthenticationService, PartyService, HubConnectionService } from '../../services';
+import { AuthenticationService, PartyService, SignalRService } from '../../services';
 import { BsModalService } from 'ngx-bootstrap';
 import { PendingMemberRequestComponent } from '../../modals/pending-member-request/pending-member-request.component';
 import { AccessToken, PendingMemberRequest, CurrentParty, CurrentPartyQueueItem } from '../../models';
@@ -17,7 +17,7 @@ export class QueueComponent implements OnInit, OnDestroy {
   public currentUser: AccessToken;
   public currentParty: CurrentParty;
 
-  constructor(private hubConnectionService: HubConnectionService,
+  constructor(private signalRService: SignalRService,
               private partyService: PartyService,
               private modalService: BsModalService,
               private authService: AuthenticationService,
@@ -36,22 +36,20 @@ export class QueueComponent implements OnInit, OnDestroy {
       this.currentUser = user;
     });
 
-    // Establish connection to hub
-    const pendingMemberRequest = await this.hubConnectionService.pendingMemberRequest$();
-    pendingMemberRequest.subscribe(request => {
+    // Hub events
+    this.signalRService.observe<PendingMemberRequest>('onPendingMemberRequest').subscribe(request => {
       console.log('pending member request: ' + request.username);
       this.onPendingMemberRequest(request);
     });
 
-    const pendingMemberResponse = await this.hubConnectionService.pendingMemberResponse$();
-    pendingMemberResponse.subscribe(accepted => {
+    this.signalRService.observe<boolean>('pendingMembershipResponse').subscribe(accepted => {
       this.onPendingMemberResponse(accepted);
     });
 
-    const partyStatusUpdate = await this.hubConnectionService.partyStatusUpdate$();
-    partyStatusUpdate.subscribe(statusUpdate => {
+    this.signalRService.observe<CurrentParty>('partyStatusUpdate').subscribe(statusUpdate => {
       this.onPartyStatusUpdate(statusUpdate);
     });
+
     this.loading = false;
   }
 
@@ -101,8 +99,8 @@ export class QueueComponent implements OnInit, OnDestroy {
     await this.router.navigateByUrl('/search');
   }
 
-  public async onClickRemoveTrack(queueItem: CurrentPartyQueueItem) {
-    await this.hubConnectionService.removeTrackFromQueue(queueItem.id);
+  public onClickRemoveTrack(queueItem: CurrentPartyQueueItem) {
+    this.signalRService.invoke('removeTrackFromQueue', queueItem.id);
   }
 
   public isPendingMember(): boolean {

@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { AuthenticationService, HubConnectionService } from '../../services';
+import { AuthenticationService, SignalRService } from '../../services';
 import { from, fromEvent, Observable } from 'rxjs';
 import { distinctUntilChanged, filter, map, switchMap, tap, throttleTime } from 'rxjs/operators';
 import { AccessToken, QueueTrack, TrackSearchResult, SpotifyTrack } from '../../models';
@@ -18,7 +18,7 @@ export class SearchComponent implements OnInit {
   private currentUser: AccessToken;
   private typeahead: Observable<SpotifyTrack[]>;
 
-  constructor(private hubConnectionService: HubConnectionService,
+  constructor(private signalRService: SignalRService,
               private authService: AuthenticationService) { }
 
   async ngOnInit() {
@@ -45,7 +45,7 @@ export class SearchComponent implements OnInit {
   }
 
   private searchSpotify(query: string): Observable<SpotifyTrack[]> {
-    return from<TrackSearchResult>(this.hubConnectionService.searchSpotify(query)).pipe(
+    return from<TrackSearchResult>(this.signalRService.invoke('searchSpotifyTracks', query)).pipe(
       map(response => response.tracks.items)
     );
   }
@@ -64,7 +64,7 @@ export class SearchComponent implements OnInit {
       durationMillis: track.duration_ms
     };
 
-    await this.hubConnectionService.addTrackToQueue(queueTrack);
+    await this.signalRService.invoke('addTrackToQueue', queueTrack);
   }
 
 

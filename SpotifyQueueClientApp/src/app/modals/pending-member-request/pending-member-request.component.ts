@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap';
 import { PendingMemberRequest } from '../../models/pending-member-request.model';
-import { HubConnectionService } from '../../services';
+import { SignalRService } from '../../services';
 
 @Component({
   selector: 'app-pending-member-request',
@@ -13,14 +13,14 @@ export class PendingMemberRequestComponent implements OnInit {
   public request: PendingMemberRequest;
 
   constructor(public modalRef: BsModalRef,
-              private hubConnectionService: HubConnectionService) { }
+              private signalRService: SignalRService) { }
 
   ngOnInit() {
   }
 
   public async onActionClick(accept: boolean) {
     if (this.request) {
-      await this.hubConnectionService.acceptPendingMember(this.request.id, accept);
+      await this.signalRService.invoke('acceptPendingMember', this.request.id, accept);
     }
     this.modalRef.hide();
   }
