@@ -1,8 +1,10 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { AuthenticationService, HubConnectionService } from '../../services';
+import { AuthenticationService, SignalRConnectionService } from '../../services';
 import { from, fromEvent, Observable } from 'rxjs';
 import { distinctUntilChanged, filter, map, switchMap, tap, throttleTime } from 'rxjs/operators';
 import { AccessToken, QueueTrack, TrackSearchResult, SpotifyTrack } from '../../models';
+import { ActivatedRoute } from '@angular/router';
+import { PartyHubService } from '../../services/party-hub.service';
 
 @Component({
   selector: 'app-search',
@@ -18,8 +20,9 @@ export class SearchComponent implements OnInit {
   private currentUser: AccessToken;
   private typeahead: Observable<SpotifyTrack[]>;
 
-  constructor(private hubConnectionService: HubConnectionService,
-              private authService: AuthenticationService) { }
+  constructor(private authService: AuthenticationService,
+              private partyHubService: PartyHubService) {
+  }
 
   async ngOnInit() {
     // Typeahead behavior
@@ -45,7 +48,7 @@ export class SearchComponent implements OnInit {
   }
 
   private searchSpotify(query: string): Observable<SpotifyTrack[]> {
-    return from<TrackSearchResult>(this.hubConnectionService.searchSpotify(query)).pipe(
+    return from<TrackSearchResult>(this.partyHubService.invoke('searchSpotifyTracks', query)).pipe(
       map(response => response.tracks.items)
     );
   }
@@ -64,7 +67,7 @@ export class SearchComponent implements OnInit {
       durationMillis: track.duration_ms
     };
 
-    await this.hubConnectionService.addTrackToQueue(queueTrack);
+    await this.partyHubService.invoke('addTrackToQueue', queueTrack);
   }
 
 
