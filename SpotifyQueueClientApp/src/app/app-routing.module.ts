@@ -7,8 +7,16 @@ const appRoutes: Routes = [
   { path: '', component: IndexComponent },
   { path: 'find', component: FindComponent },
   { path: 'create', component: CreateComponent, canActivate: [AuthGuard] },
-  { path: 'search', component: SearchComponent, canActivate: [AuthGuard] },
-  { path: 'queue', component: QueueComponent, canActivate: [AuthGuard] }
+  {
+    path: 'search',
+    component: SearchComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'queue',
+    component: QueueComponent,
+    canActivate: [AuthGuard]
+  }
 ];
 
 @NgModule({

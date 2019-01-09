@@ -1,13 +1,13 @@
 import { ApiService } from './api.service';
 import { Injectable } from '@angular/core';
 import { PartyListItem, CurrentParty } from '../models';
-
 @Injectable({
   providedIn: 'root'
 })
 export class PartyService {
 
-  constructor(private apiService: ApiService) { }
+  constructor(private apiService: ApiService) {
+  }
 
   public create(name: string) {
     const body = {

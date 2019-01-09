@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap';
 import { PendingMemberRequest } from '../../models';
-import { SignalRService } from '../../services';
+import { SignalRConnectionService } from '../../services';
 
 @Component({
   selector: 'app-pending-member-request',
@@ -13,7 +13,7 @@ export class PendingMemberRequestComponent implements OnInit {
   public request: PendingMemberRequest;
 
   constructor(public modalRef: BsModalRef,
-              private signalRService: SignalRService) { }
+              private signalRService: SignalRConnectionService) { }
 
   ngOnInit() {
   }

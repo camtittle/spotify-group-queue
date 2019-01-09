@@ -1,9 +1,6 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { HubConnection, HubConnectionBuilder } from '@aspnet/signalr';
-import { environment } from '../../environments/environment';
+import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@aspnet/signalr';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { AuthenticationService } from './authentication.service';
-import { AccessToken } from '../models';
+import { Injectable } from '@angular/core';
 
 /*
  * Manages a singleton SignalR Hub connection
@@ -12,44 +9,27 @@ import { AccessToken } from '../models';
 @Injectable({
   providedIn: 'root'
 })
-export class SignalRService implements OnDestroy {
+export class SignalRConnectionService {
 
   public connected$ = new BehaviorSubject<boolean>(false);
 
-  private currentUser: AccessToken;
   private connection: HubConnection;
 
   // Observables wrapping hub events
   private hubEvents: { [methodName: string]: Subject<any> } = {};
 
-  constructor(private authService: AuthenticationService) {
-    this.setupConnection();
+  constructor() {
+  }
 
-    this.connection.start().then(() => {
-      console.log('--> SIGNALR CONNECTION STARTED');
+  public async openConnection() {
+    if (this.connection.state !== HubConnectionState.Connected) {
+      console.log('Establishing hub connection');
+
+      await this.connection.start();
       this.connected$.next(true);
-    });
-
-    authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-    });
-  }
-
-  public ngOnDestroy() {
-    if (this.connection) {
-      this.connection.stop(); // Ignored promise
     }
-  }
 
-  private setupConnection() {
-    this.connection = new HubConnectionBuilder()
-      .withUrl(environment.signalRHubUrl, {accessTokenFactory: () => this.getAccessToken()})
-      .build();
-
-    this.connection.onclose(err => {
-      this.connected$.next(false);
-      this.connection = null;
-    });
+    console.log('Hub connection established');
   }
 
   public async closeConnection() {
@@ -57,6 +37,17 @@ export class SignalRService implements OnDestroy {
       await this.connection.stop();
     }
     this.connected$.next(false);
+  }
+
+  public setupConnection(url: string, accessTokenProvider: () => string) {
+    this.connection = new HubConnectionBuilder()
+      .withUrl(url, {accessTokenFactory: () => accessTokenProvider()})
+      .build();
+
+    this.connection.onclose(err => {
+      this.connected$.next(false);
+      this.connection = null;
+    });
   }
 
   /**
@@ -84,13 +75,10 @@ export class SignalRService implements OnDestroy {
    */
   public async invoke<T>(methodName: string, ...params: any[]): Promise<T> {
     // TODO: do we need this await?
-    return await this.connection.invoke(methodName, ...params);
-  }
-
-  private getAccessToken(): string {
-    if (this.currentUser) {
-      return this.currentUser.authToken;
+    if (this.connection.state !== HubConnectionState.Connected) {
+      console.warn('Cannot invoke method ' + methodName + ' - not connected to hub');
+      return;
     }
-    return null;
+    return await this.connection.invoke<T>(methodName, ...params);
   }
 }

@@ -218,7 +218,7 @@ namespace api.Services
                 Artist = request.Artist,
                 DurationMillis = request.DurationMillis,
                 Index = newIndex
-        };
+            };
 
             _context.QueueItems.Add(queueItem);
 
