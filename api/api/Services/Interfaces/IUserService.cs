@@ -14,6 +14,7 @@ namespace api.Services.Interfaces
         Task<User> FindByUsername(string username);
         Task<User> Find(string id);
         Party GetParty(User user);
+        Task UpdateSpotifyTokens(User user, string accessToken, string refreshToken, int expiresIn);
 
     }
 }

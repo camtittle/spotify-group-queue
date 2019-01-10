@@ -9,7 +9,7 @@ using Spotify.Exceptions;
 using Spotify.Interfaces;
 using Spotify.Models;
 
-namespace Spotify.Models
+namespace Spotify
 {
     public class SpotifyClient : ISpotifyClient
     {
@@ -67,9 +67,9 @@ namespace Spotify.Models
 
                     var content = new FormUrlEncodedContent(new Dictionary<string, string>()
                     {
-                        { "grant_type", "authorization_code" },
-                        { "code", code },
-                        { "redirect_uri", _settings.RedirectUri }
+                        {"grant_type", "authorization_code"},
+                        {"code", code},
+                        {"redirect_uri", _settings.RedirectUri}
                     });
 
                     var request = new HttpRequestMessage(HttpMethod.Post, _settings.TokenUri)
@@ -78,8 +78,22 @@ namespace Spotify.Models
                     };
 
                     var response = await client.SendAsync(request);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new SpotifyAuthenticationException(
+                            "Spotify authorization code token request was unsuccessful. Server responded with: " +
+                            response.StatusCode);
+                    }
+
                     var responseString = await response.Content.ReadAsStringAsync();
-                    var responeModel = JsonConvert.DeserializeObject<AuthorizationCodeTokenResponse>(responseString);
+                    var responseModel = JsonConvert.DeserializeObject<AuthorizationCodeTokenResponse>(responseString);
+
+                    return responseModel;
+                }
+                catch (Exception e)
+                {
+                    throw new SpotifyAuthenticationException("Spotify authorization code token request was unsuccessful.", e);
                 }
             }
         }

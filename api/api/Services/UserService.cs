@@ -58,6 +58,13 @@ namespace api.Services
             return await _context.Users.Where(u => u.Username == username).Include(u => u.CurrentParty).Include(u => u.OwnedParty).Include(u => u.PendingParty).FirstOrDefaultAsync();
         }
 
+        public async Task Update(User user)
+        {
+            _context.Users.Update(user);
+
+            await _context.SaveChangesAsync();
+        }
+
         public Party GetParty(User user)
         {
             if (user.IsMember)
@@ -76,6 +83,34 @@ namespace api.Services
             }
 
             return null;
+        }
+
+        public async Task UpdateSpotifyTokens(User user, string accessToken, string refreshToken, int expiresIn)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new ArgumentNullException(nameof(accessToken));
+            }
+
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                throw new ArgumentNullException(nameof(refreshToken));
+            }
+
+            var expiry = DateTime.UtcNow.AddSeconds(expiresIn);
+
+            user.SpotifyAccessToken = accessToken;
+            user.SpotifyRefreshToken = refreshToken;
+            user.SpotifyTokenExpiry = expiry;
+
+            _context.Users.Update(user);
+
+            await _context.SaveChangesAsync();
         }
     }
 }

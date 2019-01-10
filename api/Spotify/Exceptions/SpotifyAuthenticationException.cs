@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Spotify.Exceptions
 {
-    class SpotifyAuthenticationException : Exception
+    public class SpotifyAuthenticationException : Exception
     {
         public SpotifyAuthenticationException(string message) : base(message)
         {

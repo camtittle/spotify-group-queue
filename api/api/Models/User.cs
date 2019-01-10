@@ -27,5 +27,10 @@ namespace api.Models
 
         public List<QueueItem> QueueItems { get; set; }
 
+        public string SpotifyAccessToken { get; set; }
+        
+        public string SpotifyRefreshToken { get; set; }
+
+        public DateTime SpotifyTokenExpiry { get; set; }
     }
 }

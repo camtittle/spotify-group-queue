@@ -23,6 +23,7 @@ namespace api.Services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPartyService, PartyService>();
             services.AddScoped<ISpotifyClient, SpotifyClient>();
+            services.AddScoped<ISpotifyService, SpotifyService>();
 
             // SignalR user ID provider
             services.AddSingleton<IUserIdProvider, MyUserIdProvider>();

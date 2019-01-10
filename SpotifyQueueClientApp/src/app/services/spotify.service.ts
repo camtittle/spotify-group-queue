@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ApiService } from './api.service';
+import { SpotifyAuthorizeResponse } from '../models/spotify-authorize-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +11,7 @@ export class SpotifyService {
 
   public connected$ = new BehaviorSubject<boolean>(false);
 
-  constructor() { }
+  constructor(private apiService: ApiService) { }
 
   public openAuthorizationDialog() {
     const uri = this.getAuthorizationUri();
@@ -26,8 +28,11 @@ export class SpotifyService {
     return savedState === newState;
   }
 
-  public handleAuthCode(code: string) {
+  public async handleAuthCode(code: string) {
     console.log('code: ' + code);
+    const response = await this.apiService.post<SpotifyAuthorizeResponse>('/spotify/authorize', {code: code}).toPromise();
+    console.log('response:');
+    console.log(response);
   }
 
   private getAuthorizationUri() {
