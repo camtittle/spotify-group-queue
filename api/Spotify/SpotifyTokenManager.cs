@@ -9,7 +9,7 @@ using Spotify.Exceptions;
 using Spotify.Interfaces;
 using Spotify.Models;
 
-namespace Spotify.Models
+namespace Spotify
 {
     public class SpotifyTokenManager : ISpotifyTokenManager
     {

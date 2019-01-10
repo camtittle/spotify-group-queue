@@ -23,7 +23,6 @@ namespace api.Hubs
         private readonly ISpotifyClient _spotifyClient;
 
         private static readonly string ADMIN_GROUP_SUFFIX = "ADMIN";
-        private static readonly string PENDING_GROUP_SUFFIX = "PENDING";
 
         public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService, ISpotifyClient spotifyClient)
         {

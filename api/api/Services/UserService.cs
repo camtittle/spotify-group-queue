@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using api.Exceptions;
 using api.Models;
@@ -17,6 +18,13 @@ namespace api.Services
         public UserService(apiContext context)
         {
             _context = context;
+        }
+
+        public async Task<User> GetFromClaims(ClaimsPrincipal claimsPrincipal)
+        {
+            var userId = claimsPrincipal.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
+            var user = await Find(userId);
+            return user;
         }
 
         public User Create(string username)
