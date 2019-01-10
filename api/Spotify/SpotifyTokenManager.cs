@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Spotify.Interfaces;
+using Spotify.Models;
 
 namespace Spotify
 {
@@ -17,9 +19,12 @@ namespace Spotify
         private const string TokenUrl = "https://accounts.spotify.com/api/token";
         private const string GrantType = "client_credentials";
 
-        public SpotifyTokenManager(string clientId, string clientSecret)
+        private readonly SpotifySettings _settings;
+
+        public SpotifyTokenManager(IOptions<SpotifySettings> spotifySettings)
         {
-            var credentialsBytes = System.Text.Encoding.UTF8.GetBytes(clientId + ":" + clientSecret);
+            _settings = spotifySettings.Value;
+            var credentialsBytes = System.Text.Encoding.UTF8.GetBytes(_settings.ClientId + ":" + _settings.ClientSecret);
             _credentialsBase64 = System.Convert.ToBase64String(credentialsBytes);
         }
 
@@ -37,7 +42,15 @@ namespace Spotify
             return _accessToken;
         }
 
-        /**
+        /*
+         * Returns the base64 encoded client credentials
+         */
+        public string GetCredentialsBase64()
+        {
+            return _credentialsBase64;
+        }
+
+        /*
          * Requests an access token from Spotify using the app's client key and secret
          */
         private async Task RequestToken()

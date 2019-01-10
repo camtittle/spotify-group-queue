@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Spotify;
 using Spotify.Interfaces;
+using Spotify.Models;
 
 namespace api.Services
 {
@@ -12,6 +13,12 @@ namespace api.Services
     {
         public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
+
+            services.AddSingleton<IConfiguration>(configuration);
+
+            // Add settings
+            services.Configure<SpotifySettings>(configuration.GetSection("SpotifySettings"));
+
             // Add all services here
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPartyService, PartyService>();
@@ -21,12 +28,7 @@ namespace api.Services
             services.AddSingleton<IUserIdProvider, MyUserIdProvider>();
 
             // Spotify
-            services.AddSingleton<ISpotifyTokenManager>(serviceProvider =>
-            {
-                var clientId = configuration["SpotifySettings:ClientId"];
-                var clientSecret = configuration["SpotifyClientSecret"];
-                return new SpotifyTokenManager(clientId, clientSecret);
-            });
+            services.AddSingleton<ISpotifyTokenManager, SpotifyTokenManager>();
 
             return services;
         }

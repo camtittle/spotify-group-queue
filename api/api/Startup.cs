@@ -72,7 +72,8 @@ namespace api
 
             services.AddSignalR();
 
-            services.AddSingleton<IConfiguration>(Configuration);
+            services.AddOptions();
+
             services.RegisterServices(Configuration); // Register all our API servies
 
             services.AddDbContext<apiContext>(options =>
