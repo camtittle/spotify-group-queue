@@ -163,7 +163,7 @@ namespace api.Hubs
         /*
          * Called on client to search for tracks on Spotify based on a query string
          */
-        public async Task<SpotifyTrackSearchResponse> SearchSpotifyTracks(string query)
+        public async Task<TrackSearchResponse> SearchSpotifyTracks(string query)
         {
             var result = await _spotifyClient.Search(query);
 

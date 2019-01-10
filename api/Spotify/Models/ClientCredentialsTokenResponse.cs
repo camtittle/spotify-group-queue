@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Spotify
+namespace Spotify.Models
 {
-    public class AuthorizationResponseModel
+    public class ClientCredentialsTokenResponse
     {
         [JsonProperty("access_token")]
         public string AccessToken;

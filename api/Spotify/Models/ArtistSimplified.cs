@@ -1,6 +1,6 @@
 ﻿namespace Spotify.Models
 {
-    public class SpotifyArtistSimplified
+    public class ArtistSimplified
     {
         public string Name;
 

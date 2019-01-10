@@ -6,6 +6,6 @@ namespace Spotify.Interfaces
 {
     public interface ISpotifyClient
     {
-        Task<SpotifyTrackSearchResponse> Search(string query);
+        Task<TrackSearchResponse> Search(string query);
     }
 }
