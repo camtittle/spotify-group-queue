@@ -9,6 +9,7 @@ import { CreateComponent } from './create/create.component';
 import { FindComponent } from './find/find.component';
 import { SearchComponent } from './search/search.component';
 import { PipesModule } from '../pipes/pipes.module';
+import { SpotifyCallbackComponent } from './spotify-callback/spotify-callback.component';
 
 @NgModule({
   imports: [
@@ -22,7 +23,8 @@ import { PipesModule } from '../pipes/pipes.module';
     IndexComponent,
     CreateComponent,
     FindComponent,
-    SearchComponent
+    SearchComponent,
+    SpotifyCallbackComponent
   ],
   exports: [
     QueueComponent,

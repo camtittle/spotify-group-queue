@@ -5,6 +5,7 @@ import { PendingMemberRequestComponent } from '../../modals/pending-member-reque
 import { AccessToken, PendingMemberRequest, CurrentParty, CurrentPartyQueueItem } from '../../models';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PartyHubService } from '../../services/party-hub.service';
+import { SpotifyService } from '../../services/spotify.service';
 
 @Component({
   selector: 'app-queue',
@@ -21,9 +22,10 @@ export class QueueComponent implements OnInit, OnDestroy {
   constructor(private partyService: PartyService,
               private modalService: BsModalService,
               private authService: AuthenticationService,
+              private partyHubService: PartyHubService,
+              private spotifyService: SpotifyService,
               private router: Router,
-              private route: ActivatedRoute,
-              private partyHubService: PartyHubService) { }
+              private route: ActivatedRoute) { }
 
   async ngOnInit() {
     // Current user subscription
@@ -39,10 +41,6 @@ export class QueueComponent implements OnInit, OnDestroy {
     this.partyHubService.observe<boolean>('pendingMembershipResponse').subscribe(accepted => {
       this.onPendingMemberResponse(accepted);
     });
-
-    // this.partyHub.observe<CurrentParty>('partyStatusUpdate').subscribe(statusUpdate => {
-    //   this.onPartyStatusUpdate(statusUpdate);
-    // });
 
     this.loading = false;
   }
@@ -91,6 +89,10 @@ export class QueueComponent implements OnInit, OnDestroy {
 
   public onClickRemoveTrack(queueItem: CurrentPartyQueueItem) {
     this.partyHubService.invoke('removeTrackFromQueue', queueItem.id);
+  }
+
+  public onClickAuthorizeSpotify() {
+    this.spotifyService.openAuthorizationDialog();
   }
 
   public isPendingMember(): boolean {

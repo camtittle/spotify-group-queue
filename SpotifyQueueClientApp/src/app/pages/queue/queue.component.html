@@ -17,6 +17,9 @@
   </div>
 
   <ng-container *ngIf="currentParty">
+
+    <a (click)="onClickAuthorizeSpotify()">Connect to Spotify</a>
+
     <ul class="list-group mx-2 mt-2">
       <li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
         {{ currentParty.owner.username }}
