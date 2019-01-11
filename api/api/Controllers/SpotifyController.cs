@@ -51,5 +51,21 @@ namespace api.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("device")]
+        [Authorize]
+        public async Task<IActionResult> SetPlaybackDevice([FromBody] SetSpotifyDeviceRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userService.GetFromClaims(User);
+
+            await _spotifyService.UpdateDevice(user, request.DeviceId, request.DeviceName);
+
+            return Ok();
+        }
     }
 }

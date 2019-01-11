@@ -147,21 +147,21 @@ export class SpotifyService {
     return response.devices;
   }
 
+  public async setPlaybackDevice(device: SpotifyDevice) {
+    console.log('set playback device');
+    const body = {
+      deviceName: device.name,
+      deviceId: device.id
+    };
+    await this.apiService.post('/spotify/device', body).toPromise();
+  }
+
   private async get<ReturnType>(endpoint: string): Promise<ReturnType> {
     console.log('GET: ' + endpoint);
     // The double cast is because there is something weird going on with the return type of httpClient with headers param
     const response = await this.httpClient.get<ReturnType>(this.getUrl(endpoint), {headers: await this.getHttpHeaders(), observe: 'body'}).toPromise();
     return response;
   }
-
-  // private handleHttpError(error: HttpErrorResponse) {
-  //   if (error.error instanceof ErrorEvent) {
-  //     console.error('Exception occured: ', error.error.message);
-  //   } else {
-  //     console.error(`Server responded with ${error.status}`);
-  //   }
-  //   return throwError(error.error);
-  // }
 
   private getUrl(endpoint: string) {
     return environment.spotify.baseApiUri + endpoint;

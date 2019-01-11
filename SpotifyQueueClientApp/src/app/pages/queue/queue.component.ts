@@ -113,6 +113,11 @@ export class QueueComponent implements OnInit, OnDestroy {
     await this.loadSpotifyDevices();
   }
 
+  public async onClickDeviceItem(device: SpotifyDevice) {
+    console.log('here');
+    await this.spotifyService.setPlaybackDevice(device);
+  }
+
   public isPendingMember(): boolean {
     if (this.currentParty && this.currentUser) {
       return this.currentParty.pendingMembers.findIndex(x => x.id === this.currentUser.id) >= 0;

@@ -44,7 +44,7 @@ namespace api.Services
                 // Attempt to exchange code for access token 
                 var result = await _spotifyClient.GetClientToken(code);
 
-                await _userService.UpdateSpotifyTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
+                await UpdateUserTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
 
                 var responseModel = new SpotifyAuthorizationResponse(result);
 
@@ -84,9 +84,55 @@ namespace api.Services
             // Get a new token
             var result = await _spotifyClient.GetClientToken(user.SpotifyRefreshToken, true);
 
-            await _userService.UpdateSpotifyTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
+            await UpdateUserTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
 
             return new SpotifyAuthorizationResponse(result);
+        }
+        public async Task UpdateUserTokens(User user, string accessToken, string refreshToken, int expiresIn)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new ArgumentNullException(nameof(accessToken));
+            }
+
+            var expiry = DateTime.UtcNow.AddSeconds(expiresIn);
+
+            user.SpotifyAccessToken = accessToken;
+            user.SpotifyTokenExpiry = expiry;
+            if (refreshToken != null)
+            {
+                user.SpotifyRefreshToken = refreshToken;
+            }
+
+            await _userService.Update(user);
+        }
+
+        public async Task UpdateDevice(User user, string deviceId, string deviceName)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+
+            if (string.IsNullOrWhiteSpace(deviceName))
+            {
+                throw new ArgumentNullException(nameof(deviceName));
+            }
+
+            user.SpotifyDeviceId = deviceId;
+            user.SpotifyDeviceName = deviceName;
+
+            await _userService.Update(user);
         }
 
 

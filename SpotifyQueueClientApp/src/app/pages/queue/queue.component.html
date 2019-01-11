@@ -22,10 +22,14 @@
 
     <div *ngIf="authorizedWithSpotify && isOwner()" class="spotify-settings">
       <div><b>Spotify Settings</b></div>
-      <label for="spotify-connect-select">Playback device:</label>
-      <select id="spotify-connect-select" class="spotify-connect-select form-control" (click)="onClickDeviceSelect()">
-        <option *ngFor="let device of spotifyDevices">{{ device.name }}</option>
-      </select>
+      <div class="btn-group" dropdown>
+        <button id="button-basic" dropdownToggle type="button" class="btn btn-secondary dropdown-toggle" aria-controls="dropdown-basic">
+          Playback device <span class="caret"></span>
+        </button>
+        <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-basic">
+          <li *ngFor="let device of spotifyDevices" role="menuitem"><span class="dropdown-item" (click)="onClickDeviceItem(device)">{{ device.name }}</span></li>
+        </ul>
+      </div>
     </div>
 
     <ul class="list-group mt-2">

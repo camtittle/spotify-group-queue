@@ -85,30 +85,6 @@ namespace api.Services
             return null;
         }
 
-        public async Task UpdateSpotifyTokens(User user, string accessToken, string refreshToken, int expiresIn)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            if (string.IsNullOrWhiteSpace(accessToken))
-            {
-                throw new ArgumentNullException(nameof(accessToken));
-            }
-
-            var expiry = DateTime.UtcNow.AddSeconds(expiresIn);
-
-            user.SpotifyAccessToken = accessToken;
-            user.SpotifyTokenExpiry = expiry;
-            if (refreshToken != null)
-            {
-                user.SpotifyRefreshToken = refreshToken;
-            }
-
-            _context.Users.Update(user);
-
-            await _context.SaveChangesAsync();
-        }
+        
     }
 }

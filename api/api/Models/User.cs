@@ -32,5 +32,9 @@ namespace api.Models
         public string SpotifyRefreshToken { get; set; }
 
         public DateTime SpotifyTokenExpiry { get; set; }
+
+        public string SpotifyDeviceName { get; set; }
+
+        public string SpotifyDeviceId { get; set; }
     }
 }
