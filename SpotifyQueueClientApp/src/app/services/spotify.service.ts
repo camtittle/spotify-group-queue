@@ -3,6 +3,8 @@ import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiService } from './api.service';
 import { SpotifyAccessToken } from '../models/spotify-access-token.model';
+import { HttpClient, HttpEventType, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { SpotifyDevice, SpotifyDevicesResponse } from '../models/spotify-device.model';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +16,8 @@ export class SpotifyService {
   private accessToken: string;
   private expiry: Date;
 
-  constructor(private apiService: ApiService) { }
+  constructor(private httpClient: HttpClient,
+              private apiService: ApiService) { }
 
   /**
    * Opens the Spotify authorization page to allow the user to connect their Spotify account
@@ -46,7 +49,7 @@ export class SpotifyService {
   /**
    * Returns a valid Spotify access token. Refreshes the stored token if necessary
    */
-  public async getAccessToken(): Promise<string> {
+  private async getAccessToken(): Promise<string> {
     if (!this.authorized$.getValue() || !this.accessToken || !this.expiry) {
       console.warn('Attempt to get a Spotify access token whilst in unauthorized state');
       return null;
@@ -119,7 +122,7 @@ export class SpotifyService {
       'redirect_uri=' + env.redirectUri,
       'state=' + this.generateAndSaveState(),
       'scope=' + env.scopes.join(' '),
-      'show_dialog=true'
+      // 'show_dialog=true'
     ];
     return encodeURI(env.authUri + '?' + queryParams.join('&'));
   }
@@ -135,6 +138,39 @@ export class SpotifyService {
       // tslint:disable-next-line
       const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
+    });
+  }
+
+  public async getConnectDevices(): Promise<SpotifyDevice[]> {
+    const response = await this.get<SpotifyDevicesResponse>('/me/player/devices');
+    console.log(response);
+    return response.devices;
+  }
+
+  private async get<ReturnType>(endpoint: string): Promise<ReturnType> {
+    console.log('GET: ' + endpoint);
+    // The double cast is because there is something weird going on with the return type of httpClient with headers param
+    const response = await this.httpClient.get<ReturnType>(this.getUrl(endpoint), {headers: await this.getHttpHeaders(), observe: 'body'}).toPromise();
+    return response;
+  }
+
+  // private handleHttpError(error: HttpErrorResponse) {
+  //   if (error.error instanceof ErrorEvent) {
+  //     console.error('Exception occured: ', error.error.message);
+  //   } else {
+  //     console.error(`Server responded with ${error.status}`);
+  //   }
+  //   return throwError(error.error);
+  // }
+
+  private getUrl(endpoint: string) {
+    return environment.spotify.baseApiUri + endpoint;
+  }
+
+  private async getHttpHeaders(): Promise<HttpHeaders> {
+    const token = await this.getAccessToken();
+    return new HttpHeaders({
+      'Authorization': 'Bearer ' + token
     });
   }
 }

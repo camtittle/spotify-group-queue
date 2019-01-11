@@ -6,6 +6,7 @@ import { AccessToken, PendingMemberRequest, CurrentParty, CurrentPartyQueueItem 
 import { ActivatedRoute, Router } from '@angular/router';
 import { PartyHubService } from '../../services/party-hub.service';
 import { SpotifyService } from '../../services/spotify.service';
+import { SpotifyDevice } from '../../models/spotify-device.model';
 
 @Component({
   selector: 'app-queue',
@@ -18,19 +19,28 @@ export class QueueComponent implements OnInit, OnDestroy {
 
   public currentUser: AccessToken;
   public currentParty: CurrentParty;
+  public authorizedWithSpotify: boolean;
+  public spotifyDevices: SpotifyDevice[];
 
   constructor(private partyService: PartyService,
               private modalService: BsModalService,
               private authService: AuthenticationService,
               private partyHubService: PartyHubService,
               private spotifyService: SpotifyService,
-              private router: Router,
-              private route: ActivatedRoute) { }
+              private router: Router) { }
 
   async ngOnInit() {
-    // Current user subscription
     this.authService.currentUser$.subscribe(user => this.currentUser = user);
+
     this.partyHubService.currentParty$.subscribe(party => this.currentParty = party);
+
+    this.spotifyService.authorized$.subscribe(async authorized => {
+      this.authorizedWithSpotify = authorized;
+
+      if (authorized && this.isOwner()) {
+        await this.loadSpotifyDevices();
+      }
+    });
 
     // Hub events
     this.partyHubService.observe<PendingMemberRequest>('onPendingMemberRequest').subscribe(request => {
@@ -93,6 +103,14 @@ export class QueueComponent implements OnInit, OnDestroy {
 
   public onClickAuthorizeSpotify() {
     this.spotifyService.triggerAuthorizationFlow();
+  }
+
+  private async loadSpotifyDevices() {
+    this.spotifyDevices = await this.spotifyService.getConnectDevices();
+  }
+
+  public async onClickDeviceSelect() {
+    await this.loadSpotifyDevices();
   }
 
   public isPendingMember(): boolean {

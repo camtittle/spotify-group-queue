@@ -1,5 +1,5 @@
 <div *ngIf="loading" class="loading-spinner">Loading....</div>
-<div *ngIf="!loading" class="queue-container">
+<div *ngIf="!loading" class="queue-container px-2">
 
   <div class="membership-status">
     <div *ngIf="isPendingMember()">
@@ -18,9 +18,17 @@
 
   <ng-container *ngIf="currentParty">
 
-    <div (click)="onClickAuthorizeSpotify()">Connect to Spotify</div>
+    <button *ngIf="!authorizedWithSpotify" (click)="onClickAuthorizeSpotify()" type="button" class="btn btn-success">Connect to Spotify</button>
 
-    <ul class="list-group mx-2 mt-2">
+    <div *ngIf="authorizedWithSpotify && isOwner()" class="spotify-settings">
+      <div><b>Spotify Settings</b></div>
+      <label for="spotify-connect-select">Playback device:</label>
+      <select id="spotify-connect-select" class="spotify-connect-select form-control" (click)="onClickDeviceSelect()">
+        <option *ngFor="let device of spotifyDevices">{{ device.name }}</option>
+      </select>
+    </div>
+
+    <ul class="list-group mt-2">
       <li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
         {{ currentParty.owner.username }}
         <span class="badge badge-primary badge-pill">Owner</span>
@@ -34,7 +42,7 @@
     </ul>
 
 
-    <ul class="queue list-group mx-2 mt-2">
+    <ul class="queue list-group mt-2">
       <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
         Song Queue
         <button type="button" class="btn btn-sm btn-success" (click)="onClickAddTrack()">Add track</button>

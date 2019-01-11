@@ -3,6 +3,7 @@ import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/c
 import { Observable } from 'rxjs';
 import { AccessToken } from '../models';
 import { AuthenticationService } from '../services';
+import { environment } from '../../environments/environment';
 
 /*
  *  Intercepts http calls and adds the bearer token if one is stored in localStorage
@@ -20,7 +21,7 @@ export class JwtInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Add authorization header with JWT if available
-    if (this.currentUser && this.currentUser.authToken) {
+    if (request.url.includes(environment.baseApiUrl) && this.currentUser && this.currentUser.authToken) {
       request = request.clone({
         setHeaders: {
           Authorization: `Bearer ${this.currentUser.authToken}`
