@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Folder Include="Enums\" />
+    <Folder Include="Models\Settings\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

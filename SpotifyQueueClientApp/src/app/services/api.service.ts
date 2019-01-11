@@ -9,14 +9,13 @@ import { environment } from '../../environments/environment';
 })
 export class ApiService {
 
-  public get<T>(endpoint: string): Observable<any> {
+  constructor(private http: HttpClient) { }
+
+  public get<T>(endpoint: string): Observable<T> {
     console.log('GET: ' + endpoint);
     return this.http.get<T>(this.getUrl(endpoint))
       .pipe(catchError(this.handleError));
   }
-
-
-  constructor(private http: HttpClient) { }
 
   public post<T>(endpoint: string, body: any): Observable<T> {
     console.log('POST: ' + endpoint);

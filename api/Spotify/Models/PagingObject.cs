@@ -4,16 +4,16 @@ namespace Spotify.Models
 {
     public class PagingObject<T>
     {
-        public List<T> Items;
+        public List<T> Items { get; set; }
 
-        public int Limit;
+        public int Limit { get; set; }
 
-        public string Next;
+        public string Next { get; set; }
 
-        public int Offset;
+        public int Offset { get; set; }
 
-        public string Previous;
+        public string Previous { get; set; }
 
-        public int Total;
+        public int Total { get; set; }
     }
 }

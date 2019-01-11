@@ -82,7 +82,7 @@ namespace api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await GetAuthorizedUser();
+            var user = await _userService.GetFromClaims(User);
             if (user.IsOwner)
             {
                 return BadRequest("Already member of a party. Leave that party first");
@@ -107,7 +107,7 @@ namespace api.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteParty()
         {
-            var user = await GetAuthorizedUser();
+            var user = await _userService.GetFromClaims(User);
 
             // User is owner of party
             if (user.IsOwner)
@@ -124,7 +124,7 @@ namespace api.Controllers
         [Authorize]
         public async Task<IActionResult> LeaveParty()
         {
-            var user = await GetAuthorizedUser();
+            var user = await _userService.GetFromClaims(User);
             var party = _userService.GetParty(user);
 
             // If user is owner, this is same as deleting the party
@@ -149,7 +149,7 @@ namespace api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await GetAuthorizedUser();
+            var user = await _userService.GetFromClaims(User);
 
             var party = await _partyService.Find(request.PartyId);
             if (party == null)
@@ -160,15 +160,6 @@ namespace api.Controllers
             await _partyService.RequestToJoin(party, user);
             return Ok();
         }
-
-        // Helper method to get the user from the current user's auth token. Assumed user is authorized
-        private async Task<User> GetAuthorizedUser()
-        {
-            var userId = User.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
-            var user = await _userService.Find(userId);
-            return user;
-        }
-
         
     }
 }

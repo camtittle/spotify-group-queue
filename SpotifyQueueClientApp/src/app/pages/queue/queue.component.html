@@ -1,5 +1,5 @@
 <div *ngIf="loading" class="loading-spinner">Loading....</div>
-<div *ngIf="!loading" class="queue-container">
+<div *ngIf="!loading" class="queue-container px-2">
 
   <div class="membership-status">
     <div *ngIf="isPendingMember()">
@@ -17,7 +17,22 @@
   </div>
 
   <ng-container *ngIf="currentParty">
-    <ul class="list-group mx-2 mt-2">
+
+    <button *ngIf="!authorizedWithSpotify" (click)="onClickAuthorizeSpotify()" type="button" class="btn btn-success">Connect to Spotify</button>
+
+    <div *ngIf="authorizedWithSpotify && isOwner()" class="spotify-settings">
+      <div><b>Spotify Settings</b></div>
+      <div class="btn-group" dropdown>
+        <button id="button-basic" dropdownToggle type="button" class="btn btn-secondary dropdown-toggle" aria-controls="dropdown-basic">
+          Playback device <span class="caret"></span>
+        </button>
+        <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-basic">
+          <li *ngFor="let device of spotifyDevices" role="menuitem"><span class="dropdown-item" (click)="onClickDeviceItem(device)">{{ device.name }}</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <ul class="list-group mt-2">
       <li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
         {{ currentParty.owner.username }}
         <span class="badge badge-primary badge-pill">Owner</span>
@@ -31,7 +46,7 @@
     </ul>
 
 
-    <ul class="queue list-group mx-2 mt-2">
+    <ul class="queue list-group mt-2">
       <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
         Song Queue
         <button type="button" class="btn btn-sm btn-success" (click)="onClickAddTrack()">Add track</button>

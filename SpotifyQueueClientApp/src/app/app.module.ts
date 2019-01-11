@@ -10,6 +10,7 @@ import { JwtInterceptor } from './helpers/jwt-interceptor';
 import { ModalsModule } from './modals/modals.module';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { PipesModule } from './pipes/pipes.module';
+import { BsDropdownModule } from 'ngx-bootstrap';
 
 
 @NgModule({
@@ -22,6 +23,7 @@ import { PipesModule } from './pipes/pipes.module';
     AppRoutingModule,
     ServicesModule,
     ModalModule.forRoot(),
+    BsDropdownModule.forRoot(),
     ModalsModule,
     PipesModule
   ],

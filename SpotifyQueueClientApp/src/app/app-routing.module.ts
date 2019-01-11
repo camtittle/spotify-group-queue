@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { IndexComponent, QueueComponent, FindComponent, CreateComponent, SearchComponent } from './pages';
 import { PartyMembershipGuardGuard } from './guards/party-membership-guard.guard';
+import { SpotifyCallbackComponent } from './pages/spotify-callback/spotify-callback.component';
 
 const appRoutes: Routes = [
   { path: '', component: IndexComponent },
@@ -17,6 +18,10 @@ const appRoutes: Routes = [
     path: 'queue',
     component: QueueComponent,
     canActivate: [AuthGuard, PartyMembershipGuardGuard]
+  },
+  {
+    path: 'spotifycallback',
+    component: SpotifyCallbackComponent
   }
 ];
 

@@ -9,20 +9,24 @@ import { CreateComponent } from './create/create.component';
 import { FindComponent } from './find/find.component';
 import { SearchComponent } from './search/search.component';
 import { PipesModule } from '../pipes/pipes.module';
+import { SpotifyCallbackComponent } from './spotify-callback/spotify-callback.component';
+import { BsDropdownModule } from 'ngx-bootstrap';
 
 @NgModule({
   imports: [
     CommonModule,
     RouterModule,
     FormsModule,
-    PipesModule
+    PipesModule,
+    BsDropdownModule
   ],
   declarations: [
     QueueComponent,
     IndexComponent,
     CreateComponent,
     FindComponent,
-    SearchComponent
+    SearchComponent,
+    SpotifyCallbackComponent
   ],
   exports: [
     QueueComponent,

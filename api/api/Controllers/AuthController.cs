@@ -33,9 +33,8 @@ namespace api.Controllers
         }
 
         // Register user with this username and get token
-        [Route("register")]
+        [HttpPost("register")]
         [AllowAnonymous]
-        [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             // TODO: add a CAPTCHA to prevent spamming
@@ -83,8 +82,7 @@ namespace api.Controllers
 
         // Re-generate a valid token for any given username
         // Only for use during development by admins
-        [Route("token")]
-        [HttpPost]
+        [HttpPost("token")]
         [AllowAnonymous]
         public async Task<IActionResult> Token([FromBody] TokenRequest request)
         {

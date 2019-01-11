@@ -5,6 +5,8 @@ import { PendingMemberRequestComponent } from '../../modals/pending-member-reque
 import { AccessToken, PendingMemberRequest, CurrentParty, CurrentPartyQueueItem } from '../../models';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PartyHubService } from '../../services/party-hub.service';
+import { SpotifyService } from '../../services/spotify.service';
+import { SpotifyDevice } from '../../models/spotify-device.model';
 
 @Component({
   selector: 'app-queue',
@@ -17,18 +19,28 @@ export class QueueComponent implements OnInit, OnDestroy {
 
   public currentUser: AccessToken;
   public currentParty: CurrentParty;
+  public authorizedWithSpotify: boolean;
+  public spotifyDevices: SpotifyDevice[];
 
   constructor(private partyService: PartyService,
               private modalService: BsModalService,
               private authService: AuthenticationService,
-              private router: Router,
-              private route: ActivatedRoute,
-              private partyHubService: PartyHubService) { }
+              private partyHubService: PartyHubService,
+              private spotifyService: SpotifyService,
+              private router: Router) { }
 
   async ngOnInit() {
-    // Current user subscription
     this.authService.currentUser$.subscribe(user => this.currentUser = user);
+
     this.partyHubService.currentParty$.subscribe(party => this.currentParty = party);
+
+    this.spotifyService.authorized$.subscribe(async authorized => {
+      this.authorizedWithSpotify = authorized;
+
+      if (authorized && this.isOwner()) {
+        await this.loadSpotifyDevices();
+      }
+    });
 
     // Hub events
     this.partyHubService.observe<PendingMemberRequest>('onPendingMemberRequest').subscribe(request => {
@@ -39,10 +51,6 @@ export class QueueComponent implements OnInit, OnDestroy {
     this.partyHubService.observe<boolean>('pendingMembershipResponse').subscribe(accepted => {
       this.onPendingMemberResponse(accepted);
     });
-
-    // this.partyHub.observe<CurrentParty>('partyStatusUpdate').subscribe(statusUpdate => {
-    //   this.onPartyStatusUpdate(statusUpdate);
-    // });
 
     this.loading = false;
   }
@@ -91,6 +99,23 @@ export class QueueComponent implements OnInit, OnDestroy {
 
   public onClickRemoveTrack(queueItem: CurrentPartyQueueItem) {
     this.partyHubService.invoke('removeTrackFromQueue', queueItem.id);
+  }
+
+  public onClickAuthorizeSpotify() {
+    this.spotifyService.triggerAuthorizationFlow();
+  }
+
+  private async loadSpotifyDevices() {
+    this.spotifyDevices = await this.spotifyService.getConnectDevices();
+  }
+
+  public async onClickDeviceSelect() {
+    await this.loadSpotifyDevices();
+  }
+
+  public async onClickDeviceItem(device: SpotifyDevice) {
+    console.log('here');
+    await this.spotifyService.setPlaybackDevice(device);
   }
 
   public isPendingMember(): boolean {

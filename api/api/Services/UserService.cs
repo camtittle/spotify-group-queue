@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using api.Exceptions;
 using api.Models;
@@ -17,6 +18,13 @@ namespace api.Services
         public UserService(apiContext context)
         {
             _context = context;
+        }
+
+        public async Task<User> GetFromClaims(ClaimsPrincipal claimsPrincipal)
+        {
+            var userId = claimsPrincipal.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
+            var user = await Find(userId);
+            return user;
         }
 
         public User Create(string username)
@@ -50,6 +58,13 @@ namespace api.Services
             return await _context.Users.Where(u => u.Username == username).Include(u => u.CurrentParty).Include(u => u.OwnedParty).Include(u => u.PendingParty).FirstOrDefaultAsync();
         }
 
+        public async Task Update(User user)
+        {
+            _context.Users.Update(user);
+
+            await _context.SaveChangesAsync();
+        }
+
         public Party GetParty(User user)
         {
             if (user.IsMember)
@@ -69,5 +84,7 @@ namespace api.Services
 
             return null;
         }
+
+        
     }
 }

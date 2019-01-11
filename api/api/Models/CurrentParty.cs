@@ -6,17 +6,17 @@ namespace api.Models
 {
     public class CurrentParty
     {
-        public string Id;
+        public string Id { get; set; }
 
-        public string Name;
+        public string Name { get; set; }
 
-        public OtherUser Owner;
+        public OtherUser Owner { get; set; }
 
-        public List<OtherUser> Members;
+        public List<OtherUser> Members { get; set; }
 
-        public List<OtherUser> PendingMembers;
+        public List<OtherUser> PendingMembers { get; set; }
 
-        public List<CurrentPartyQueueItem> QueueItems;
+        public List<CurrentPartyQueueItem> QueueItems { get; set; }
 
         public CurrentParty(Party party, bool partial = false)
         {
@@ -41,17 +41,17 @@ namespace api.Models
 
     public class CurrentPartyQueueItem
     {
-        public string Id;
+        public string Id { get; set; }
 
-        public string Username;
+        public string Username { get; set; }
 
-        public string Title;
+        public string Title { get; set; }
 
-        public string Artist;
+        public string Artist { get; set; }
 
-        public string SpotifyUri;
+        public string SpotifyUri { get; set; }
 
-        public long DurationMillis;
+        public long DurationMillis { get; set; }
 
         public CurrentPartyQueueItem(QueueItem queueItem)
         {

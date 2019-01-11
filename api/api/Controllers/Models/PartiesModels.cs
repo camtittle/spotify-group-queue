@@ -10,23 +10,23 @@ namespace api.Controllers.Models
     {
         [Required]
         [StringLength(40)]
-        public string Name;
+        public string Name { get; set; }
     }
 
     public class JoinPartyRequest
     {
         [Required]
-        public string PartyId;
+        public string PartyId { get; set; }
     }
 
     public class GetPartiesResponse
     {
-        public string Id;
+        public string Id { get; set; }
 
-        public string Name;
+        public string Name { get; set; }
 
-        public string Owner;
+        public string Owner { get; set; }
 
-        public int MemberCount;
+        public int MemberCount { get; set; }
     }
 }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api.Models;
 
 namespace api.Migrations
 {
     [DbContext(typeof(apiContext))]
-    partial class apiContextModelSnapshot : ModelSnapshot
+    [Migration("20190110143217_UserSpotifyTokenDetails")]
+    partial class UserSpotifyTokenDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,10 +87,6 @@ namespace api.Migrations
                     b.Property<string>("PendingPartyId");
 
                     b.Property<string>("SpotifyAccessToken");
-
-                    b.Property<string>("SpotifyDeviceId");
-
-                    b.Property<string>("SpotifyDeviceName");
 
                     b.Property<string>("SpotifyRefreshToken");
 
