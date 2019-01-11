@@ -97,16 +97,14 @@ namespace api.Services
                 throw new ArgumentNullException(nameof(accessToken));
             }
 
-            if (string.IsNullOrWhiteSpace(refreshToken))
-            {
-                throw new ArgumentNullException(nameof(refreshToken));
-            }
-
             var expiry = DateTime.UtcNow.AddSeconds(expiresIn);
 
             user.SpotifyAccessToken = accessToken;
-            user.SpotifyRefreshToken = refreshToken;
             user.SpotifyTokenExpiry = expiry;
+            if (refreshToken != null)
+            {
+                user.SpotifyRefreshToken = refreshToken;
+            }
 
             _context.Users.Update(user);
 

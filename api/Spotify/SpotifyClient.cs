@@ -13,7 +13,7 @@ namespace Spotify
 {
     public class SpotifyClient : ISpotifyClient
     {
-        private ISpotifyTokenManager _spotifyTokenManager;
+        private readonly ISpotifyTokenManager _spotifyTokenManager;
 
         private const string SearchUrl = "https://api.spotify.com/v1/search";
 
@@ -56,7 +56,7 @@ namespace Spotify
         /*
          * Requests a new access token from Spotify using an authorization code or refresh token
          */
-        public async Task<AuthorizationCodeTokenResponse> GetClientToken(string code)
+        public async Task<AuthorizationCodeTokenResponse> GetClientToken(string code, bool isRefreshToken = false)
         {
             using (var client = new HttpClient())
             {
@@ -67,8 +67,8 @@ namespace Spotify
 
                     var content = new FormUrlEncodedContent(new Dictionary<string, string>()
                     {
-                        {"grant_type", "authorization_code"},
-                        {"code", code},
+                        {"grant_type", isRefreshToken ? "refresh_token" : "authorization_code"},
+                        {isRefreshToken ? "refresh_token" : "code", code},
                         {"redirect_uri", _settings.RedirectUri}
                     });
 
@@ -82,7 +82,7 @@ namespace Spotify
                     if (!response.IsSuccessStatusCode)
                     {
                         throw new SpotifyAuthenticationException(
-                            "Spotify authorization code token request was unsuccessful. Server responded with: " +
+                            "Spotify authorization code token request / refresh request was unsuccessful. Server responded with: " +
                             response.StatusCode);
                     }
 
@@ -93,7 +93,7 @@ namespace Spotify
                 }
                 catch (Exception e)
                 {
-                    throw new SpotifyAuthenticationException("Spotify authorization code token request was unsuccessful.", e);
+                    throw new SpotifyAuthenticationException("Spotify authorization code token request / refresh request was unsuccessful.", e);
                 }
             }
         }

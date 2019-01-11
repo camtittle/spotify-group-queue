@@ -13,5 +13,11 @@ namespace api.Controllers.Models
             AccessToken = response.AccessToken;
             ExpiresIn = response.ExpiresIn;
         }
+
+        public SpotifyAuthorizationResponse(string token, int expiresIn)
+        {
+            AccessToken = token;
+            ExpiresIn = expiresIn;
+        }
     }
 }

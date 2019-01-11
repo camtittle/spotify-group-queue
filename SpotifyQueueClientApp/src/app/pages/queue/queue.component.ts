@@ -92,7 +92,7 @@ export class QueueComponent implements OnInit, OnDestroy {
   }
 
   public onClickAuthorizeSpotify() {
-    this.spotifyService.openAuthorizationDialog();
+    this.spotifyService.triggerAuthorizationFlow();
   }
 
   public isPendingMember(): boolean {

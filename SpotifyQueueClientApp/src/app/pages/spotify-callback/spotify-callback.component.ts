@@ -35,7 +35,7 @@ export class SpotifyCallbackComponent implements OnInit {
 
   private async handleCode(state: string, code: string) {
     if (this.spotifyService.validateState(state)) {
-      this.spotifyService.handleAuthCode(code);
+      this.spotifyService.authorizeWithCode(code);
     }
   }
 

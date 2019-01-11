@@ -39,7 +39,17 @@ namespace api.Controllers
             var result = await _spotifyService.AuthorizeClient(user, request.Code);
 
             return Ok(result);
+        }
 
+        [HttpGet("refresh")]
+        [Authorize]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var user = await _userService.GetFromClaims(User);
+
+            var result = await _spotifyService.RefreshClientToken(user);
+
+            return Ok(result);
         }
     }
 }

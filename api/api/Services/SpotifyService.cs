@@ -56,6 +56,39 @@ namespace api.Services
             }
         }
 
-        
+        /*
+         * Returns a new Spotify access token for Spotify account associated with the given user
+         */
+        public async Task<SpotifyAuthorizationResponse> RefreshClientToken(User user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (user.SpotifyAccessToken == null || user.SpotifyRefreshToken == null || user.SpotifyTokenExpiry == null)
+            {
+                throw new SpotifyAuthenticationException("Unable to refresh token without an existing access token");
+            }
+            
+            // Check if existing token is still valid
+            var now = DateTime.UtcNow;
+            var expiresIn = Convert.ToInt32((user.SpotifyTokenExpiry - now).TotalSeconds);
+
+            // If there's more than 3 minutes left, use it. Else refresh it
+            if (expiresIn > 180)
+            {
+                return new SpotifyAuthorizationResponse(user.SpotifyAccessToken, expiresIn);
+            }
+
+            // Get a new token
+            var result = await _spotifyClient.GetClientToken(user.SpotifyRefreshToken, true);
+
+            await _userService.UpdateSpotifyTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
+
+            return new SpotifyAuthorizationResponse(result);
+        }
+
+
     }
 }

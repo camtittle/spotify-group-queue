@@ -7,5 +7,6 @@ namespace api.Services.Interfaces
     public interface ISpotifyService
     {
         Task<SpotifyAuthorizationResponse> AuthorizeClient(User user, string code);
+        Task<SpotifyAuthorizationResponse> RefreshClientToken(User user);
     }
 }
