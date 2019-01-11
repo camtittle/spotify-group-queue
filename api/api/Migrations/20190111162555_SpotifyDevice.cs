@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace api.Migrations
 {
@@ -6,6 +7,12 @@ namespace api.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "SpotifyTokenExpiry",
+                table: "Users",
+                nullable: true,
+                oldClrType: typeof(DateTime));
+
             migrationBuilder.AddColumn<string>(
                 name: "SpotifyDeviceId",
                 table: "Users",
@@ -26,6 +33,13 @@ namespace api.Migrations
             migrationBuilder.DropColumn(
                 name: "SpotifyDeviceName",
                 table: "Users");
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "SpotifyTokenExpiry",
+                table: "Users",
+                nullable: false,
+                oldClrType: typeof(DateTime),
+                oldNullable: true);
         }
     }
 }

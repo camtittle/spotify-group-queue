@@ -73,7 +73,7 @@ namespace api.Services
             
             // Check if existing token is still valid
             var now = DateTime.UtcNow;
-            var expiresIn = Convert.ToInt32((user.SpotifyTokenExpiry - now).TotalSeconds);
+            var expiresIn = Convert.ToInt32(((DateTime)user.SpotifyTokenExpiry - now).TotalSeconds);
 
             // If there's more than 3 minutes left, use it. Else refresh it
             if (expiresIn > 180)

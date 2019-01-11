@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiService } from './api.service';
 import { SpotifyAccessToken } from '../models/spotify-access-token.model';
-import { HttpClient, HttpEventType, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SpotifyDevice, SpotifyDevicesResponse } from '../models/spotify-device.model';
 
 @Injectable({
@@ -17,7 +17,9 @@ export class SpotifyService {
   private expiry: Date;
 
   constructor(private httpClient: HttpClient,
-              private apiService: ApiService) { }
+              private apiService: ApiService) {
+    this.checkAuthorizationStatus();
+  }
 
   /**
    * Opens the Spotify authorization page to allow the user to connect their Spotify account
@@ -86,6 +88,14 @@ export class SpotifyService {
     this.saveAccessToken(token);
   }
 
+  private async checkAuthorizationStatus() {
+    const token = await this.apiService.get<SpotifyAccessToken>('/spotify/refresh').toPromise();
+
+    if (token) {
+      this.saveAccessToken(token);
+    }
+  }
+
   private accessTokenIsValid(token: any): boolean {
     // Check required fields are present and save
     if (!(token.accessToken && token.expiresIn)) {
@@ -99,17 +109,11 @@ export class SpotifyService {
   }
 
   private saveAccessToken(token: SpotifyAccessToken) {
-    console.log('Saving spotify access token:');
-    console.log(token);
-
     this.accessToken = token.accessToken;
 
     // Refresh 60 seconds early to prevent edge cases
     this.expiry = new Date();
     this.expiry.setSeconds(this.expiry.getSeconds() + token.expiresIn - 60);
-
-    console.log('Expiry: ');
-    console.log(this.expiry);
 
     this.authorized$.next(true);
   }

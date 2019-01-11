@@ -10,7 +10,7 @@ using api.Models;
 namespace api.Migrations
 {
     [DbContext(typeof(apiContext))]
-    [Migration("20190111121832_SpotifyDevice")]
+    [Migration("20190111162555_SpotifyDevice")]
     partial class SpotifyDevice
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -94,7 +94,7 @@ namespace api.Migrations
 
                     b.Property<string>("SpotifyRefreshToken");
 
-                    b.Property<DateTime>("SpotifyTokenExpiry");
+                    b.Property<DateTime?>("SpotifyTokenExpiry");
 
                     b.Property<string>("Username");
 

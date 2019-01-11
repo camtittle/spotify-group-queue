@@ -92,7 +92,7 @@ namespace api.Migrations
 
                     b.Property<string>("SpotifyRefreshToken");
 
-                    b.Property<DateTime>("SpotifyTokenExpiry");
+                    b.Property<DateTime?>("SpotifyTokenExpiry");
 
                     b.Property<string>("Username");
 

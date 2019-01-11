@@ -47,6 +47,11 @@ namespace api.Controllers
         {
             var user = await _userService.GetFromClaims(User);
 
+            if (user.SpotifyRefreshToken == null)
+            {
+                return NoContent();
+            }
+
             var result = await _spotifyService.RefreshClientToken(user);
 
             return Ok(result);
