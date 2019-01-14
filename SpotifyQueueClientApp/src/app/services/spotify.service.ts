@@ -26,7 +26,6 @@ export class SpotifyService {
    */
   public triggerAuthorizationFlow() {
     const uri = this.getAuthorizationUri();
-    console.log(uri);
     window.location.href = uri;
   }
 
@@ -51,14 +50,14 @@ export class SpotifyService {
   /**
    * Returns a valid Spotify access token. Refreshes the stored token if necessary
    */
-  private async getAccessToken(): Promise<string> {
-    if (!this.authorized$.getValue() || !this.accessToken || !this.expiry) {
+  public async getAccessToken(): Promise<string> {
+    if (!this.authorized$.getValue()) {
       console.warn('Attempt to get a Spotify access token whilst in unauthorized state');
       return null;
     }
 
     const now = new Date();
-    if (this.expiry < now) {
+    if (!this.accessToken || !this.expiry || this.expiry < now) {
       await this.refreshAccessToken();
     }
 
@@ -88,20 +87,20 @@ export class SpotifyService {
     this.saveAccessToken(token);
   }
 
-  private async checkAuthorizationStatus() {
-    const token = await this.apiService.get<SpotifyAccessToken>('/spotify/refresh').toPromise();
-
-    if (token) {
-      this.saveAccessToken(token);
+  private checkAuthorizationStatus() {
+    const status = sessionStorage.getItem('authorizedSpotify');
+    if (status && status === 'true') {
+      this.authorized$.next(true);
     }
   }
 
   private accessTokenIsValid(token: any): boolean {
     // Check required fields are present and save
-    if (!(token.accessToken && token.expiresIn)) {
+    if (!(token && token.accessToken && token.expiresIn)) {
       // TODO: display a message to user - prompt to retry?
       this.authorized$.next(false);
-      console.error('Missing fields in Spotify access token');
+      sessionStorage.removeItem('authorizedSpotify');
+      console.warn('Missing fields in Spotify access token');
       return false;
     }
 
@@ -115,6 +114,7 @@ export class SpotifyService {
     this.expiry = new Date();
     this.expiry.setSeconds(this.expiry.getSeconds() + token.expiresIn - 60);
 
+    sessionStorage.setItem('authorizedSpotify', 'true');
     this.authorized$.next(true);
   }
 
@@ -147,12 +147,10 @@ export class SpotifyService {
 
   public async getConnectDevices(): Promise<SpotifyDevice[]> {
     const response = await this.get<SpotifyDevicesResponse>('/me/player/devices');
-    console.log(response);
-    return response.devices;
+    return response ? response.devices : [];
   }
 
   public async setPlaybackDevice(device: SpotifyDevice) {
-    console.log('set playback device');
     const body = {
       deviceName: device.name,
       deviceId: device.id
@@ -161,9 +159,7 @@ export class SpotifyService {
   }
 
   private async get<ReturnType>(endpoint: string): Promise<ReturnType> {
-    console.log('GET: ' + endpoint);
-    // The double cast is because there is something weird going on with the return type of httpClient with headers param
-    const response = await this.httpClient.get<ReturnType>(this.getUrl(endpoint), {headers: await this.getHttpHeaders(), observe: 'body'}).toPromise();
+    const response = await this.httpClient.get<ReturnType>(this.getUrl(endpoint)).toPromise();
     return response;
   }
 

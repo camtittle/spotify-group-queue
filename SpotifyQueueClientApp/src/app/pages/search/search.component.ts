@@ -37,7 +37,6 @@ export class SearchComponent implements OnInit {
 
     this.typeahead.subscribe(result => {
       this.results = result;
-      console.log(this.results);
     });
 
     // Access token subscription
@@ -54,7 +53,6 @@ export class SearchComponent implements OnInit {
   }
 
   public async onTrackClick(track: SpotifyTrack) {
-    console.log(track.name);
     if (!this.currentUser || !this.currentUser.username) {
       console.error('Cannot add track to queue - no current user');
       return;

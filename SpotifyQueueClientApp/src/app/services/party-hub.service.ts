@@ -29,7 +29,6 @@ export class PartyHubService {
     });
 
     this.signalRConnectionService.observe<CurrentParty>('partyStatusUpdate').subscribe(party => {
-      console.log('party hub service status update');
       this.currentParty$.next(party);
     });
   }

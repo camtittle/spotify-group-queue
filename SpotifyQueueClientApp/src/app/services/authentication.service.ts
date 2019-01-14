@@ -17,7 +17,6 @@ export class AuthenticationService {
   constructor(private apiService: ApiService) {
     // Initialise current user observable using stored credentials
     const user = this.getAccessToken();
-    console.log('init auth service');
     console.log(user);
     if (user) {
       this.currentUser$.next(user);
@@ -30,7 +29,6 @@ export class AuthenticationService {
       return this.apiService.post<AccessToken>('/auth/token', {username: username, developerPassword: environment.devPassword})
         .pipe(map(response => {
             this.currentUser$.next(response);
-            console.log(this.currentUser$.getValue());
             this.saveAccessToken(response);
             return response;
           })

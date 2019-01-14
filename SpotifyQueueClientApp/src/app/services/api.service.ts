@@ -28,6 +28,7 @@ export class ApiService {
   }
 
   private handleError(error: HttpErrorResponse) {
+    console.log(error);
     if (error.error instanceof ErrorEvent) {
       console.error('Exception occured: ', error.error.message);
     } else {

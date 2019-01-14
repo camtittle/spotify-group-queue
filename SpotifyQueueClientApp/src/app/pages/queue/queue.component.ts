@@ -114,7 +114,6 @@ export class QueueComponent implements OnInit, OnDestroy {
   }
 
   public async onClickDeviceItem(device: SpotifyDevice) {
-    console.log('here');
     await this.spotifyService.setPlaybackDevice(device);
   }
 
