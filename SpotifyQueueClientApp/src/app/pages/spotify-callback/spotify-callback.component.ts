@@ -40,7 +40,7 @@ export class SpotifyCallbackComponent implements OnInit {
   }
 
   private async navigateAway() {
-    await this.router.navigate(['queue'], {queryParams: []});
+    await this.router.navigate(['party', 'queue'], {queryParams: []});
   }
 
 }
