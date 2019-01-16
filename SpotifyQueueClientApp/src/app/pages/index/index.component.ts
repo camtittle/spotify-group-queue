@@ -23,9 +23,9 @@ export class IndexComponent implements OnInit {
     this.loading = true;
     this.authenticationService.register(this.usernameInput).subscribe(async result => {
       if (result.currentParty) {
-        await this.router.navigate(['/queue']);
+        await this.router.navigate(['party', 'queue']);
       } else {
-        await this.router.navigate(['/find']);
+        await this.router.navigate(['find']);
       }
     },
     err => {

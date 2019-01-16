@@ -21,7 +21,7 @@ export class FindComponent implements OnInit {
 
   public async joinParty(party: PartyListItem) {
     await this.partyService.requestToJoinParty(party);
-    await this.router.navigateByUrl('/queue');
+    await this.router.navigate(['party', 'queue']);
   }
 
 }

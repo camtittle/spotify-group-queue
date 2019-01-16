@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router, CanActivateChild } from '@angular/router';
 import { Observable } from 'rxjs';
 import { CurrentParty } from '../models';
 import { PartyHubService } from '../services/party-hub.service';
@@ -8,7 +8,7 @@ import { PartyService } from '../services';
 @Injectable({
   providedIn: 'root'
 })
-export class PartyMembershipGuardGuard implements CanActivate {
+export class PartyMembershipGuard implements CanActivate, CanActivateChild {
 
   private currentParty: CurrentParty;
 
@@ -18,9 +18,7 @@ export class PartyMembershipGuardGuard implements CanActivate {
     partyHubService.currentParty$.subscribe(x => this.currentParty = x);
   }
 
-  async canActivate(
-    next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Promise<boolean> {
+  async canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
 
     if (this.currentParty) {
       return true;
@@ -34,5 +32,9 @@ export class PartyMembershipGuardGuard implements CanActivate {
     }
 
     this.router.navigate(['find'], { queryParams: { returnUrl: state.url }});
+  }
+
+  canActivateChild(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
+    return this.canActivate(next, state);
   }
 }

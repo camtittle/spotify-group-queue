@@ -1,6 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
 import { PagesModule } from './pages/pages.module';
 import { ServicesModule } from './services/services.module';
 import { AppRoutingModule } from './app-routing.module';
@@ -11,6 +10,7 @@ import { ModalsModule } from './modals/modals.module';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { PipesModule } from './pipes/pipes.module';
 import { BsDropdownModule } from 'ngx-bootstrap';
+import { PartyModule } from './features/party/party.module';
 
 
 @NgModule({
@@ -25,7 +25,8 @@ import { BsDropdownModule } from 'ngx-bootstrap';
     ModalModule.forRoot(),
     BsDropdownModule.forRoot(),
     ModalsModule,
-    PipesModule
+    PipesModule,
+    PartyModule
   ],
   exports: [
   ],

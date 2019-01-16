@@ -1,12 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AuthenticationService, PartyService, SignalRConnectionService } from '../../services';
+import { AuthenticationService, PartyService, SignalRConnectionService } from '../../../services/index';
 import { BsModalService } from 'ngx-bootstrap';
-import { PendingMemberRequestComponent } from '../../modals/pending-member-request/pending-member-request.component';
-import { AccessToken, PendingMemberRequest, CurrentParty, CurrentPartyQueueItem } from '../../models';
+import { PendingMemberRequestComponent } from '../../../modals/pending-member-request/pending-member-request.component';
+import { AccessToken, PendingMemberRequest, CurrentParty, CurrentPartyQueueItem } from '../../../models/index';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PartyHubService } from '../../services/party-hub.service';
-import { SpotifyService } from '../../services/spotify.service';
-import { SpotifyDevice } from '../../models/spotify-device.model';
+import { PartyHubService } from '../../../services/party-hub.service';
+import { SpotifyService } from '../../../services/spotify.service';
+import { SpotifyDevice } from '../../../models/spotify-device.model';
 
 @Component({
   selector: 'app-queue',
@@ -27,6 +27,7 @@ export class QueueComponent implements OnInit, OnDestroy {
               private authService: AuthenticationService,
               private partyHubService: PartyHubService,
               private spotifyService: SpotifyService,
+              private route: ActivatedRoute,
               private router: Router) { }
 
   async ngOnInit() {
@@ -94,7 +95,7 @@ export class QueueComponent implements OnInit, OnDestroy {
   }
 
   public async onClickAddTrack() {
-    await this.router.navigateByUrl('/search');
+    await this.router.navigate(['../search'], { relativeTo: this.route });
   }
 
   public onClickRemoveTrack(queueItem: CurrentPartyQueueItem) {
@@ -107,10 +108,6 @@ export class QueueComponent implements OnInit, OnDestroy {
 
   private async loadSpotifyDevices() {
     this.spotifyDevices = await this.spotifyService.getConnectDevices();
-  }
-
-  public async onClickDeviceSelect() {
-    await this.loadSpotifyDevices();
   }
 
   public async onClickDeviceItem(device: SpotifyDevice) {

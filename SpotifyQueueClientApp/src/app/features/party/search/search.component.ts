@@ -1,10 +1,10 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { AuthenticationService, SignalRConnectionService } from '../../services';
+import { AuthenticationService, SignalRConnectionService } from '../../../services/index';
 import { from, fromEvent, Observable } from 'rxjs';
 import { distinctUntilChanged, filter, map, switchMap, tap, throttleTime } from 'rxjs/operators';
-import { AccessToken, QueueTrack, TrackSearchResult, SpotifyTrack } from '../../models';
+import { AccessToken, QueueTrack, TrackSearchResult, SpotifyTrack } from '../../../models/index';
 import { ActivatedRoute } from '@angular/router';
-import { PartyHubService } from '../../services/party-hub.service';
+import { PartyHubService } from '../../../services/party-hub.service';
 
 @Component({
   selector: 'app-search',
@@ -67,7 +67,5 @@ export class SearchComponent implements OnInit {
 
     await this.partyHubService.invoke('addTrackToQueue', queueTrack);
   }
-
-
 
 }
