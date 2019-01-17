@@ -21,6 +21,7 @@ namespace api.Controllers.Models
         [Required] public string AuthToken { get; set; }
         [Required] public string Username { get; set; }
         [Required] public string Id { get; set; }
+        [Required] public bool IsOwner { get; set; }
         public CurrentParty CurrentParty { get; set; }
 
         public RegisterResponse(string id, string username, string authToken, CurrentParty currentParty)
@@ -29,6 +30,7 @@ namespace api.Controllers.Models
             Username = username;
             Id = id;
             CurrentParty = currentParty;
+            IsOwner = currentParty.Owner.Id == id;
         }
     }
 }

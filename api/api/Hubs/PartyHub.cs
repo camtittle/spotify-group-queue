@@ -34,7 +34,7 @@ namespace api.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var user = await GetCurrentUser();
+            var user = await _userService.GetFromClaims(Context.User);
             var party = _userService.GetParty(user);
 
             // Add user to a Group with members
@@ -50,7 +50,7 @@ namespace api.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var user = await GetCurrentUser();
+            var user = await _userService.GetFromClaims(Context.User);
             var party = _userService.GetParty(user);
 
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, party.Id);
@@ -67,6 +67,20 @@ namespace api.Hubs
             var adminGroupName = party.Id + ADMIN_GROUP_SUFFIX;
             await _hubContext.Clients.Group(adminGroupName).SendAsync("onPendingMemberRequest", userModel);
         }
+
+        /*
+         * Called from client to request the latest playback state
+         */
+        [Authorize]
+        public async Task<PlaybackStatusUpdate> GetCurrentPlaybackState()
+        {
+            var user = await _userService.GetFromClaims(Context.User);
+
+            var party = _userService.GetParty(user);
+
+            return _partyService.GetPlaybackStatusUpdate(party, user.IsOwner);
+        }
+
 
         /*
          * Called from client to accept/decline pending membership request
@@ -93,7 +107,7 @@ namespace api.Hubs
             }
 
             // Verify that the authorized user is the owner of the party, and user is a pending member of the party
-            var owner = await GetCurrentUser();
+            var owner = await _userService.GetFromClaims(Context.User);
             if (!owner.IsOwner || party.Owner.Id != owner.Id)
             {
                 // TODO throw an exception?
@@ -132,8 +146,8 @@ namespace api.Hubs
             {
                 throw new ArgumentException("Missing request paramaters", nameof(requestModel));
             }
-            
-            var user = await GetCurrentUser();
+
+            var user = await _userService.GetFromClaims(Context.User);
 
             // TODO: do something with the result?
             var queueItem = await _partyService.AddQueueItem(user, requestModel);
@@ -149,8 +163,8 @@ namespace api.Hubs
             {
                 throw new ArgumentException("Missing request paramaters", nameof(queueItemId));
             }
-            
-            var user = await GetCurrentUser();
+
+            var user = await _userService.GetFromClaims(Context.User);
 
             await _partyService.RemoveQueueItem(user, queueItemId);
 
@@ -187,12 +201,6 @@ namespace api.Hubs
         {
             await _hubContext.Clients.Users(party.Members.Select(x => x.Id).ToList()).SendAsync("playbackStatusUpdate", update);
             await _hubContext.Clients.User(party.Owner.Id).SendAsync("playbackStatusUpdate", partialUpdate);
-        }
-
-        public async Task<User> GetCurrentUser()
-        {
-            var userId = Context.User.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
-            return await _userService.Find(userId);
         }
         
     }

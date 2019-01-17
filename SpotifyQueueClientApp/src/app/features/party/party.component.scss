@@ -1,0 +1,24 @@
+.party-container {
+
+  .playback-overlay {
+    position: fixed;
+    bottom: 0;
+
+    background-color: #555555;
+    color: #dddddd;
+
+    width: 100%;
+    text-align: center;
+    padding: 8px 4px;
+
+    .title {
+      color: white;
+    }
+
+    .device-info {
+      font-size: 12px;
+      color: greenyellow;
+    }
+
+  }
+}

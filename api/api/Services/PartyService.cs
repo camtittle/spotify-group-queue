@@ -283,27 +283,14 @@ namespace api.Services
             };
 
             // Notify clients
-            await this.SendPlaybackStatusUpdate(party);
+            await SendPlaybackStatusUpdate(party);
 
             await _context.SaveChangesAsync();
         }
 
-        public async Task SendPlaybackStatusUpdate(Party party)
+        public PlaybackStatusUpdate GetPlaybackStatusUpdate(Party party, bool includeAdminFields = false)
         {
-            await LoadFull(party);
-
-            var fullUpdate = new PlaybackStatusUpdate()
-            {
-                Uri = party.CurrentTrack.Uri,
-                Artist = party.CurrentTrack.Artist,
-                DurationMillis = party.CurrentTrack.DurationMillis,
-                Title = party.CurrentTrack.Title,
-                IsPlaying = party.CurrentTrack.IsPlaying,
-                DeviceId = party.Owner.CurrentDevice?.DeviceId,
-                DeviceName = party.Owner.CurrentDevice?.Name
-            };
-
-            var partialUpdate = new PlaybackStatusUpdate()
+            var update = new PlaybackStatusUpdate()
             {
                 Uri = party.CurrentTrack.Uri,
                 Artist = party.CurrentTrack.Artist,
@@ -311,6 +298,23 @@ namespace api.Services
                 Title = party.CurrentTrack.Title,
                 IsPlaying = party.CurrentTrack.IsPlaying
             };
+
+            if (includeAdminFields)
+            {
+                update.DeviceId = party.Owner.CurrentDevice?.DeviceId;
+                update.DeviceName = party.Owner.CurrentDevice?.Name;
+            }
+
+            return update;
+        }
+
+        public async Task SendPlaybackStatusUpdate(Party party)
+        {
+            await LoadFull(party);
+
+            var partialUpdate = GetPlaybackStatusUpdate(party);
+
+            var fullUpdate = GetPlaybackStatusUpdate(party, true);
 
             await PartyHub.SendPlaybackStatusUpdate(party, fullUpdate, partialUpdate);
         }

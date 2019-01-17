@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { SignalRConnectionService } from './signal-r-connection-service';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
+import { PlaybackState } from '../models/spotify/spotify-playback-state.model';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ import { AuthenticationService } from './authentication.service';
 export class PartyHubService {
 
   public currentParty$ = new BehaviorSubject<CurrentParty>(null);
+  public playbackState$ = new BehaviorSubject<PlaybackState>(null);
 
   private currentUser: AccessToken;
 
@@ -23,6 +25,13 @@ export class PartyHubService {
 
     signalRConnectionService.setupConnection(environment.signalRHubUrl, () => this.getAccessToken());
 
+    this.signalRConnectionService.connected$.subscribe(async connected => {
+      if (connected) {
+        const state = await this.signalRConnectionService.invoke<PlaybackState>('getCurrentPlaybackState');
+        this.playbackState$.next(state);
+      }
+    });
+
     // Check if currently in a party before attempting hub connection
     this.getCurrentParty().then(party => {
       this.updateCurrentParty(party);
@@ -30,6 +39,10 @@ export class PartyHubService {
 
     this.signalRConnectionService.observe<CurrentParty>('partyStatusUpdate').subscribe(party => {
       this.currentParty$.next(party);
+    });
+
+    this.signalRConnectionService.observe<PlaybackState>('playbackStatusUpdate').subscribe(state => {
+      this.playbackState$.next(state);
     });
   }
 

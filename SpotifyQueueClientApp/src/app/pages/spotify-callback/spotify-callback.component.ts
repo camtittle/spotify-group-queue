@@ -26,7 +26,7 @@ export class SpotifyCallbackComponent implements OnInit {
           console.warn('Spotify auth error: ' + error);
         }
       } else {
-        this.handleCode(state, code);
+        await this.handleCode(state, code);
       }
 
       await this.navigateAway();

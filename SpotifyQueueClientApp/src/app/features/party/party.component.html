@@ -1,2 +1,24 @@
-<h3>Party Component</h3>
-<router-outlet></router-outlet>
+<div class="party-container">
+  <h3>Party Component</h3>
+  <router-outlet></router-outlet>
+
+  <div class="playback-overlay">
+
+    <div *ngIf="currentUser.isOwner" class="playback-controls">
+
+    </div>
+
+    <div *ngIf="playbackState" class="current-playback">
+      <div class="current-track">
+        <span class="mr-2 title">{{ playbackState?.title }}</span>
+        •
+        <span class="ml-2 artist">{{ playbackState?.artist }}</span>
+      </div>
+      <div *ngIf="playbackState.deviceName" class="device-info">
+        <div class="device-name">♫ Playing on {{ playbackState?.deviceName }}</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+

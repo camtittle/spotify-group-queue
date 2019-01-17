@@ -4,6 +4,7 @@ import { SpotifyService } from '../../services/spotify.service';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { AuthenticationService } from '../../services';
 import { AccessToken } from '../../models';
+import { PlaybackState } from '../../models/spotify/spotify-playback-state.model';
 
 @Component({
   selector: 'app-party',
@@ -12,7 +13,9 @@ import { AccessToken } from '../../models';
 })
 export class PartyComponent implements OnInit {
 
-  private currentUser: AccessToken;
+  public currentUser: AccessToken;
+
+  public playbackState: PlaybackState;
 
   // partyHubService injected in order to ensure it is initialised for all child components
   constructor(private partyHubService: PartyHubService,
@@ -27,12 +30,11 @@ export class PartyComponent implements OnInit {
 
     this.authService.currentUser$.subscribe(user => this.currentUser = user);
 
-    console.log('sub to playback status update');
-    this.partyHubService.observe('playbackStatusUpdate').subscribe(update => {
-      console.log('playback status update');
-      console.log(update);
+    this.partyHubService.playbackState$.subscribe(state => {
+      console.log('STATE MADE IT TO PARTY COMPONENT');
+      console.log(state);
+      this.playbackState = state;
     });
-
   }
 
 

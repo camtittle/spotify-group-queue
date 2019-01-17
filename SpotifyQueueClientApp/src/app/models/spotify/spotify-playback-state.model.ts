@@ -1,9 +1,10 @@
-import { SpotifyDevice } from './spotify-device.model';
-import { SpotifyTrack } from './spotify-track.model';
+export interface PlaybackState {
+  uri: string;
+  title: string;
+  artist: string;
+  durationMillis: number;
+  isPlaying: boolean;
 
-export interface SpotifyPlaybackState {
-  device: SpotifyDevice;
-  progress_ms: number;
-  is_playing: boolean;
-  item: SpotifyTrack;
+  deviceId: string;
+  deviceName: string;
 }

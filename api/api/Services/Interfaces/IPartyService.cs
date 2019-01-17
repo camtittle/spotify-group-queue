@@ -25,5 +25,6 @@ namespace api.Services.Interfaces
         Task RemoveQueueItem(User user, string queueItemId);
         Task UpdatePlaybackState(Party party, PlaybackState state);
         Task SendPlaybackStatusUpdate(Party party);
+        PlaybackStatusUpdate GetPlaybackStatusUpdate(Party party, bool includeAdminFields = false);
     }
 }
