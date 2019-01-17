@@ -27,7 +27,7 @@ namespace api.Services
          * Exchange an authorization code for an Access token and Refresh token from Spotify.
          * Stores the credentials against the user
          */
-        public async Task<SpotifyAuthorizationResponse> AuthorizeClient(User user, string code)
+        public async Task<SpotifyAccessToken> AuthorizeClient(User user, string code)
         {
             if (string.IsNullOrWhiteSpace(code))
             {
@@ -43,12 +43,10 @@ namespace api.Services
             {
                 // Attempt to exchange code for access token 
                 var result = await _spotifyClient.GetClientToken(code);
+                
+                UpdateUserTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
 
-                await UpdateUserTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
-
-                var responseModel = new SpotifyAuthorizationResponse(result);
-
-                return responseModel;
+                return new SpotifyAccessToken(result);
             }
             catch (Exception e)
             {
@@ -57,9 +55,10 @@ namespace api.Services
         }
 
         /*
-         * Returns a new Spotify access token for Spotify account associated with the given user
+         * Returns a Spotify access token for Spotify account associated with the given user
+         * If there is a valid one stored, use that, else fetch a new one from Spotify
          */
-        public async Task<SpotifyAuthorizationResponse> RefreshClientToken(User user)
+        public async Task<SpotifyAccessToken> GetUserAccessToken(User user)
         {
             if (user == null)
             {
@@ -78,7 +77,7 @@ namespace api.Services
             // If there's more than 3 minutes left, use it. Else refresh it
             if (expiresIn > 180)
             {
-                return new SpotifyAuthorizationResponse(user.SpotifyAccessToken, expiresIn);
+                return new SpotifyAccessToken(user.SpotifyAccessToken, expiresIn);
             }
 
             // Get a new token
@@ -86,8 +85,9 @@ namespace api.Services
 
             await UpdateUserTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
 
-            return new SpotifyAuthorizationResponse(result);
+            return new SpotifyAccessToken(result);
         }
+
         public async Task UpdateUserTokens(User user, string accessToken, string refreshToken, int expiresIn)
         {
             if (user == null)
@@ -129,12 +129,28 @@ namespace api.Services
                 throw new ArgumentNullException(nameof(deviceName));
             }
 
-            user.SpotifyDeviceId = deviceId;
-            user.SpotifyDeviceName = deviceName;
+            user.CurrentDevice.DeviceId = deviceId;
+            user.CurrentDevice.Name = deviceName;
 
             await _userService.Update(user);
         }
 
+        public async Task<PlaybackState> GetPlaybackState(User user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (user.SpotifyRefreshToken == null)
+            {
+                throw new SpotifyAuthenticationException("Error getting playback state: User not authorized with Spotify");
+            }
+
+            var accessToken = await GetUserAccessToken(user);
+
+            return await _spotifyClient.GetAsUser<PlaybackState>("/me/player", accessToken.AccessToken);
+        }
 
     }
 }

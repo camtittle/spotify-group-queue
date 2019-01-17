@@ -20,5 +20,6 @@ namespace api.Models
 
         public List<QueueItem> QueueItems { get; set; }
 
+        public Track CurrentTrack { get; set; }
     }
 }

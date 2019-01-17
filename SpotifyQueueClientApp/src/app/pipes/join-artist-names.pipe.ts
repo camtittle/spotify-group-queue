@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { SpotifyArtist } from '../models/spotify-track.model';
+import { SpotifyArtist } from '../models/spotify/spotify-track.model';
 
 @Pipe({
   name: 'joinArtistNames'

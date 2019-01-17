@@ -26,7 +26,7 @@ export class SpotifyCallbackComponent implements OnInit {
           console.warn('Spotify auth error: ' + error);
         }
       } else {
-        await this.handleCode(state, code);
+        this.handleCode(state, code);
       }
 
       await this.navigateAway();
@@ -35,7 +35,7 @@ export class SpotifyCallbackComponent implements OnInit {
 
   private async handleCode(state: string, code: string) {
     if (this.spotifyService.validateState(state)) {
-      this.spotifyService.authorizeWithCode(code);
+      await this.spotifyService.authorizeWithCode(code);
     }
   }
 

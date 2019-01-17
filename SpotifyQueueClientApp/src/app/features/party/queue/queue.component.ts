@@ -6,7 +6,8 @@ import { AccessToken, PendingMemberRequest, CurrentParty, CurrentPartyQueueItem 
 import { ActivatedRoute, Router } from '@angular/router';
 import { PartyHubService } from '../../../services/party-hub.service';
 import { SpotifyService } from '../../../services/spotify.service';
-import { SpotifyDevice } from '../../../models/spotify-device.model';
+import { SpotifyDevice } from '../../../models/spotify/spotify-device.model';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-queue',
@@ -35,11 +36,11 @@ export class QueueComponent implements OnInit, OnDestroy {
 
     this.partyHubService.currentParty$.subscribe(party => this.currentParty = party);
 
-    this.spotifyService.authorized$.subscribe(async authorized => {
+    this.spotifyService.authorized$.pipe(distinctUntilChanged()).subscribe(async authorized => {
       this.authorizedWithSpotify = authorized;
 
       if (authorized && this.isOwner()) {
-        await this.loadSpotifyDevices();
+        await this.initialiseSpotify();
       }
     });
 
@@ -106,7 +107,7 @@ export class QueueComponent implements OnInit, OnDestroy {
     this.spotifyService.triggerAuthorizationFlow();
   }
 
-  private async loadSpotifyDevices() {
+  private async initialiseSpotify() {
     this.spotifyDevices = await this.spotifyService.getConnectDevices();
   }
 

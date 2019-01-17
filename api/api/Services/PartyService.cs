@@ -10,6 +10,7 @@ using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Spotify.Models;
 using SQLitePCL;
 
 namespace api.Services
@@ -190,6 +191,7 @@ namespace api.Services
                 .ThenInclude(u => u.CurrentParty).Include(p => p.PendingMembers).ThenInclude(u => u.PendingParty)
                 .Include(p => p.Owner).ThenInclude(u => u.OwnedParty)
                 .Include(p => p.QueueItems)
+                .Include(p => p.CurrentTrack)
                 .FirstOrDefaultAsync();
         }
 
@@ -226,6 +228,7 @@ namespace api.Services
 
             return queueItem;
         }
+
         public async Task RemoveQueueItem(User user, string queueItemId)
         {
             if (!user.IsOwner)
@@ -242,12 +245,74 @@ namespace api.Services
             var queueItem = await _context.QueueItems.FindAsync(queueItemId);
             if (queueItem == null)
             {
-                throw new PartyQueueException("Cannot remove reack from queue - queue item with ID not found");
+                throw new PartyQueueException("Cannot remove track from queue - queue item with ID not found");
             }
 
             _context.QueueItems.Remove(queueItem);
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdatePlaybackState(Party party, PlaybackState state)
+        {
+            if (party == null)
+            {
+                throw new ArgumentNullException(nameof(party));
+            }
+
+            if (state == null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+
+            await LoadFull(party);
+
+            party.CurrentTrack = new Models.Track()
+            {
+                Uri = state.Item.Uri,
+                Title = state.Item.Name,
+                Artist = state.Item.Artists[0].Name,
+                DurationMillis = state.Item.DurationMillis,
+                IsPlaying = state.IsPlaying
+            };
+
+            party.Owner.CurrentDevice = new SpotifyDevice()
+            {
+                DeviceId = state.Device?.Id,
+                Name = state.Device?.Name
+            };
+
+            // Notify clients
+            await this.SendPlaybackStatusUpdate(party);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SendPlaybackStatusUpdate(Party party)
+        {
+            await LoadFull(party);
+
+            var fullUpdate = new PlaybackStatusUpdate()
+            {
+                Uri = party.CurrentTrack.Uri,
+                Artist = party.CurrentTrack.Artist,
+                DurationMillis = party.CurrentTrack.DurationMillis,
+                Title = party.CurrentTrack.Title,
+                IsPlaying = party.CurrentTrack.IsPlaying,
+                DeviceId = party.Owner.CurrentDevice?.DeviceId,
+                DeviceName = party.Owner.CurrentDevice?.Name
+            };
+
+            var partialUpdate = new PlaybackStatusUpdate()
+            {
+                Uri = party.CurrentTrack.Uri,
+                Artist = party.CurrentTrack.Artist,
+                DurationMillis = party.CurrentTrack.DurationMillis,
+                Title = party.CurrentTrack.Title,
+                IsPlaying = party.CurrentTrack.IsPlaying
+            };
+
+            await PartyHub.SendPlaybackStatusUpdate(party, fullUpdate, partialUpdate);
         }
     }
 }

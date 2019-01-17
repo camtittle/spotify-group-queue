@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using api.Controllers.Models;
 using api.Hubs.Models;
 using api.Models;
+using Spotify.Models;
 
 namespace api.Services.Interfaces
 {
@@ -22,5 +23,7 @@ namespace api.Services.Interfaces
         Task<Party> LoadFull(Party party);
         Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request);
         Task RemoveQueueItem(User user, string queueItemId);
+        Task UpdatePlaybackState(Party party, PlaybackState state);
+        Task SendPlaybackStatusUpdate(Party party);
     }
 }

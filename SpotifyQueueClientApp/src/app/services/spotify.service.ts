@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiService } from './api.service';
-import { SpotifyAccessToken } from '../models/spotify-access-token.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { SpotifyDevice, SpotifyDevicesResponse } from '../models/spotify-device.model';
+import { SpotifyAccessToken } from '../models/spotify/spotify-access-token.model';
+import { HttpClient } from '@angular/common/http';
+import { SpotifyDevice, SpotifyDevicesResponse } from '../models/spotify/spotify-device.model';
+import { PlaybackService } from './playback.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,8 @@ export class SpotifyService {
   private expiry: Date;
 
   constructor(private httpClient: HttpClient,
-              private apiService: ApiService) {
+              private apiService: ApiService,
+              private playbackService: PlaybackService) {
     this.checkAuthorizationStatus();
   }
 
@@ -43,7 +45,7 @@ export class SpotifyService {
    * @param code Authorization code provided by Spotify during the auth flow
    */
   public async authorizeWithCode(code: string) {
-    const token = await this.getAccessTokenFromServer(code);
+    const token = await this.authorizeSpotifyWithServer(code);
     this.saveAccessToken(token);
   }
 
@@ -64,7 +66,7 @@ export class SpotifyService {
     return this.accessToken;
   }
 
-  private async getAccessTokenFromServer(authCode: string): Promise<SpotifyAccessToken> {
+  private async authorizeSpotifyWithServer(authCode: string): Promise<SpotifyAccessToken> {
     const response = await this.apiService.post<SpotifyAccessToken>('/spotify/authorize', {code: authCode}).toPromise();
 
     // Check required fields are present and save
@@ -94,7 +96,7 @@ export class SpotifyService {
     }
   }
 
-  private accessTokenIsValid(token: any): boolean {
+  private accessTokenIsValid(token: SpotifyAccessToken): boolean {
     // Check required fields are present and save
     if (!(token && token.accessToken && token.expiresIn)) {
       // TODO: display a message to user - prompt to retry?
@@ -150,6 +152,11 @@ export class SpotifyService {
     return response ? response.devices : [];
   }
 
+  public async getPlaybackState(): Promise<any> {
+    const response = await this.get<any>('/me/player');
+    return response;
+  }
+
   public async setPlaybackDevice(device: SpotifyDevice) {
     const body = {
       deviceName: device.name,
@@ -165,12 +172,5 @@ export class SpotifyService {
 
   private getUrl(endpoint: string) {
     return environment.spotify.baseApiUri + endpoint;
-  }
-
-  private async getHttpHeaders(): Promise<HttpHeaders> {
-    const token = await this.getAccessToken();
-    return new HttpHeaders({
-      'Authorization': 'Bearer ' + token
-    });
   }
 }

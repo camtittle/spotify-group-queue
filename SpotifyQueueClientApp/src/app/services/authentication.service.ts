@@ -43,6 +43,12 @@ export class AuthenticationService {
       );
   }
 
+  public isAdmin(): boolean {
+    const user = this.currentUser$.getValue();
+
+    return user ? user.currentParty.owner.id === user.id : false;
+  }
+
   private saveAccessToken(token: AccessToken) {
     sessionStorage.setItem('currentUser', JSON.stringify(token));
   }

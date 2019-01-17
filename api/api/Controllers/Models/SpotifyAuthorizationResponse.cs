@@ -1,6 +1,4 @@
-﻿using Spotify.Models;
-
-namespace api.Controllers.Models
+﻿namespace api.Controllers.Models
 {
     public class SpotifyAuthorizationResponse
     {
@@ -8,15 +6,9 @@ namespace api.Controllers.Models
 
         public int ExpiresIn { get; set; }
 
-        public SpotifyAuthorizationResponse(AuthorizationCodeTokenResponse response)
+        public SpotifyAuthorizationResponse(string accessToken, int expiresIn)
         {
-            AccessToken = response.AccessToken;
-            ExpiresIn = response.ExpiresIn;
-        }
-
-        public SpotifyAuthorizationResponse(string token, int expiresIn)
-        {
-            AccessToken = token;
+            AccessToken = accessToken;
             ExpiresIn = expiresIn;
         }
     }

@@ -3,11 +3,6 @@ using api.Controllers.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Options;
-using Microsoft.Extensions.Options;
-using Spotify.Interfaces;
-using Spotify.Models;
-using Spotify.Exceptions;
 
 namespace api.Controllers
 {
@@ -17,11 +12,13 @@ namespace api.Controllers
 
         private readonly ISpotifyService _spotifyService;
         private readonly IUserService _userService;
+        private readonly IPartyService _partyService;
 
-        public SpotifyController(ISpotifyService spotifyService, IUserService userService)
+        public SpotifyController(ISpotifyService spotifyService, IUserService userService, IPartyService partyService)
         {
             _spotifyService = spotifyService;
             _userService = userService;
+            _partyService = partyService;
         }
 
         [HttpPost("authorize")]
@@ -36,7 +33,19 @@ namespace api.Controllers
             var user = await _userService.GetFromClaims(User);
 
             // Attempt to exchange the code for an access token
-            var result = await _spotifyService.AuthorizeClient(user, request.Code);
+            var token = await _spotifyService.AuthorizeClient(user, request.Code);
+
+            if (user.IsOwner)
+            {
+                var playbackState = await _spotifyService.GetPlaybackState(user);
+
+                if (playbackState != null)
+                {
+                    await _partyService.UpdatePlaybackState(user.OwnedParty, playbackState);
+                }
+            }
+
+            var result = new SpotifyAuthorizationResponse(token.AccessToken, token.ExpiresIn);
 
             return Ok(result);
         }
@@ -52,7 +61,7 @@ namespace api.Controllers
                 return NoContent();
             }
 
-            var result = await _spotifyService.RefreshClientToken(user);
+            var result = await _spotifyService.GetUserAccessToken(user);
 
             return Ok(result);
         }

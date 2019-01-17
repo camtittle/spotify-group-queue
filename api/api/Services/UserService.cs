@@ -50,12 +50,22 @@ namespace api.Services
 
         public async Task<User> Find(string id)
         {
-            return await _context.Users.Where(u => u.Id == id).Include(u => u.CurrentParty).Include(u => u.OwnedParty).Include(u => u.PendingParty).FirstOrDefaultAsync();
+            return await _context.Users.Where(u => u.Id == id)
+                .Include(u => u.CurrentParty)
+                .Include(u => u.OwnedParty)
+                .Include(u => u.PendingParty)
+                .Include(u => u.CurrentDevice)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<User> FindByUsername(string username)
         {
-            return await _context.Users.Where(u => u.Username == username).Include(u => u.CurrentParty).Include(u => u.OwnedParty).Include(u => u.PendingParty).FirstOrDefaultAsync();
+            return await _context.Users.Where(u => u.Username == username)
+                .Include(u => u.CurrentParty)
+                .Include(u => u.OwnedParty)
+                .Include(u => u.PendingParty)
+                .Include(u => u.CurrentDevice)
+                .FirstOrDefaultAsync();
         }
 
         public async Task Update(User user)

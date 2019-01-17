@@ -1,4 +1,4 @@
-import { SpotifyTrack } from './spotify-track.model';
+import { SpotifyTrack } from './spotify/spotify-track.model';
 
 export interface TrackSearchResult {
   tracks: PagingObject<SpotifyTrack>;

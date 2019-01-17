@@ -15,7 +15,7 @@ namespace Spotify
     {
         private readonly ISpotifyTokenManager _spotifyTokenManager;
 
-        private const string SearchUrl = "https://api.spotify.com/v1/search";
+        private const string SearchEndpoint = "/search";
 
         private readonly SpotifySettings _settings;
 
@@ -40,7 +40,7 @@ namespace Spotify
                         { "type", "track" }
                     });
                     var queryString = content.ReadAsStringAsync().Result;
-                    var requestUrl = SearchUrl + "?" + queryString;
+                    var requestUrl = _settings.BaseApiUri + SearchEndpoint + "?" + queryString;
 
                     var response = await client.GetStringAsync(requestUrl);
 
@@ -94,6 +94,30 @@ namespace Spotify
                 catch (Exception e)
                 {
                     throw new SpotifyAuthenticationException("Spotify authorization code token request / refresh request was unsuccessful.", e);
+                }
+            }
+        }
+
+        /*
+         * Performs a GET request on behalf of an authorised user, using the given access token
+         */
+        public async Task<T> GetAsUser<T>(string endpoint, string accessToken)
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                var uri = _settings.BaseApiUri + endpoint;
+
+                try
+                {
+                    var response = await client.GetStringAsync(uri);
+
+                    return JsonConvert.DeserializeObject<T>(response);
+                }
+                catch (HttpRequestException e)
+                {
+                    return default(T);
                 }
             }
         }

@@ -38,13 +38,13 @@ namespace api.Hubs
             var party = _userService.GetParty(user);
 
             // Add user to a Group with members
-            Groups.AddToGroupAsync(Context.ConnectionId, party.Id);
+            await Groups.AddToGroupAsync(Context.ConnectionId, party.Id);
 
             // If the user is the owner of the party, add to an Admin Group
             var groupName = party.Id + ADMIN_GROUP_SUFFIX;
             if (user.IsOwner)
             {
-                Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             }
         }
 
@@ -53,11 +53,11 @@ namespace api.Hubs
             var user = await GetCurrentUser();
             var party = _userService.GetParty(user);
 
-            Groups.RemoveFromGroupAsync(Context.ConnectionId, party.Id);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, party.Id);
             if (user.IsOwner)
             {
                 var groupName = party.Id + ADMIN_GROUP_SUFFIX;
-                Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
             }
         }
 
@@ -110,7 +110,7 @@ namespace api.Hubs
             }
 
             // Notify pending member
-            Clients.User(pendingUserId).SendAsync("pendingMembershipResponse", accept);
+            await Clients.User(pendingUserId).SendAsync("pendingMembershipResponse", accept);
 
             // Notify all users of status update
             await SendPartyStatusUpdate(party);
@@ -178,9 +178,15 @@ namespace api.Hubs
             var fullModel = await _partyService.GetCurrentParty(party);
             var partialModel = await _partyService.GetCurrentParty(party, true);
 
-            Clients.Users(party.Members.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", fullModel);
-            Clients.Users(party.PendingMembers.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", partialModel);
-            Clients.User(party.Owner.Id).SendAsync("partyStatusUpdate", fullModel);
+            await Clients.Users(party.Members.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", fullModel);
+            await Clients.Users(party.PendingMembers.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", partialModel);
+            await Clients.User(party.Owner.Id).SendAsync("partyStatusUpdate", fullModel);
+        }
+
+        public static async Task SendPlaybackStatusUpdate(Party party, PlaybackStatusUpdate update, PlaybackStatusUpdate partialUpdate)
+        {
+            await _hubContext.Clients.Users(party.Members.Select(x => x.Id).ToList()).SendAsync("playbackStatusUpdate", update);
+            await _hubContext.Clients.User(party.Owner.Id).SendAsync("playbackStatusUpdate", partialUpdate);
         }
 
         public async Task<User> GetCurrentUser()
@@ -188,8 +194,6 @@ namespace api.Hubs
             var userId = Context.User.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
             return await _userService.Find(userId);
         }
-
         
-
     }
 }
