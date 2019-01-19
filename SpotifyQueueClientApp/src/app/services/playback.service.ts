@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { PlaybackState } from '../models/spotify/spotify-playback-state.model';
+import { PlaybackStatusUpdate } from '../models/playback-status-update.model';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class PlaybackService {
 
-  public state$ = new BehaviorSubject<PlaybackState>(null);
+  public state$ = new BehaviorSubject<PlaybackStatusUpdate>(null);
 
   constructor() { }
 }

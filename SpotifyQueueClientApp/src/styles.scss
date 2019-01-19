@@ -1,0 +1,55 @@
+/* You can add global styles to this file, and also import other style files */
+@import '~bootstrap/dist/css/bootstrap.min.css';
+
+body {
+  background-color: #191414;
+  color: white;
+}
+
+app-navigation-bar {
+  position: fixed;
+  width: 100%;
+  z-index: 9;
+}
+
+button.btn {
+  border-radius: 1px;
+}
+
+.btn.btn-spotify {
+  background-color: #1DB954;
+  color: white;
+}
+
+.btn.btn-spotify-white {
+  background-color: white;
+  color: #1DB954;
+  font-weight: 500;
+}
+
+.section-header {
+  .header-text {
+    font-weight: 500;
+  }
+
+  .header-button {
+    position: absolute;
+    right: 16px;
+  }
+}
+
+.list-group-flush .list-group-item, .list-item-padding {
+  padding: .375rem 16px;
+}
+
+.list-group-flush .list-group-item {
+  color: white;
+  background: none;
+  border: none;
+}
+
+.ic {
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-size: contain;
+}

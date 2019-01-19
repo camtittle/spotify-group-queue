@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Spotify.Exceptions;
 using Spotify.Interfaces;
 using Spotify.Models;
+using PlaybackState = Spotify.Models.PlaybackState;
 
 namespace api.Services
 {
@@ -44,7 +45,7 @@ namespace api.Services
                 // Attempt to exchange code for access token 
                 var result = await _spotifyClient.GetClientToken(code);
                 
-                UpdateUserTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
+                await UpdateUserTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
 
                 return new SpotifyAccessToken(result);
             }

@@ -1,0 +1,10 @@
+<div class="navigation-bar-container px-2 py-3 d-flex justify-content-center align-items-center">
+  <div *ngIf="back && back?.length > 0" (click)="onClickBackButton()" class="back-button d-flex align-items-center">
+    <div class="ic ic-left-chevron-white mr-1"></div>
+  </div>
+
+  <div class="title">
+    {{ title }}
+  </div>
+
+</div>

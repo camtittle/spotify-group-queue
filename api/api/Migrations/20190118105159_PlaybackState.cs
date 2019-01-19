@@ -2,7 +2,7 @@
 
 namespace api.Migrations
 {
-    public partial class PartyCurrentTrack : Migration
+    public partial class PlaybackState : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -16,6 +16,12 @@ namespace api.Migrations
                 table: "Users",
                 newName: "CurrentDevice_DeviceId");
 
+            migrationBuilder.AddColumn<int>(
+                name: "Playback",
+                table: "Parties",
+                nullable: false,
+                defaultValue: 0);
+
             migrationBuilder.AddColumn<string>(
                 name: "CurrentTrack_Artist",
                 table: "Parties",
@@ -26,12 +32,6 @@ namespace api.Migrations
                 table: "Parties",
                 nullable: false,
                 defaultValue: 0);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "CurrentTrack_IsPlaying",
-                table: "Parties",
-                nullable: false,
-                defaultValue: false);
 
             migrationBuilder.AddColumn<string>(
                 name: "CurrentTrack_Title",
@@ -47,15 +47,15 @@ namespace api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
+                name: "Playback",
+                table: "Parties");
+
+            migrationBuilder.DropColumn(
                 name: "CurrentTrack_Artist",
                 table: "Parties");
 
             migrationBuilder.DropColumn(
                 name: "CurrentTrack_DurationMillis",
-                table: "Parties");
-
-            migrationBuilder.DropColumn(
-                name: "CurrentTrack_IsPlaying",
                 table: "Parties");
 
             migrationBuilder.DropColumn(

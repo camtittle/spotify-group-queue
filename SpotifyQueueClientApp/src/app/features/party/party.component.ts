@@ -1,21 +1,34 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DoCheck, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { PartyHubService } from '../../services/party-hub.service';
 import { SpotifyService } from '../../services/spotify.service';
-import { distinctUntilChanged } from 'rxjs/operators';
 import { AuthenticationService } from '../../services';
-import { AccessToken } from '../../models';
-import { PlaybackState } from '../../models/spotify/spotify-playback-state.model';
+import { AccessToken, CurrentParty } from '../../models';
+import { Playback, PlaybackStatusUpdate } from '../../models/playback-status-update.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-party',
   templateUrl: './party.component.html',
   styleUrls: ['./party.component.scss']
 })
-export class PartyComponent implements OnInit {
+export class PartyComponent implements OnInit, OnDestroy, DoCheck {
+
+  @ViewChild('playbackOverlay') playbackOverlay: ElementRef;
 
   public currentUser: AccessToken;
+  public currentParty: CurrentParty;
+  public playbackState: PlaybackStatusUpdate;
+  public connectedToSpotify: boolean;
 
-  public playbackState: PlaybackState;
+  public routerMarginBottom: number;
+
+  private currentUserSub: Subscription;
+  private currentPartySub: Subscription;
+  private playbackStateSub: Subscription;
+  private spotifySub: Subscription;
+
+  // Make Playback enum visible in template
+  public Playback = Playback;
 
   // partyHubService injected in order to ensure it is initialised for all child components
   constructor(private partyHubService: PartyHubService,
@@ -23,18 +36,41 @@ export class PartyComponent implements OnInit {
               private authService: AuthenticationService) { }
 
   ngOnInit() {
+    this.currentUserSub = this.authService.currentUser$.subscribe(user => this.currentUser = user);
 
-    this.spotifyService.authorized$.pipe(distinctUntilChanged()).subscribe(async authorized => {
-      console.log('spotify authorized: ' + authorized);
-    });
+    this.currentPartySub = this.partyHubService.currentParty$.subscribe(party => this.currentParty = party);
 
-    this.authService.currentUser$.subscribe(user => this.currentUser = user);
+    this.playbackStateSub = this.partyHubService.playbackState$.subscribe(state => this.playbackState = state);
 
-    this.partyHubService.playbackState$.subscribe(state => {
-      console.log('STATE MADE IT TO PARTY COMPONENT');
-      console.log(state);
-      this.playbackState = state;
-    });
+    this.spotifySub = this.spotifyService.authorized$.subscribe(authorized => this.connectedToSpotify = authorized);
+  }
+
+  ngOnDestroy() {
+    if (this.currentUserSub) {
+      this.currentUserSub.unsubscribe();
+    }
+
+    if (this.currentPartySub) {
+      this.currentPartySub.unsubscribe();
+    }
+
+    if (this.playbackStateSub) {
+      this.playbackStateSub.unsubscribe();
+    }
+
+    if (this.spotifySub) {
+      this.spotifySub.unsubscribe();
+    }
+  }
+
+  ngDoCheck() {
+    if (this.playbackOverlay) {
+      this.routerMarginBottom = this.playbackOverlay.nativeElement.clientHeight;
+    }
+  }
+
+  get isOwner(): boolean {
+    return this.currentUser.id === this.currentParty.owner.id;
   }
 
 

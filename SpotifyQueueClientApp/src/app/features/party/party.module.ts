@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from '../../app-routing.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { NotificationComponent } from './notification/notification.component';
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import { NotificationComponent } from './notification/notification.component';
     FormsModule,
     AppRoutingModule,
     BsDropdownModule,
-    PipesModule
+    PipesModule,
+    SharedModule
   ],
   declarations: [
     PartyComponent,

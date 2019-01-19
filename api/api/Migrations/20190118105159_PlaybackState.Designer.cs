@@ -10,8 +10,8 @@ using api.Models;
 namespace api.Migrations
 {
     [DbContext(typeof(apiContext))]
-    [Migration("20190117122019_PartyCurrentTrack")]
-    partial class PartyCurrentTrack
+    [Migration("20190118105159_PlaybackState")]
+    partial class PlaybackState
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -27,6 +27,8 @@ namespace api.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Name");
+
+                    b.Property<int>("Playback");
 
                     b.HasKey("Id");
 
@@ -116,8 +118,6 @@ namespace api.Migrations
                             b1.Property<string>("Artist");
 
                             b1.Property<int>("DurationMillis");
-
-                            b1.Property<bool>("IsPlaying");
 
                             b1.Property<string>("Title");
 

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Creator: CorelDRAW X6 -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xml:space="preserve"
+   width="2.36111in"
+   height="2.36111in"
+   version="1.1"
+   style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+   viewBox="0 0 2361 2361"
+   id="svg10"
+   sodipodi:docname="spotify-icon-white.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"><metadata
+   id="metadata14"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="716"
+   inkscape:window-height="480"
+   id="namedview12"
+   showgrid="false"
+   inkscape:zoom="1.041177"
+   inkscape:cx="113.33328"
+   inkscape:cy="113.33328"
+   inkscape:window-x="592"
+   inkscape:window-y="188"
+   inkscape:window-maximized="0"
+   inkscape:current-layer="Layer_x0020_1" />
+ <defs
+   id="defs4">
+  <style
+   type="text/css"
+   id="style2">
+   <![CDATA[
+    .fil0 {fill:#FEFEFE;fill-rule:nonzero}
+   ]]>
+  </style>
+ </defs>
+ <g
+   id="Layer_x0020_1">
+  <metadata
+   id="CorelCorpID_0Corel-Layer" />
+  <path
+   class="fil0"
+   d="M1869 1048c-375,-223 -993,-243 -1351,-135 -57,17 -118,-15 -136,-72 -17,-58 15,-118 73,-136 411,-125 1094,-101 1525,156 52,31 69,97 38,149 -31,52 -97,69 -149,38zm-12 330c-26,43 -82,56 -125,30 -313,-192 -789,-248 -1159,-136 -48,14 -99,-13 -113,-60 -14,-48 13,-99 60,-113 422,-128 948,-66 1307,155 43,26 56,82 30,125zm-142 317c-21,34 -66,45 -100,24 -273,-167 -617,-205 -1022,-112 -39,9 -78,-16 -87,-55 -9,-39 15,-78 55,-87 443,-101 823,-58 1130,130 34,21 45,66 24,100zm-533 -1678c-642,0 -1163,521 -1163,1163 0,642 521,1163 1163,1163 642,0 1163,-521 1163,-1163 0,-642 -521,-1163 -1163,-1163z"
+   id="path7" />
+ </g>
+</svg>

@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { SignalRConnectionService } from './signal-r-connection-service';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
-import { PlaybackState } from '../models/spotify/spotify-playback-state.model';
+import { PlaybackStatusUpdate } from '../models/playback-status-update.model';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ import { PlaybackState } from '../models/spotify/spotify-playback-state.model';
 export class PartyHubService {
 
   public currentParty$ = new BehaviorSubject<CurrentParty>(null);
-  public playbackState$ = new BehaviorSubject<PlaybackState>(null);
+  public playbackState$ = new BehaviorSubject<PlaybackStatusUpdate>(null);
 
   private currentUser: AccessToken;
 
@@ -27,7 +27,8 @@ export class PartyHubService {
 
     this.signalRConnectionService.connected$.subscribe(async connected => {
       if (connected) {
-        const state = await this.signalRConnectionService.invoke<PlaybackState>('getCurrentPlaybackState');
+        const state = await this.signalRConnectionService.invoke<PlaybackStatusUpdate>('getCurrentPlaybackState');
+        console.log(state);
         this.playbackState$.next(state);
       }
     });
@@ -41,7 +42,7 @@ export class PartyHubService {
       this.currentParty$.next(party);
     });
 
-    this.signalRConnectionService.observe<PlaybackState>('playbackStatusUpdate').subscribe(state => {
+    this.signalRConnectionService.observe<PlaybackStatusUpdate>('playbackStatusUpdate').subscribe(state => {
       this.playbackState$.next(state);
     });
   }

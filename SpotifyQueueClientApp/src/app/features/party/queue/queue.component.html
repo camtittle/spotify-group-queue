@@ -1,64 +1,76 @@
-<div *ngIf="loading" class="loading-spinner">Loading....</div>
-<div *ngIf="!loading" class="queue-container px-2">
+<app-navigation-bar #navigationBar
+                    [title]="currentParty ? currentParty.name : 'My Party'"></app-navigation-bar>
 
-  <div class="membership-status">
-    <div *ngIf="isPendingMember()">
-      Waiting for {{currentParty.owner.username}} to respond to your request to join {{currentParty.name}}
-    </div>
-    <div *ngIf="isMember()">
-      You are a member of {{currentParty.name}}
-    </div>
-    <div *ngIf="isOwner()">
-      You are the owner of {{currentParty.name}}
-    </div>
-    <div *ngIf="!currentParty">
-      Please join a party
-    </div>
-  </div>
+<div class="queue-container"
+     [ngStyle]="{ 'paddingTop': containerPaddingTop + 'px'}">
 
-  <ng-container *ngIf="currentParty">
+  <ng-container *ngIf="loading" class="loading-spinner">
+    Loading....
+  </ng-container>
 
-    <button *ngIf="!authorizedWithSpotify" (click)="onClickAuthorizeSpotify()" type="button" class="btn btn-success">Connect to Spotify</button>
+  <ng-container *ngIf="!loading && currentParty">
 
-    <div *ngIf="authorizedWithSpotify && isOwner()" class="spotify-settings">
-      <div><b>Spotify Settings</b></div>
-      <div class="btn-group" dropdown>
-        <button id="button-basic" dropdownToggle type="button" class="btn btn-secondary dropdown-toggle" aria-controls="dropdown-basic">
-          Playback device <span class="caret"></span>
-        </button>
-        <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-basic">
-          <li *ngFor="let device of spotifyDevices" role="menuitem"><span class="dropdown-item" (click)="onClickDeviceItem(device)">{{ device.name }}</span></li>
-        </ul>
+    <div *ngIf="isOwner() && !authorizedWithSpotify" class="connect-spotify-container w-100 d-flex flex-column align-items-center p-2">
+      <div class="mb-2">Connect to Spotify to start playing</div>
+      <button (click)="onClickAuthorizeSpotify()" type="button" class="btn btn-spotify-white d-flex align-items-center">
+        <span class="ic spotify-icon-green mr-2"></span>
+        Connect to Spotify
+      </button>
+    </div>
+
+    <!--<div *ngIf="authorizedWithSpotify && isOwner()" class="spotify-settings">-->
+      <!--<div><b>Spotify Settings</b></div>-->
+      <!--<div class="btn-group" dropdown>-->
+        <!--<button id="button-basic" dropdownToggle type="button" class="btn btn-secondary dropdown-toggle" aria-controls="dropdown-basic">-->
+          <!--Playback device <span class="caret"></span>-->
+        <!--</button>-->
+        <!--<ul id="dropdown-basic" *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-basic">-->
+          <!--<li *ngFor="let device of spotifyDevices" role="menuitem"><span class="dropdown-item" (click)="onClickDeviceItem(device)">{{ device.name }}</span></li>-->
+        <!--</ul>-->
+      <!--</div>-->
+    <!--</div>-->
+
+    <div class="main-container pt-1">
+
+      <ul class="queue list-group list-group-flush">
+        <li class="list-group-item list-item-navigation d-flex justify-content-between align-items-center">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>Members ({{ currentParty.members.length + 1 }})</div>
+          </div>
+          <div class="ic user-green"></div>
+          <!--<div class="ic-right-chevron-white"></div>-->
+        </li>
+      </ul>
+
+      <!--<ul class="list-group list-group-flush mt-2">-->
+      <!--<li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">-->
+      <!--{{ currentParty.owner.username }}-->
+      <!--<span class="badge badge-primary badge-pill">Owner</span>-->
+      <!--</li>-->
+      <!--<li *ngFor="let member of currentParty?.members" class="list-group-item">-->
+      <!--{{ member.username }}-->
+      <!--</li>-->
+      <!--<li *ngFor="let pendingMember of currentParty?.pendingMembers" class="list-group-item list-group-item-light">-->
+      <!--{{ pendingMember.username }}-->
+      <!--</li>-->
+      <!--</ul>-->
+
+
+      <div class="section-header d-flex list-item-padding pb-2 justify-content-center align-items-center">
+        <div class="header-text">Song Queue</div>
+        <div class="ic plus-green-circle header-button" (click)="onClickAddTrack()"></div>
       </div>
+      <ul class="queue list-group list-group-flush">
+        <li *ngFor="let queueItem of currentParty?.queueItems" class="track list-group-item">
+          <div class="track-title">{{ queueItem.title }}</div>
+          <div class="track-subheading d-flex justify-content-between">
+            <span>{{ queueItem.artist }}</span>
+            <span class="remove-track" (click)="onClickRemoveTrack(queueItem)">Remove</span>
+          </div>
+        </li>
+      </ul>
+
     </div>
-
-    <ul class="list-group mt-2">
-      <li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
-        {{ currentParty.owner.username }}
-        <span class="badge badge-primary badge-pill">Owner</span>
-      </li>
-      <li *ngFor="let member of currentParty?.members" class="list-group-item">
-        {{ member.username }}
-      </li>
-      <li *ngFor="let pendingMember of currentParty?.pendingMembers" class="list-group-item list-group-item-light">
-        {{ pendingMember.username }}
-      </li>
-    </ul>
-
-
-    <ul class="queue list-group mt-2">
-      <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
-        Song Queue
-        <button type="button" class="btn btn-sm btn-success" (click)="onClickAddTrack()">Add track</button>
-      </li>
-      <li *ngFor="let queueItem of currentParty?.queueItems" class="track list-group-item">
-        <div class="track-title">{{ queueItem.title }}</div>
-        <div class="track-subheading d-flex justify-content-between">
-          <span>{{ queueItem.artist }}</span>
-          <span class="remove-track" (click)="onClickRemoveTrack(queueItem)">Remove</span>
-        </div>
-      </li>
-    </ul>
   </ng-container>
 </div>
 

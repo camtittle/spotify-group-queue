@@ -19,8 +19,8 @@ export class CreateComponent implements OnInit {
   }
 
   public onCreateClick() {
-    this.partyService.create(this.nameInput).subscribe(party => {
-      this.router.navigate(['queue']);
+    this.partyService.create(this.nameInput).subscribe(async party => {
+      await this.router.navigate(['party', 'queue']);
     }, err => this.creationError = err);
   }
 

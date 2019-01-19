@@ -1,9 +1,8 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { AuthenticationService, SignalRConnectionService } from '../../../services/index';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AuthenticationService } from '../../../services/index';
 import { from, fromEvent, Observable } from 'rxjs';
 import { distinctUntilChanged, filter, map, switchMap, tap, throttleTime } from 'rxjs/operators';
 import { AccessToken, QueueTrack, TrackSearchResult, SpotifyTrack } from '../../../models/index';
-import { ActivatedRoute } from '@angular/router';
 import { PartyHubService } from '../../../services/party-hub.service';
 
 @Component({
@@ -11,17 +10,21 @@ import { PartyHubService } from '../../../services/party-hub.service';
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss']
 })
-export class SearchComponent implements OnInit {
+export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
 
+  @ViewChild('inputContainer',  {read: ElementRef}) inputContainer: ElementRef;
   @ViewChild('searchInput') searchInput: ElementRef;
 
   public searchInputValue: string;
   public results: SpotifyTrack[];
   private currentUser: AccessToken;
   private typeahead: Observable<SpotifyTrack[]>;
+  public containerPaddingTop: number;
+
 
   constructor(private authService: AuthenticationService,
-              private partyHubService: PartyHubService) {
+              private partyHubService: PartyHubService,
+              private cdRef: ChangeDetectorRef) {
   }
 
   async ngOnInit() {
@@ -44,6 +47,16 @@ export class SearchComponent implements OnInit {
       this.currentUser = user;
     });
 
+  }
+
+  ngOnDestroy() {
+
+  }
+
+  ngAfterViewInit() {
+    this.containerPaddingTop = this.inputContainer.nativeElement.clientHeight;
+    this.searchInput.nativeElement.focus();
+    this.cdRef.detectChanges();
   }
 
   private searchSpotify(query: string): Observable<SpotifyTrack[]> {

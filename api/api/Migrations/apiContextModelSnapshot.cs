@@ -26,6 +26,8 @@ namespace api.Migrations
 
                     b.Property<string>("Name");
 
+                    b.Property<int>("Playback");
+
                     b.HasKey("Id");
 
                     b.ToTable("Parties");
@@ -114,8 +116,6 @@ namespace api.Migrations
                             b1.Property<string>("Artist");
 
                             b1.Property<int>("DurationMillis");
-
-                            b1.Property<bool>("IsPlaying");
 
                             b1.Property<string>("Title");
 

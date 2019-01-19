@@ -6,10 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20190117122019_PartyCurrentTrack.cs" />
+    <Compile Remove="Migrations\20190117122019_PartyCurrentTrack.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Enums\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

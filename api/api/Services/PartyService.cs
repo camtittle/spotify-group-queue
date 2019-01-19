@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Controllers.Models;
+using api.Enums;
 using api.Exceptions;
 using api.Hubs;
 using api.Hubs.Models;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spotify.Models;
 using SQLitePCL;
+using PlaybackState = Spotify.Models.PlaybackState;
 
 namespace api.Services
 {
@@ -54,7 +56,9 @@ namespace api.Services
                 Members = new List<User>(),
                 PendingMembers = new List<User>(),
                 Owner = owner,
-                QueueItems = new List<QueueItem>()
+                QueueItems = new List<QueueItem>(),
+                Playback = Playback.NOT_ACTIVE,
+                CurrentTrack = new Models.Track()
             };
             _context.Parties.Add(party);
             await _context.SaveChangesAsync();
@@ -272,9 +276,13 @@ namespace api.Services
                 Uri = state.Item.Uri,
                 Title = state.Item.Name,
                 Artist = state.Item.Artists[0].Name,
-                DurationMillis = state.Item.DurationMillis,
-                IsPlaying = state.IsPlaying
+                DurationMillis = state.Item.DurationMillis
             };
+
+            if (party.Playback != Playback.NOT_ACTIVE)
+            {
+                party.Playback = state.IsPlaying ? Playback.PLAYING : Playback.PAUSED;
+            }
 
             party.Owner.CurrentDevice = new SpotifyDevice()
             {
@@ -295,14 +303,14 @@ namespace api.Services
                 Uri = party.CurrentTrack.Uri,
                 Artist = party.CurrentTrack.Artist,
                 DurationMillis = party.CurrentTrack.DurationMillis,
-                Title = party.CurrentTrack.Title,
-                IsPlaying = party.CurrentTrack.IsPlaying
+                Title = party.CurrentTrack.Title
             };
 
             if (includeAdminFields)
             {
                 update.DeviceId = party.Owner.CurrentDevice?.DeviceId;
                 update.DeviceName = party.Owner.CurrentDevice?.Name;
+                update.PlaybackState = party.Playback;
             }
 
             return update;

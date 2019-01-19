@@ -1,11 +1,16 @@
 .queue-container {
 
+  .connect-spotify-container {
+    background-color: #1DB954;
+  }
+
   .queue {
 
     .track {
 
       .track-subheading {
         font-size: 12px;
+        color: #bbbbbb;
       }
 
       &:not(.expanded) {
@@ -22,4 +27,29 @@
       }
     }
   }
+
+  .ic.right-chevron-white {
+    width: 20px;
+    height: 20px;
+    background-image: url("../../../../assets/right-chevron-white.svg");
+  }
+
+  .ic.user-green {
+    width: 20px;
+    height: 20px;
+    background-image: url("../../../../assets/user-green.svg");
+  }
+
+  .ic.plus-green-circle {
+    width: 20px;
+    height: 20px;
+    background-image: url("../../../../assets/plus-green-circle.svg");
+  }
+
+  .ic.spotify-icon-green {
+    width: 20px;
+    height: 20px;
+    background-image: url("../../../../assets/spotify-icon-green.svg");
+  }
+
 }

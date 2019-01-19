@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AuthenticationService, PartyService, SignalRConnectionService } from '../../../services/index';
 import { BsModalService } from 'ngx-bootstrap';
 import { PendingMemberRequestComponent } from '../../../modals/pending-member-request/pending-member-request.component';
@@ -14,7 +14,9 @@ import { distinctUntilChanged } from 'rxjs/operators';
   templateUrl: './queue.component.html',
   styleUrls: ['./queue.component.scss']
 })
-export class QueueComponent implements OnInit, OnDestroy {
+export class QueueComponent implements OnInit, OnDestroy, AfterViewInit {
+
+  @ViewChild('navigationBar',  {read: ElementRef}) navigationBar: ElementRef;
 
   public loading = true;
 
@@ -23,13 +25,16 @@ export class QueueComponent implements OnInit, OnDestroy {
   public authorizedWithSpotify: boolean;
   public spotifyDevices: SpotifyDevice[];
 
+  public containerPaddingTop: number;
+
   constructor(private partyService: PartyService,
               private modalService: BsModalService,
               private authService: AuthenticationService,
               private partyHubService: PartyHubService,
               private spotifyService: SpotifyService,
               private route: ActivatedRoute,
-              private router: Router) { }
+              private router: Router,
+              private cdRef: ChangeDetectorRef) { }
 
   async ngOnInit() {
     this.authService.currentUser$.subscribe(user => this.currentUser = user);
@@ -59,6 +64,11 @@ export class QueueComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
 
+  }
+
+  ngAfterViewInit() {
+    this.containerPaddingTop = this.navigationBar.nativeElement.clientHeight;
+    this.cdRef.detectChanges();
   }
 
   /**

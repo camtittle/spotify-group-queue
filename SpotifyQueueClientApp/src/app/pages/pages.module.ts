@@ -11,6 +11,7 @@ import { SearchComponent } from '../features/party/search/search.component';
 import { PipesModule } from '../pipes/pipes.module';
 import { SpotifyCallbackComponent } from './spotify-callback/spotify-callback.component';
 import { BsDropdownModule } from 'ngx-bootstrap';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   imports: [
@@ -18,6 +19,7 @@ import { BsDropdownModule } from 'ngx-bootstrap';
     RouterModule,
     FormsModule,
     PipesModule,
+    SharedModule
   ],
   declarations: [
     IndexComponent,

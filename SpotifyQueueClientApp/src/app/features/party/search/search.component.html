@@ -1,22 +1,36 @@
-<div class="search-container">
-  <h3>Search for tracks</h3>
+<!--<app-navigation-bar #searchContainer-->
+                    <!--[back]="['party', 'queue']"-->
+                    <!--title="Search"></app-navigation-bar>-->
 
-  <div class="form-group mx-2">
-    <input #searchInput
-           [(ngModel)]="searchInputValue"
-           type="text" class="form-control" id="searchInput"
-           placeholder="Search for tracks...">
+<div class="search-container">
+
+  <div #inputContainer class="input-container mb-2 py-2">
+    <div class="form-group mb-0">
+      <input #searchInput
+             [(ngModel)]="searchInputValue"
+             type="text" class="form-control" id="searchInput"
+             placeholder="Search for tracks..."
+             [autofocus]="true"
+             autocomplete="off">
+    </div>
   </div>
 
-  <ul *ngIf="results" class="results list-group list-group-flush">
-    <button *ngFor="let track of results"
-            class="track list-group-item list-group-item-action"
-            (click)="onTrackClick(track)">
-      <div>{{ track.name }}</div>
-      <div class="track-subheading d-flex justify-content-between">
-        {{ track.artists | joinArtistNames }}
-        <span>{{ track.duration_ms | formatMillisDuration }}</span>
-      </div>
-    </button>
-  </ul>
+  <div class="results-container" *ngIf="results"
+       [ngStyle]="{ 'paddingTop': containerPaddingTop + 'px'}">
+    <div class="section-header d-flex list-item-padding pb-2 justify-content-center align-items-center">
+      <div class="header-text">Tracks</div>
+    </div>
+
+    <ul class="results list-group list-group-flush">
+      <button *ngFor="let track of results"
+              class="track list-group-item list-group-item-action"
+              (click)="onTrackClick(track)">
+        <div>{{ track.name }}</div>
+        <div class="track-subheading d-flex justify-content-between">
+          {{ track.artists | joinArtistNames }}
+          <span>{{ track.duration_ms | formatMillisDuration }}</span>
+        </div>
+      </button>
+    </ul>
+  </div>
 </div>

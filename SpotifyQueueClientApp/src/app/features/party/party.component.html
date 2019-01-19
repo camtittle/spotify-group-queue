@@ -1,22 +1,27 @@
 <div class="party-container">
-  <h3>Party Component</h3>
-  <router-outlet></router-outlet>
+  <div class="router-container" [ngStyle]="{'margin-bottom': routerMarginBottom + 'px'}">
+    <router-outlet></router-outlet>
+  </div>
 
-  <div class="playback-overlay">
+  <div #playbackOverlay *ngIf="isOwner && connectedToSpotify || playbackState?.playbackState != Playback.NOT_ACTIVE" class="playback-overlay">
 
-    <div *ngIf="currentUser.isOwner" class="playback-controls">
-
+    <div *ngIf="currentUser.id === currentParty.owner.id" class="playback-controls mb-2">
+      <div *ngIf="playbackState?.playbackState === Playback.NOT_ACTIVE" class="activate-playback-controls d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center"><span class="ic-play-button mr-2"></span>Play Queue</button>
+      </div>
+      <!--<div class="play-control ic-play-button"></div>-->
     </div>
 
-    <div *ngIf="playbackState" class="current-playback">
+    <div *ngIf="playbackState && playbackState?.playbackState !== Playback.NOT_ACTIVE" class="current-playback">
       <div class="current-track">
-        <span class="mr-2 title">{{ playbackState?.title }}</span>
+        <span class="mr-2 title">{{ playbackState.title }}</span>
         •
-        <span class="ml-2 artist">{{ playbackState?.artist }}</span>
+        <span class="ml-2 artist">{{ playbackState.artist }}</span>
       </div>
-      <div *ngIf="playbackState.deviceName" class="device-info">
-        <div class="device-name">♫ Playing on {{ playbackState?.deviceName }}</div>
-      </div>
+    </div>
+
+    <div *ngIf="playbackState?.deviceName" class="device-info">
+      <div class="device-name">♫ Connected to {{ playbackState.deviceName }}</div>
     </div>
 
   </div>

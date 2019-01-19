@@ -13,7 +13,5 @@ namespace api.Models
         public string Artist { get; set; }
 
         public int DurationMillis { get; set; }
-
-        public bool IsPlaying { get; set; }
     }
 }

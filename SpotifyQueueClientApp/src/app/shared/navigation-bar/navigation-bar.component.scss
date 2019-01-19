@@ -1,0 +1,21 @@
+.navigation-bar-container {
+
+  background-color: #2f2f2f;
+
+  .ic.ic-left-chevron-white {
+    width: 18px;
+    height: 18px;
+    background-image: url("../../../assets/left-chevron-white.svg");
+    cursor: pointer;
+  }
+
+  .back-button {
+    position: absolute;
+    left: 0.5rem;
+  }
+
+  .title {
+    font-weight: 500;
+  }
+
+}

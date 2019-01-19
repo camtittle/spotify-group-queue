@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using api.Enums;
 
 namespace api.Models
 {
@@ -21,5 +22,7 @@ namespace api.Models
         public List<QueueItem> QueueItems { get; set; }
 
         public Track CurrentTrack { get; set; }
+
+        public Playback Playback { get; set; }
     }
 }

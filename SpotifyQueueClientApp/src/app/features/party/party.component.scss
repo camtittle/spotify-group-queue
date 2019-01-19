@@ -3,22 +3,35 @@
   .playback-overlay {
     position: fixed;
     bottom: 0;
-
-    background-color: #555555;
+    background-color: #3f3f3f;
     color: #dddddd;
-
     width: 100%;
     text-align: center;
     padding: 8px 4px;
 
-    .title {
-      color: white;
+    .current-track {
+      .title {
+        color: white;
+      }
     }
+
+
 
     .device-info {
       font-size: 12px;
       color: greenyellow;
     }
 
+    .playback-controls {
+
+
+    }
+  }
+
+  .ic.ic-play-button {
+    width: 18px;
+    height: 18px;
+    background-image: url("../../../assets/play-button.svg");
+    cursor: pointer;
   }
 }

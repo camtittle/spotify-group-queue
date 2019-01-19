@@ -11,11 +11,12 @@ import { ModalModule } from 'ngx-bootstrap/modal';
 import { PipesModule } from './pipes/pipes.module';
 import { BsDropdownModule } from 'ngx-bootstrap';
 import { PartyModule } from './features/party/party.module';
+import { SharedModule } from './shared/shared.module';
 
 
 @NgModule({
   declarations: [
-    AppComponent,
+    AppComponent
   ],
   imports: [
     BrowserModule,
@@ -26,7 +27,8 @@ import { PartyModule } from './features/party/party.module';
     BsDropdownModule.forRoot(),
     ModalsModule,
     PipesModule,
-    PartyModule
+    PartyModule,
+    SharedModule
   ],
   exports: [
   ],

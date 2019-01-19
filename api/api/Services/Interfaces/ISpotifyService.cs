@@ -2,6 +2,7 @@
 using api.Controllers.Models;
 using api.Models;
 using Spotify.Models;
+using PlaybackState = Spotify.Models.PlaybackState;
 
 namespace api.Services.Interfaces
 {
