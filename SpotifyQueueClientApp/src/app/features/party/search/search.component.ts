@@ -1,30 +1,33 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AuthenticationService } from '../../../services/index';
+import { AuthenticationService } from '../../../services';
 import { from, fromEvent, Observable } from 'rxjs';
 import { distinctUntilChanged, filter, map, switchMap, tap, throttleTime } from 'rxjs/operators';
-import { AccessToken, QueueTrack, TrackSearchResult, SpotifyTrack } from '../../../models/index';
+import { QueueTrack, TrackSearchResult, SpotifyTrack } from '../../../models';
 import { PartyHubService } from '../../../services/party-hub.service';
+import { Router } from '@angular/router';
+import { BasePartyScreen } from '../base-party-screen';
+import { SpotifyService } from '../../../services/spotify.service';
 
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss']
 })
-export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
+export class SearchComponent extends BasePartyScreen implements OnInit, OnDestroy, AfterViewInit {
 
-  @ViewChild('inputContainer',  {read: ElementRef}) inputContainer: ElementRef;
   @ViewChild('searchInput') searchInput: ElementRef;
 
   public searchInputValue: string;
   public results: SpotifyTrack[];
-  private currentUser: AccessToken;
+
   private typeahead: Observable<SpotifyTrack[]>;
-  public containerPaddingTop: number;
 
-
-  constructor(private authService: AuthenticationService,
-              private partyHubService: PartyHubService,
-              private cdRef: ChangeDetectorRef) {
+  constructor(protected authService: AuthenticationService,
+              protected partyHubService: PartyHubService,
+              protected spotifyService: SpotifyService,
+              protected router: Router,
+              protected cdRef: ChangeDetectorRef) {
+    super(partyHubService, authService, spotifyService, router, cdRef);
   }
 
   async ngOnInit() {
@@ -41,22 +44,17 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.typeahead.subscribe(result => {
       this.results = result;
     });
-
-    // Access token subscription
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-    });
-
   }
 
   ngOnDestroy() {
-
   }
 
   ngAfterViewInit() {
-    this.containerPaddingTop = this.inputContainer.nativeElement.clientHeight;
+    super.ngAfterViewInit();
     this.searchInput.nativeElement.focus();
-    this.cdRef.detectChanges();
+  }
+
+  protected onSpotifyAuthorization() {
   }
 
   private searchSpotify(query: string): Observable<SpotifyTrack[]> {

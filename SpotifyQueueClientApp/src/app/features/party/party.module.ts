@@ -9,6 +9,8 @@ import { AppRoutingModule } from '../../app-routing.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { NotificationComponent } from './notification/notification.component';
 import { SharedModule } from '../../shared/shared.module';
+import { MembersComponent } from './members/members.component';
+import { DevicesComponent } from './devices/devices.component';
 
 @NgModule({
   imports: [
@@ -23,7 +25,9 @@ import { SharedModule } from '../../shared/shared.module';
     PartyComponent,
     QueueComponent,
     SearchComponent,
-    NotificationComponent
+    NotificationComponent,
+    MembersComponent,
+    DevicesComponent
   ],
   exports: [
     PartyComponent

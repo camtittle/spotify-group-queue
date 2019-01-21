@@ -21,15 +21,17 @@ namespace api.Hubs
         private readonly IUserService _userService;
         private readonly IPartyService _partyService;
         private readonly ISpotifyClient _spotifyClient;
+        private readonly ISpotifyService _spotifyService;
 
         private static readonly string ADMIN_GROUP_SUFFIX = "ADMIN";
 
-        public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService, ISpotifyClient spotifyClient)
+        public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService, ISpotifyClient spotifyClient, ISpotifyService spotifyService)
         {
             _hubContext = hubContext;
             _userService = userService;
             _partyService = partyService;
             _spotifyClient = spotifyClient;
+            _spotifyService = spotifyService;
         }
 
         public override async Task OnConnectedAsync()
@@ -77,6 +79,23 @@ namespace api.Hubs
             var user = await _userService.GetFromClaims(Context.User);
 
             var party = _userService.GetParty(user);
+
+            if (party == null)
+            {
+                throw new PartyHubException("Cannot get playback state - not member of a party");
+            }
+
+            if (party.Owner.SpotifyRefreshToken == null)
+            {
+                throw new PartyHubException("Cannot get playback state - Party not connected to Spotify");
+            }
+
+            party = await _partyService.LoadFull(party);
+
+            // Get latest playback state from Spotify
+            var status = await _spotifyService.GetPlaybackState(party.Owner);
+
+            await _partyService.UpdatePlaybackState(party, status);
 
             return _partyService.GetPlaybackStatusUpdate(party, user.IsOwner);
         }

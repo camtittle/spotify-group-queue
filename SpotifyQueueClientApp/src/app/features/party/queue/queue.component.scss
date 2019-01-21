@@ -8,11 +8,6 @@
 
     .track {
 
-      .track-subheading {
-        font-size: 12px;
-        color: #bbbbbb;
-      }
-
       &:not(.expanded) {
         .track-title {
           white-space: nowrap;

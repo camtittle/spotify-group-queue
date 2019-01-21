@@ -6,8 +6,9 @@ body {
   color: white;
 }
 
-app-navigation-bar {
+.fixed-bar-top {
   position: fixed;
+  top: 0;
   width: 100%;
   z-index: 9;
 }
@@ -40,6 +41,11 @@ button.btn {
 
 .list-group-flush .list-group-item, .list-item-padding {
   padding: .375rem 16px;
+
+  .subheading {
+    font-size: 12px;
+    color: #bbbbbb;
+  }
 }
 
 .list-group-flush .list-group-item {
@@ -48,8 +54,32 @@ button.btn {
   border: none;
 }
 
+.list-group-flush .list-group-item.list-group-item-action {
+  transition: color 0.15s;
+}
+
+.list-group-flush .list-group-item.list-group-item-action:hover {
+  color: #9c9c9c;
+}
+
 .ic {
   display: inline-block;
   background-repeat: no-repeat;
   background-size: contain;
 }
+
+.ic.ic-left-chevron-white {
+  width: 18px;
+  height: 18px;
+  background-image: url("assets/left-chevron-white.svg");
+  cursor: pointer;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+*:focus {
+  outline: none;
+}
+

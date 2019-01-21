@@ -128,7 +128,7 @@ export class SpotifyService {
       'redirect_uri=' + env.redirectUri,
       'state=' + this.generateAndSaveState(),
       'scope=' + env.scopes.join(' '),
-      // 'show_dialog=true'
+      'show_dialog=true'
     ];
     return encodeURI(env.authUri + '?' + queryParams.join('&'));
   }
@@ -147,7 +147,7 @@ export class SpotifyService {
     });
   }
 
-  public async getConnectDevices(): Promise<SpotifyDevice[]> {
+  public async getDevices(): Promise<SpotifyDevice[]> {
     const response = await this.get<SpotifyDevicesResponse>('/me/player/devices');
     return response ? response.devices : [];
   }

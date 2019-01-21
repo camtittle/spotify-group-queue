@@ -5,6 +5,8 @@ import { IndexComponent, QueueComponent, FindComponent, CreateComponent, SearchC
 import { PartyMembershipGuard } from './guards/party-membership-guard';
 import { SpotifyCallbackComponent } from './pages/spotify-callback/spotify-callback.component';
 import { PartyComponent } from './features/party/party.component';
+import { MembersComponent } from './features/party/members/members.component';
+import { DevicesComponent } from './features/party/devices/devices.component';
 
 const appRoutes: Routes = [
   {
@@ -36,6 +38,14 @@ const appRoutes: Routes = [
       {
         path: 'search',
         component: SearchComponent
+      },
+      {
+        path: 'members',
+        component: MembersComponent
+      },
+      {
+        path: 'devices',
+        component: DevicesComponent
       }
     ]
   }

@@ -1,8 +1,9 @@
 <app-navigation-bar #navigationBar
-                    [title]="currentParty ? currentParty.name : 'My Party'"></app-navigation-bar>
+                    [title]="currentParty ? currentParty.name : 'My Party'"
+                    class="fixed-bar-top"></app-navigation-bar>
 
 <div class="queue-container"
-     [ngStyle]="{ 'paddingTop': containerPaddingTop + 'px'}">
+     [ngStyle]="{ 'paddingTop': navigationBarHeight + 'px'}">
 
   <ng-container *ngIf="loading" class="loading-spinner">
     Loading....
@@ -10,7 +11,7 @@
 
   <ng-container *ngIf="!loading && currentParty">
 
-    <div *ngIf="isOwner() && !authorizedWithSpotify" class="connect-spotify-container w-100 d-flex flex-column align-items-center p-2">
+    <div *ngIf="isOwner && !authorizedWithSpotify" class="connect-spotify-container w-100 d-flex flex-column align-items-center p-2">
       <div class="mb-2">Connect to Spotify to start playing</div>
       <button (click)="onClickAuthorizeSpotify()" type="button" class="btn btn-spotify-white d-flex align-items-center">
         <span class="ic spotify-icon-green mr-2"></span>
@@ -18,22 +19,11 @@
       </button>
     </div>
 
-    <!--<div *ngIf="authorizedWithSpotify && isOwner()" class="spotify-settings">-->
-      <!--<div><b>Spotify Settings</b></div>-->
-      <!--<div class="btn-group" dropdown>-->
-        <!--<button id="button-basic" dropdownToggle type="button" class="btn btn-secondary dropdown-toggle" aria-controls="dropdown-basic">-->
-          <!--Playback device <span class="caret"></span>-->
-        <!--</button>-->
-        <!--<ul id="dropdown-basic" *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-basic">-->
-          <!--<li *ngFor="let device of spotifyDevices" role="menuitem"><span class="dropdown-item" (click)="onClickDeviceItem(device)">{{ device.name }}</span></li>-->
-        <!--</ul>-->
-      <!--</div>-->
-    <!--</div>-->
-
     <div class="main-container pt-1">
 
       <ul class="queue list-group list-group-flush">
-        <li class="list-group-item list-item-navigation d-flex justify-content-between align-items-center">
+        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center clickable"
+            [routerLink]="['/party/members']">
           <div class="d-flex justify-content-between align-items-center">
             <div>Members ({{ currentParty.members.length + 1 }})</div>
           </div>
@@ -42,28 +32,14 @@
         </li>
       </ul>
 
-      <!--<ul class="list-group list-group-flush mt-2">-->
-      <!--<li *ngIf="currentParty?.owner" class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">-->
-      <!--{{ currentParty.owner.username }}-->
-      <!--<span class="badge badge-primary badge-pill">Owner</span>-->
-      <!--</li>-->
-      <!--<li *ngFor="let member of currentParty?.members" class="list-group-item">-->
-      <!--{{ member.username }}-->
-      <!--</li>-->
-      <!--<li *ngFor="let pendingMember of currentParty?.pendingMembers" class="list-group-item list-group-item-light">-->
-      <!--{{ pendingMember.username }}-->
-      <!--</li>-->
-      <!--</ul>-->
-
-
       <div class="section-header d-flex list-item-padding pb-2 justify-content-center align-items-center">
         <div class="header-text">Song Queue</div>
-        <div class="ic plus-green-circle header-button" (click)="onClickAddTrack()"></div>
+        <div class="ic plus-green-circle header-button clickable" (click)="onClickAddTrack()"></div>
       </div>
       <ul class="queue list-group list-group-flush">
         <li *ngFor="let queueItem of currentParty?.queueItems" class="track list-group-item">
           <div class="track-title">{{ queueItem.title }}</div>
-          <div class="track-subheading d-flex justify-content-between">
+          <div class="subheading d-flex justify-content-between">
             <span>{{ queueItem.artist }}</span>
             <span class="remove-track" (click)="onClickRemoveTrack(queueItem)">Remove</span>
           </div>

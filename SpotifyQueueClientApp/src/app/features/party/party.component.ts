@@ -5,6 +5,7 @@ import { AuthenticationService } from '../../services';
 import { AccessToken, CurrentParty } from '../../models';
 import { Playback, PlaybackStatusUpdate } from '../../models/playback-status-update.model';
 import { Subscription } from 'rxjs';
+import { SpotifyDevice } from '../../models/spotify/spotify-device.model';
 
 @Component({
   selector: 'app-party',
@@ -18,7 +19,8 @@ export class PartyComponent implements OnInit, OnDestroy, DoCheck {
   public currentUser: AccessToken;
   public currentParty: CurrentParty;
   public playbackState: PlaybackStatusUpdate;
-  public connectedToSpotify: boolean;
+  public authorizedWithSpotify: boolean;
+
 
   public routerMarginBottom: number;
 
@@ -42,7 +44,11 @@ export class PartyComponent implements OnInit, OnDestroy, DoCheck {
 
     this.playbackStateSub = this.partyHubService.playbackState$.subscribe(state => this.playbackState = state);
 
-    this.spotifySub = this.spotifyService.authorized$.subscribe(authorized => this.connectedToSpotify = authorized);
+    this.spotifySub = this.spotifyService.authorized$.subscribe(async authorized => {
+      this.authorizedWithSpotify = authorized;
+
+
+    });
   }
 
   ngOnDestroy() {

@@ -3,7 +3,7 @@
     <router-outlet></router-outlet>
   </div>
 
-  <div #playbackOverlay *ngIf="isOwner && connectedToSpotify || playbackState?.playbackState != Playback.NOT_ACTIVE" class="playback-overlay">
+  <div #playbackOverlay *ngIf="isOwner && authorizedWithSpotify || playbackState?.playbackState != Playback.NOT_ACTIVE" class="playback-overlay">
 
     <div *ngIf="currentUser.id === currentParty.owner.id" class="playback-controls mb-2">
       <div *ngIf="playbackState?.playbackState === Playback.NOT_ACTIVE" class="activate-playback-controls d-flex justify-content-center">
@@ -20,8 +20,8 @@
       </div>
     </div>
 
-    <div *ngIf="playbackState?.deviceName" class="device-info">
-      <div class="device-name">♫ Connected to {{ playbackState.deviceName }}</div>
+    <div *ngIf="playbackState?.deviceName" class="device-info d-flex justify-content-center">
+      <div class="device-name clickable" [routerLink]="['/party/devices']">♫ Connected to {{ playbackState.deviceName }}</div>
     </div>
 
   </div>

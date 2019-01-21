@@ -1,0 +1,19 @@
+<app-navigation-bar #navigationBar
+                    title="Members"
+                    [back]="['party', 'queue']"
+                    class="fixed-bar-top"></app-navigation-bar>
+
+<div class="members-container"
+     [ngStyle]="{ 'paddingTop': navigationBarHeight + 'px'}">
+  <ul class="queue list-group list-group-flush">
+    <li class="track list-group-item">
+      <div class="track-title">{{ currentParty.owner.username }} (owner)</div>
+    </li>
+    <li *ngFor="let member of currentParty?.members" class="list-group-item">
+      <div class="track-title">{{ member.username }}</div>
+    </li>
+    <li *ngFor="let member of currentParty?.pendingMembers" class="list-group-item">
+      <div class="track-title">{{ member.username }}</div>
+    </li>
+  </ul>
+</div>

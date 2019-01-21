@@ -1,54 +1,34 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AuthenticationService, PartyService, SignalRConnectionService } from '../../../services/index';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AuthenticationService, PartyService } from '../../../services/index';
 import { BsModalService } from 'ngx-bootstrap';
 import { PendingMemberRequestComponent } from '../../../modals/pending-member-request/pending-member-request.component';
-import { AccessToken, PendingMemberRequest, CurrentParty, CurrentPartyQueueItem } from '../../../models/index';
+import { PendingMemberRequest, CurrentParty, CurrentPartyQueueItem } from '../../../models/index';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PartyHubService } from '../../../services/party-hub.service';
 import { SpotifyService } from '../../../services/spotify.service';
-import { SpotifyDevice } from '../../../models/spotify/spotify-device.model';
-import { distinctUntilChanged } from 'rxjs/operators';
+import { BasePartyScreen } from '../base-party-screen';
 
 @Component({
   selector: 'app-queue',
   templateUrl: './queue.component.html',
   styleUrls: ['./queue.component.scss']
 })
-export class QueueComponent implements OnInit, OnDestroy, AfterViewInit {
-
-  @ViewChild('navigationBar',  {read: ElementRef}) navigationBar: ElementRef;
+export class QueueComponent extends BasePartyScreen implements OnInit {
 
   public loading = true;
 
-  public currentUser: AccessToken;
-  public currentParty: CurrentParty;
-  public authorizedWithSpotify: boolean;
-  public spotifyDevices: SpotifyDevice[];
-
-  public containerPaddingTop: number;
-
-  constructor(private partyService: PartyService,
-              private modalService: BsModalService,
-              private authService: AuthenticationService,
-              private partyHubService: PartyHubService,
-              private spotifyService: SpotifyService,
+  constructor(protected authService: AuthenticationService,
+              protected partyHubService: PartyHubService,
+              protected spotifyService: SpotifyService,
+              protected cdRef: ChangeDetectorRef,
+              protected router: Router,
               private route: ActivatedRoute,
-              private router: Router,
-              private cdRef: ChangeDetectorRef) { }
+              private partyService: PartyService,
+              private modalService: BsModalService) {
+    super(partyHubService, authService, spotifyService, router, cdRef);
+  }
 
   async ngOnInit() {
-    this.authService.currentUser$.subscribe(user => this.currentUser = user);
-
-    this.partyHubService.currentParty$.subscribe(party => this.currentParty = party);
-
-    this.spotifyService.authorized$.pipe(distinctUntilChanged()).subscribe(async authorized => {
-      this.authorizedWithSpotify = authorized;
-
-      if (authorized && this.isOwner()) {
-        await this.initialiseSpotify();
-      }
-    });
-
     // Hub events
     this.partyHubService.observe<PendingMemberRequest>('onPendingMemberRequest').subscribe(request => {
       console.log('pending member request: ' + request.username);
@@ -62,13 +42,7 @@ export class QueueComponent implements OnInit, OnDestroy, AfterViewInit {
     this.loading = false;
   }
 
-  ngOnDestroy() {
-
-  }
-
-  ngAfterViewInit() {
-    this.containerPaddingTop = this.navigationBar.nativeElement.clientHeight;
-    this.cdRef.detectChanges();
+  protected onSpotifyAuthorization(authorized: boolean) {
   }
 
   /**
@@ -116,34 +90,4 @@ export class QueueComponent implements OnInit, OnDestroy, AfterViewInit {
   public onClickAuthorizeSpotify() {
     this.spotifyService.triggerAuthorizationFlow();
   }
-
-  private async initialiseSpotify() {
-    this.spotifyDevices = await this.spotifyService.getConnectDevices();
-  }
-
-  public async onClickDeviceItem(device: SpotifyDevice) {
-    await this.spotifyService.setPlaybackDevice(device);
-  }
-
-  public isPendingMember(): boolean {
-    if (this.currentParty && this.currentUser) {
-      return this.currentParty.pendingMembers.findIndex(x => x.id === this.currentUser.id) >= 0;
-    }
-    return false;
-  }
-
-  public isMember(): boolean {
-    if (this.currentParty && this.currentUser) {
-      return this.currentParty.members.findIndex(x => x.id === this.currentUser.id) >= 0;
-    }
-    return false;
-  }
-
-  public isOwner(): boolean {
-    if (this.currentParty && this.currentUser) {
-      return this.currentParty.owner.id === this.currentUser.id;
-    }
-    return false;
-  }
-
 }

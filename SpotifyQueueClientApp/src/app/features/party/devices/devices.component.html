@@ -1,0 +1,20 @@
+<app-navigation-bar #navigationBar
+                    title="Devices"
+                    [back]="['party', 'queue']"
+                    class="fixed-bar-top"></app-navigation-bar>
+
+<div class="queue-container"
+     [ngStyle]="{ 'paddingTop': navigationBarHeight + 'px'}">
+
+  <ul *ngIf="spotifyDevices && spotifyDevices.length > 0" class="results list-group list-group-flush">
+    <button *ngFor="let device of spotifyDevices"
+            class="device list-group-item list-group-item-action"
+            (click)="onClickDeviceItem(device)">
+      <div>{{ device.name }}</div>
+      <div class="d-flex justify-content-between subheading">
+        {{ device.type }}
+      </div>
+    </button>
+  </ul>
+
+</div>
