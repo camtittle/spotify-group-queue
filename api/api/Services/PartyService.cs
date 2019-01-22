@@ -264,32 +264,38 @@ namespace api.Services
                 throw new ArgumentNullException(nameof(party));
             }
 
+            party = await LoadFull(party);
+
             if (state == null)
             {
-                throw new ArgumentNullException(nameof(state));
+                party.CurrentTrack = new Models.Track();
+
+                party.Playback = Playback.NOT_ACTIVE;
+
+                party.Owner.CurrentDevice = new SpotifyDevice();
             }
-
-            await LoadFull(party);
-
-            party.CurrentTrack = new Models.Track()
+            else
             {
-                Uri = state.Item.Uri,
-                Title = state.Item.Name,
-                Artist = state.Item.Artists[0].Name,
-                DurationMillis = state.Item.DurationMillis
-            };
+                party.CurrentTrack = new Models.Track()
+                {
+                    Uri = state.Item.Uri,
+                    Title = state.Item.Name,
+                    Artist = state.Item.Artists[0].Name,
+                    DurationMillis = state.Item.DurationMillis
+                };
 
-            if (party.Playback != Playback.NOT_ACTIVE)
-            {
-                party.Playback = state.IsPlaying ? Playback.PLAYING : Playback.PAUSED;
+                if (party.Playback != Playback.NOT_ACTIVE)
+                {
+                    party.Playback = state.IsPlaying ? Playback.PLAYING : Playback.PAUSED;
+                }
+
+                party.Owner.CurrentDevice = new SpotifyDevice()
+                {
+                    DeviceId = state.Device?.Id,
+                    Name = state.Device?.Name
+                };
             }
-
-            party.Owner.CurrentDevice = new SpotifyDevice()
-            {
-                DeviceId = state.Device?.Id,
-                Name = state.Device?.Name
-            };
-
+            
             // Notify clients
             await SendPlaybackStatusUpdate(party);
 
@@ -316,15 +322,15 @@ namespace api.Services
             return update;
         }
 
-        public async Task SendPlaybackStatusUpdate(Party party)
+        public async Task SendPlaybackStatusUpdate(Party party, User[] exceptUsers = null)
         {
-            await LoadFull(party);
+            party = await LoadFull(party);
 
             var partialUpdate = GetPlaybackStatusUpdate(party);
 
             var fullUpdate = GetPlaybackStatusUpdate(party, true);
 
-            await PartyHub.SendPlaybackStatusUpdate(party, fullUpdate, partialUpdate);
+            await PartyHub.SendPlaybackStatusUpdate(party, fullUpdate, partialUpdate, exceptUsers);
         }
     }
 }

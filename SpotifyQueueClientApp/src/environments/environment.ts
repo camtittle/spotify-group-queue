@@ -6,6 +6,7 @@ import {secrets} from './secrets';
 
 export const environment = {
   production: false,
+  appName: 'AppName',
   useDevRegisterEndpoint: true,
   baseApiUrl: 'http://localhost:58953/api/v1',
   signalRHubUrl: 'http://localhost:58953/partyHub',

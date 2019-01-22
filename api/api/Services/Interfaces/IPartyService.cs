@@ -22,7 +22,7 @@ namespace api.Services.Interfaces
         Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request);
         Task RemoveQueueItem(User user, string queueItemId);
         Task UpdatePlaybackState(Party party, PlaybackState state);
-        Task SendPlaybackStatusUpdate(Party party);
+        Task SendPlaybackStatusUpdate(Party party, User[] exceptUsers = null);
         PlaybackStatusUpdate GetPlaybackStatusUpdate(Party party, bool includeAdminFields = false);
     }
 }

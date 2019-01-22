@@ -216,10 +216,20 @@ namespace api.Hubs
             await Clients.User(party.Owner.Id).SendAsync("partyStatusUpdate", fullModel);
         }
 
-        public static async Task SendPlaybackStatusUpdate(Party party, PlaybackStatusUpdate update, PlaybackStatusUpdate partialUpdate)
+        public static async Task SendPlaybackStatusUpdate(Party party, PlaybackStatusUpdate update, PlaybackStatusUpdate partialUpdate, User[] exceptUsers = null)
         {
-            await _hubContext.Clients.Users(party.Members.Select(x => x.Id).ToList()).SendAsync("playbackStatusUpdate", update);
-            await _hubContext.Clients.User(party.Owner.Id).SendAsync("playbackStatusUpdate", partialUpdate);
+            if (exceptUsers == null)
+            {
+                exceptUsers = new User[] {};
+            } 
+
+            var members = party.Members.Except(exceptUsers).Select(x => x.Id).ToList();
+            await _hubContext.Clients.Users(members).SendAsync("playbackStatusUpdate", partialUpdate);
+
+            if (!exceptUsers.Contains(party.Owner))
+            {
+                await _hubContext.Clients.User(party.Owner.Id).SendAsync("playbackStatusUpdate", update);
+            }
         }
         
     }

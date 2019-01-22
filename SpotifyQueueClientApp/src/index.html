@@ -7,12 +7,18 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <style>
+    app-root:empty + #initial-loader {
+      opacity: 1 !important;
+      z-index: 100 !important;
+    }
+  </style>
 </head>
-<body>
+<body style="background-color: #191414; color: white;">
   <app-root></app-root>
 
-  <div id="initial-loader" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;" class="loading d-flex align-items-center justify-content-center">
-    <h1 style="color: white">Loading...</h1>
-  </div>
+  <div id="initial-loader" class="loader" style="font-family: sans-serif; transition: opacity .8s; opacity: 0; z-index: -1">Loading...</div>
+
 </body>
 </html>

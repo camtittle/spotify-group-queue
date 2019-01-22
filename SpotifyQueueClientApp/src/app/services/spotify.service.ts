@@ -5,7 +5,6 @@ import { ApiService } from './api.service';
 import { SpotifyAccessToken } from '../models/spotify/spotify-access-token.model';
 import { HttpClient } from '@angular/common/http';
 import { SpotifyDevice, SpotifyDevicesResponse } from '../models/spotify/spotify-device.model';
-import { PlaybackService } from './playback.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,8 +17,7 @@ export class SpotifyService {
   private expiry: Date;
 
   constructor(private httpClient: HttpClient,
-              private apiService: ApiService,
-              private playbackService: PlaybackService) {
+              private apiService: ApiService) {
     this.checkAuthorizationStatus();
   }
 

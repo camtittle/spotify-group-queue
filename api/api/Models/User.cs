@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -34,5 +35,15 @@ namespace api.Models
         public DateTime? SpotifyTokenExpiry { get; set; }
         
         public SpotifyDevice CurrentDevice { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is User user)
+            {
+                return user.Id == this.Id;
+            }
+
+            return false;
+        }
     }
 }

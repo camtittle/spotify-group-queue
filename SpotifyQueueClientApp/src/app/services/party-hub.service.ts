@@ -6,6 +6,8 @@ import { SignalRConnectionService } from './signal-r-connection-service';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
 import { PlaybackStatusUpdate } from '../models/playback-status-update.model';
+import { SpotifyDevice } from '../models/spotify/spotify-device.model';
+import { throttleTime } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -28,7 +30,6 @@ export class PartyHubService {
     this.signalRConnectionService.connected$.subscribe(async connected => {
       if (connected) {
         const state = await this.signalRConnectionService.invoke<PlaybackStatusUpdate>('getCurrentPlaybackState');
-        console.log(state);
         this.playbackState$.next(state);
       }
     });

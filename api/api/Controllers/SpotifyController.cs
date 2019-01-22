@@ -3,6 +3,7 @@ using api.Controllers.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Spotify.Exceptions;
 
 namespace api.Controllers
 {
@@ -77,7 +78,14 @@ namespace api.Controllers
 
             var user = await _userService.GetFromClaims(User);
 
+            if (!user.IsOwner)
+            {
+                throw new SpotifyException("Cannot set playback device - User not owner of any party");
+            }
+
             await _spotifyService.UpdateDevice(user, request.DeviceId, request.DeviceName);
+
+            await _partyService.SendPlaybackStatusUpdate(user.OwnedParty);
 
             return Ok();
         }

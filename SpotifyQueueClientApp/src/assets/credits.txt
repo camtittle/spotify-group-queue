@@ -1,7 +1,8 @@
 Right facing triangle (play): <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a>
-User Silhouette: <a href="https://www.freepik.com/" title="Freepik">Freepik</a>
+User Silhouette, Refresh: <a href="https://www.freepik.com/" title="Freepik">Freepik</a>
 Right chevron: <a href="https://www.flaticon.com/authors/elegant-themes" title="Elegant Themes">Elegant Themes</a> 
 Plus in circle: <div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a>
+Headphones: <a href="https://www.flaticon.com/authors/gregor-cresnar" title="Gregor Cresnar">Gregor Cresnar</a>
 
 <div>Icons from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>/div>
 

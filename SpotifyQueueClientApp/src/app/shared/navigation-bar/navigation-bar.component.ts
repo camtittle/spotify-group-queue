@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Component({
@@ -11,6 +11,9 @@ export class NavigationBarComponent implements OnInit {
   @Input() back: string[];
   @Input() title: string;
 
+  @Input() actionIconClass: string;
+  @Output() action = new EventEmitter();
+
   constructor(private router: Router) { }
 
   ngOnInit() {
@@ -21,6 +24,10 @@ export class NavigationBarComponent implements OnInit {
       await this.router.navigate(this.back);
     }
     return;
+  }
+
+  public onClickActionButton() {
+    this.action.emit();
   }
 
 }

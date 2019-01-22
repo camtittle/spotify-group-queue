@@ -20,8 +20,6 @@ export class PartyComponent implements OnInit, OnDestroy, DoCheck {
   public currentParty: CurrentParty;
   public playbackState: PlaybackStatusUpdate;
   public authorizedWithSpotify: boolean;
-
-
   public routerMarginBottom: number;
 
   private currentUserSub: Subscription;
@@ -42,12 +40,14 @@ export class PartyComponent implements OnInit, OnDestroy, DoCheck {
 
     this.currentPartySub = this.partyHubService.currentParty$.subscribe(party => this.currentParty = party);
 
-    this.playbackStateSub = this.partyHubService.playbackState$.subscribe(state => this.playbackState = state);
+    this.playbackStateSub = this.partyHubService.playbackState$.subscribe(state => {
+      console.log('--> playback status update');
+      console.log(state);
+      this.playbackState = state;
+    });
 
     this.spotifySub = this.spotifyService.authorized$.subscribe(async authorized => {
       this.authorizedWithSpotify = authorized;
-
-
     });
   }
 

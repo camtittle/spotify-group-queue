@@ -1,5 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 @import '~bootstrap/dist/css/bootstrap.min.css';
+@import 'app/styles/icons.scss';
+@import 'app/styles/loader.scss';
 
 body {
   background-color: #191414;
@@ -60,19 +62,6 @@ button.btn {
 
 .list-group-flush .list-group-item.list-group-item-action:hover {
   color: #9c9c9c;
-}
-
-.ic {
-  display: inline-block;
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-.ic.ic-left-chevron-white {
-  width: 18px;
-  height: 18px;
-  background-image: url("assets/left-chevron-white.svg");
-  cursor: pointer;
 }
 
 .clickable {

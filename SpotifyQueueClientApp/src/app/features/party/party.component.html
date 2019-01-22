@@ -3,7 +3,7 @@
     <router-outlet></router-outlet>
   </div>
 
-  <div #playbackOverlay *ngIf="isOwner && authorizedWithSpotify || playbackState?.playbackState != Playback.NOT_ACTIVE" class="playback-overlay">
+  <div #playbackOverlay *ngIf="(isOwner && authorizedWithSpotify) || (playbackState?.playbackState != Playback.NOT_ACTIVE)" class="playback-overlay">
 
     <div *ngIf="currentUser.id === currentParty.owner.id" class="playback-controls mb-2">
       <div *ngIf="playbackState?.playbackState === Playback.NOT_ACTIVE" class="activate-playback-controls d-flex justify-content-center">

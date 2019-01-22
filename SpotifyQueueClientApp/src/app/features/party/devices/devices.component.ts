@@ -14,6 +14,8 @@ import { Router } from '@angular/router';
 export class DevicesComponent extends BasePartyScreen implements OnInit {
 
   public spotifyDevices: SpotifyDevice[];
+  public activeDevice: SpotifyDevice;
+  public loading = true;
 
   constructor(protected spotifyService: SpotifyService,
               protected partyHubService: PartyHubService,
@@ -27,15 +29,36 @@ export class DevicesComponent extends BasePartyScreen implements OnInit {
   }
 
   protected async onSpotifyAuthorization(authorized: boolean) {
-    console.log('spotify auth: ' + authorized);
     if (authorized && this.isOwner) {
-      // do something
-      this.spotifyDevices = await this.spotifyService.getDevices();
+      // Get latest devices
+      await this.updateDeviceList();
+      this.loading = false;
     }
   }
 
   public async onClickDeviceItem(device: SpotifyDevice) {
     await this.spotifyService.setPlaybackDevice(device);
+  }
+
+  private async updateDeviceList() {
+    this.spotifyDevices = await this.spotifyService.getDevices();
+
+    const active = this.spotifyDevices.filter(x => x.is_active);
+    if (active.length > 0) {
+      this.activeDevice = active[0];
+    }
+
+    const index = this.spotifyDevices.findIndex(x => x.id === this.activeDevice.id);
+    this.spotifyDevices.splice(index, 1);
+
+    await this.spotifyService.setPlaybackDevice(this.activeDevice);
+  }
+
+  public async refresh() {
+    console.log('refresh');
+    this.loading = true;
+    await this.updateDeviceList();
+    this.loading = false;
   }
 
 }

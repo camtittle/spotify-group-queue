@@ -1,0 +1,25 @@
+.ic {
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 18px;
+  height: 18px;
+
+  &.ic-left-chevron-white {
+    background-image: url("/assets/left-chevron-white.svg");
+    cursor: pointer;
+  }
+
+  &.ic-headphones {
+    background-image: url("/assets/headphones.svg");
+  }
+
+  &.ic-reload {
+    width: 22px;
+    height: 22px;
+    background-image: url("/assets/reload.svg");
+  }
+}
+
+
+
