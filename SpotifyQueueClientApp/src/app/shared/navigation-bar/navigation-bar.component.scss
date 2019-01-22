@@ -15,10 +15,6 @@
   .action-button {
     position: absolute;
     right: 0.75rem;
-    transition: transform 0.15s ease-out;
-
-    &:active, &:focus {
-      transform: scale(0.8);
-    }
+    
   }
 }

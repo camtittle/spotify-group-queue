@@ -9,15 +9,7 @@
     Loading....
   </ng-container>
 
-  <ng-container *ngIf="!loading && currentParty">
-
-    <div *ngIf="isOwner && !authorizedWithSpotify" class="connect-spotify-container w-100 d-flex flex-column align-items-center p-2">
-      <div class="mb-2">Connect to Spotify to start playing</div>
-      <button (click)="onClickAuthorizeSpotify()" type="button" class="btn btn-spotify-white d-flex align-items-center">
-        <span class="ic spotify-icon-green mr-2"></span>
-        Connect to Spotify
-      </button>
-    </div>
+  <div *ngIf="!loading && currentParty" [@fadeInOut]>
 
     <div class="main-container pt-1">
 
@@ -47,7 +39,7 @@
       </ul>
 
     </div>
-  </ng-container>
+  </div>
 </div>
 
 

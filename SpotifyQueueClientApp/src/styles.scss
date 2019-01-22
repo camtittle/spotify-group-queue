@@ -68,7 +68,10 @@ button.btn {
   cursor: pointer;
 }
 
-*:focus {
-  outline: none;
+button.btn {
+  box-shadow: none !important;
 }
 
+*:focus, button.btn:focus, button.btn:active {
+  outline: none !important;
+}

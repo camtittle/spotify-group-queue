@@ -11,6 +11,7 @@ import { NotificationComponent } from './notification/notification.component';
 import { SharedModule } from '../../shared/shared.module';
 import { MembersComponent } from './members/members.component';
 import { DevicesComponent } from './devices/devices.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   imports: [
@@ -19,7 +20,8 @@ import { DevicesComponent } from './devices/devices.component';
     AppRoutingModule,
     BsDropdownModule,
     PipesModule,
-    SharedModule
+    SharedModule,
+    BrowserAnimationsModule
   ],
   declarations: [
     PartyComponent,

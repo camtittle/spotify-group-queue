@@ -5,16 +5,18 @@ import { AuthenticationService } from '../../services';
 import { AccessToken, CurrentParty } from '../../models';
 import { Playback, PlaybackStatusUpdate } from '../../models/playback-status-update.model';
 import { Subscription } from 'rxjs';
-import { SpotifyDevice } from '../../models/spotify/spotify-device.model';
+import { fadeInOut } from '../../animations';
 
 @Component({
   selector: 'app-party',
   templateUrl: './party.component.html',
-  styleUrls: ['./party.component.scss']
+  styleUrls: ['./party.component.scss'],
+  animations: [ fadeInOut ]
 })
 export class PartyComponent implements OnInit, OnDestroy, DoCheck {
 
   @ViewChild('playbackOverlay') playbackOverlay: ElementRef;
+  @ViewChild('connectToSpotify') connectToSpotify: ElementRef;
 
   public currentUser: AccessToken;
   public currentParty: CurrentParty;
@@ -70,14 +72,27 @@ export class PartyComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   ngDoCheck() {
+    let margin = 0;
     if (this.playbackOverlay) {
-      this.routerMarginBottom = this.playbackOverlay.nativeElement.clientHeight;
+      margin += this.playbackOverlay.nativeElement.clientHeight;
     }
+
+    if (this.connectToSpotify) {
+      margin += this.connectToSpotify.nativeElement.clientHeight;
+    }
+
+    this.routerMarginBottom = margin;
   }
 
   get isOwner(): boolean {
     return this.currentUser.id === this.currentParty.owner.id;
   }
 
+  get showPlaybackControls(): boolean {
+    return this.isOwner && this.playbackState && !!this.playbackState.deviceName;
+  }
 
+  public onClickAuthorizeSpotify() {
+    this.spotifyService.triggerAuthorizationFlow();
+  }
 }

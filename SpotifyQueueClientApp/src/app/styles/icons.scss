@@ -19,6 +19,37 @@
     height: 22px;
     background-image: url("/assets/reload.svg");
   }
+
+  &.ic-play-button {
+    width: 14px;
+    height: 14px;
+    background-image: url("/assets/play-button.svg");
+    cursor: pointer;
+  }
+
+  &.right-chevron-white {
+    width: 20px;
+    height: 20px;
+    background-image: url("/assets/right-chevron-white.svg");
+  }
+
+  &.user-green {
+    width: 20px;
+    height: 20px;
+    background-image: url("/assets/user-green.svg");
+  }
+
+  &.plus-green-circle {
+    width: 20px;
+    height: 20px;
+    background-image: url("/assets/plus-green-circle.svg");
+  }
+
+  &.spotify-icon-green {
+    width: 20px;
+    height: 20px;
+    background-image: url("/assets/spotify-icon-green.svg");
+  }
 }
 
 

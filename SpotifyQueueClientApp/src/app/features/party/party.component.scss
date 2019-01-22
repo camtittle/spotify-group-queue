@@ -1,5 +1,11 @@
 .party-container {
 
+  .connect-spotify-container {
+    position: fixed;
+    bottom: 0;
+    background-color: #1DB954;
+  }
+
   .playback-overlay {
     position: fixed;
     bottom: 0;
@@ -18,10 +24,14 @@
 
     .device-info {
       font-size: 12px;
-      color: #76cf15;
 
-      .device-name {
+      .device-name, connect-to-device {
         width: fit-content;
+        color: #76cf15;
+      }
+
+      .connect-to-device {
+        color: #bbbbbb;
       }
     }
 
@@ -29,12 +39,5 @@
 
 
     }
-  }
-
-  .ic.ic-play-button {
-    width: 18px;
-    height: 18px;
-    background-image: url("../../../assets/play-button.svg");
-    cursor: pointer;
   }
 }

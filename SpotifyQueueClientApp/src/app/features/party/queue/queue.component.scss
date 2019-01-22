@@ -1,13 +1,7 @@
 .queue-container {
 
-  .connect-spotify-container {
-    background-color: #1DB954;
-  }
-
   .queue {
-
     .track {
-
       &:not(.expanded) {
         .track-title {
           white-space: nowrap;
@@ -22,29 +16,4 @@
       }
     }
   }
-
-  .ic.right-chevron-white {
-    width: 20px;
-    height: 20px;
-    background-image: url("../../../../assets/right-chevron-white.svg");
-  }
-
-  .ic.user-green {
-    width: 20px;
-    height: 20px;
-    background-image: url("../../../../assets/user-green.svg");
-  }
-
-  .ic.plus-green-circle {
-    width: 20px;
-    height: 20px;
-    background-image: url("../../../../assets/plus-green-circle.svg");
-  }
-
-  .ic.spotify-icon-green {
-    width: 20px;
-    height: 20px;
-    background-image: url("../../../../assets/spotify-icon-green.svg");
-  }
-
 }

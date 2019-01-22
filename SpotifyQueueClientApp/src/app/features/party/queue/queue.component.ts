@@ -7,11 +7,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PartyHubService } from '../../../services/party-hub.service';
 import { SpotifyService } from '../../../services/spotify.service';
 import { BasePartyScreen } from '../base-party-screen';
+import { fadeInOut } from '../../../animations';
 
 @Component({
   selector: 'app-queue',
   templateUrl: './queue.component.html',
-  styleUrls: ['./queue.component.scss']
+  styleUrls: ['./queue.component.scss'],
+  animations: [ fadeInOut ]
 })
 export class QueueComponent extends BasePartyScreen implements OnInit {
 
@@ -85,9 +87,5 @@ export class QueueComponent extends BasePartyScreen implements OnInit {
 
   public onClickRemoveTrack(queueItem: CurrentPartyQueueItem) {
     this.partyHubService.invoke('removeTrackFromQueue', queueItem.id);
-  }
-
-  public onClickAuthorizeSpotify() {
-    this.spotifyService.triggerAuthorizationFlow();
   }
 }

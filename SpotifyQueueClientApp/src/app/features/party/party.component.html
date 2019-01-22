@@ -3,11 +3,11 @@
     <router-outlet></router-outlet>
   </div>
 
-  <div #playbackOverlay *ngIf="(isOwner && authorizedWithSpotify) || (playbackState?.playbackState != Playback.NOT_ACTIVE)" class="playback-overlay">
+  <div #playbackOverlay *ngIf="(isOwner && authorizedWithSpotify) || (playbackState?.playbackState != Playback.NOT_ACTIVE)" class="playback-overlay" [@fadeInOut]>
 
-    <div *ngIf="currentUser.id === currentParty.owner.id" class="playback-controls mb-2">
+    <div *ngIf="showPlaybackControls" class="playback-controls mb-2">
       <div *ngIf="playbackState?.playbackState === Playback.NOT_ACTIVE" class="activate-playback-controls d-flex justify-content-center">
-        <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center"><span class="ic-play-button mr-2"></span>Play Queue</button>
+        <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center"><span class="ic ic-play-button mr-2"></span>Play Queue</button>
       </div>
       <!--<div class="play-control ic-play-button"></div>-->
     </div>
@@ -20,10 +20,19 @@
       </div>
     </div>
 
-    <div *ngIf="playbackState?.deviceName" class="device-info d-flex justify-content-center">
-      <div class="device-name clickable" [routerLink]="['/party/devices']">♫ Connected to {{ playbackState.deviceName }}</div>
+    <div class="device-info d-flex justify-content-center">
+      <div *ngIf="playbackState?.deviceName" class="device-name clickable" [routerLink]="['/party/devices']">♫ Connected to {{ playbackState.deviceName }}</div>
+      <div *ngIf="!(playbackState?.deviceName)" class="connect-to-device clickable" [routerLink]="['/party/devices']">⦾ Connect to a playback device</div>
     </div>
 
+  </div>
+
+  <div #connectToSpotify *ngIf="isOwner && !authorizedWithSpotify" class="connect-spotify-container w-100 d-flex flex-column align-items-center p-2">
+    <div class="mb-2">Connect to Spotify to start playing</div>
+    <button (click)="onClickAuthorizeSpotify()" type="button" class="btn btn-spotify-white d-flex align-items-center">
+      <span class="ic spotify-icon-green mr-2"></span>
+      Connect to Spotify
+    </button>
   </div>
 </div>
 
