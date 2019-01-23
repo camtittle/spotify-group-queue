@@ -21,12 +21,13 @@ namespace api.Services
     {
         private readonly apiContext _context;
         private readonly IUserService _userService;
+        private readonly ISpotifyService _spotifyService;
 
-        public PartyService(apiContext context,
-            IUserService userService)
+        public PartyService(apiContext context, IUserService userService, ISpotifyService spotifyService)
         {
             _context = context;
             _userService = userService;
+            _spotifyService = spotifyService;
         }
 
         public async Task<Party> Create(User owner, string name)
@@ -257,7 +258,35 @@ namespace api.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdatePlaybackState(Party party, PlaybackState state)
+        public async Task UpdateDevice(Party party, string deviceId, string deviceName)
+        {
+            if (party == null)
+            {
+                throw new ArgumentNullException(nameof(party));
+            }
+
+            party = await LoadFull(party);
+
+            if (deviceId == party.Owner.CurrentDevice.DeviceId)
+            {
+                return;
+            }
+
+            await _spotifyService.UpdateDevice(party.Owner, deviceId, deviceName);
+
+            party.Owner.CurrentDevice = new SpotifyDevice()
+            {
+                DeviceId = deviceId,
+                Name = deviceName
+            };
+
+            // Notify clients
+            await SendPlaybackStatusUpdate(party);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdatePlaybackState(Party party, PlaybackState state, User[] dontNotifyUsers = null)
         {
             if (party == null)
             {
@@ -297,7 +326,7 @@ namespace api.Services
             }
             
             // Notify clients
-            await SendPlaybackStatusUpdate(party);
+            await SendPlaybackStatusUpdate(party, dontNotifyUsers);
 
             await _context.SaveChangesAsync();
         }

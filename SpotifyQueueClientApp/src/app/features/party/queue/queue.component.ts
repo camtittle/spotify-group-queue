@@ -44,9 +44,6 @@ export class QueueComponent extends BasePartyScreen implements OnInit {
     this.loading = false;
   }
 
-  protected onSpotifyAuthorization(authorized: boolean) {
-  }
-
   /**
    * Called on admin users when a user requests to join their party
    * @param request

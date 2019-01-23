@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using api.Controllers.Models;
+using api.Exceptions;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -130,10 +132,34 @@ namespace api.Services
                 throw new ArgumentNullException(nameof(deviceName));
             }
 
+            if (user.SpotifyRefreshToken == null)
+            {
+                throw new SpotifyPlaybackException("Cannot transfer playback - User not authorized with Spotify");
+            }
+
+            if (user.CurrentDevice.DeviceId != deviceId)
+            {
+                await TransferSpotifyPlayback(user, deviceId);
+            }
+
             user.CurrentDevice.DeviceId = deviceId;
             user.CurrentDevice.Name = deviceName;
 
             await _userService.Update(user);
+        }
+
+        private async Task TransferSpotifyPlayback(User user, string deviceId)
+        {
+            var accessToken = await GetUserAccessToken(user);
+
+            var request = new TransferPlaybackRequest()
+            {
+                DeviceIds = new[] { deviceId },
+                Play = true
+            };
+
+            // Transfer Spotify playback to given device
+            await _spotifyClient.PutAsUser<string>("/me/player", accessToken.AccessToken, request);
         }
 
         public async Task<PlaybackState> GetPlaybackState(User user)

@@ -83,9 +83,12 @@ namespace api.Controllers
                 throw new SpotifyException("Cannot set playback device - User not owner of any party");
             }
 
-            await _spotifyService.UpdateDevice(user, request.DeviceId, request.DeviceName);
+            var party = _userService.GetParty(user);
 
-            await _partyService.SendPlaybackStatusUpdate(user.OwnedParty);
+            if (user.CurrentDevice.DeviceId != request.DeviceId)
+            {
+                await _partyService.UpdateDevice(party, request.DeviceId, request.DeviceName);
+            }
 
             return Ok();
         }

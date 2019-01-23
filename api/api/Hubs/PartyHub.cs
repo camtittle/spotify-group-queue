@@ -95,7 +95,7 @@ namespace api.Hubs
             // Get latest playback state from Spotify
             var status = await _spotifyService.GetPlaybackState(party.Owner);
 
-            await _partyService.UpdatePlaybackState(party, status);
+            await _partyService.UpdatePlaybackState(party, status, new[] {user});
 
             return _partyService.GetPlaybackStatusUpdate(party, user.IsOwner);
         }
@@ -221,7 +221,7 @@ namespace api.Hubs
             if (exceptUsers == null)
             {
                 exceptUsers = new User[] {};
-            } 
+            }
 
             var members = party.Members.Except(exceptUsers).Select(x => x.Id).ToList();
             await _hubContext.Clients.Users(members).SendAsync("playbackStatusUpdate", partialUpdate);

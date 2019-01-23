@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -114,6 +115,31 @@ namespace Spotify
                     var response = await client.GetStringAsync(uri);
 
                     return JsonConvert.DeserializeObject<T>(response);
+                }
+                catch (HttpRequestException e)
+                {
+                    return default(T);
+                }
+            }
+        }
+
+        public async Task<T> PutAsUser<T>(string endpoint, string accessToken, object jsonBody)
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                var uri = _settings.BaseApiUri + endpoint;
+
+                try
+                {
+                    var jsonString = JsonConvert.SerializeObject(jsonBody);
+                    var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+                    var response = await client.PutAsync(uri, content);
+                    var responseString = await response.Content.ReadAsStringAsync();
+
+                    return JsonConvert.DeserializeObject<T>(responseString);
                 }
                 catch (HttpRequestException e)
                 {
