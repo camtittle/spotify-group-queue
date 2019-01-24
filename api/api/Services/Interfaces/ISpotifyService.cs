@@ -11,7 +11,7 @@ namespace api.Services.Interfaces
         Task<SpotifyAccessToken> AuthorizeClient(User user, string code);
         Task<SpotifyAccessToken> GetUserAccessToken(User user);
         Task UpdateUserTokens(User user, string accessToken, string refreshToken, int expiresIn);
-        Task UpdateDevice(User user, string deviceId, string deviceName);
+        Task<bool> TransferPlayback(User user, string deviceId);
         Task<PlaybackState> GetPlaybackState(User user);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -137,8 +138,14 @@ namespace Spotify
                     var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
                     var response = await client.PutAsync(uri, content);
-                    var responseString = await response.Content.ReadAsStringAsync();
 
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new SpotifyException("Error code return from " + endpoint + ". Status code: " + response.StatusCode);
+                    }
+
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    
                     return JsonConvert.DeserializeObject<T>(responseString);
                 }
                 catch (HttpRequestException e)

@@ -67,6 +67,7 @@ namespace api.Controllers
             return Ok(result);
         }
 
+        // TODO: lock down to party owners
         [HttpPost("device")]
         [Authorize]
         public async Task<IActionResult> SetPlaybackDevice([FromBody] SetSpotifyDeviceRequest request)
@@ -87,10 +88,14 @@ namespace api.Controllers
 
             if (user.CurrentDevice.DeviceId != request.DeviceId)
             {
-                await _partyService.UpdateDevice(party, request.DeviceId, request.DeviceName);
+                var device = await _partyService.UpdateDevice(party, request.DeviceId, request.DeviceName);
+
+                await _partyService.SendPlaybackStatusUpdate(party);
+
+                return Ok(device);
             }
 
-            return Ok();
+            return Ok(user.CurrentDevice);
         }
     }
 }

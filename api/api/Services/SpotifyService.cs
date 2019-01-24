@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using api.Controllers.Models;
 using api.Exceptions;
@@ -115,7 +116,7 @@ namespace api.Services
             await _userService.Update(user);
         }
 
-        public async Task UpdateDevice(User user, string deviceId, string deviceName)
+        public async Task<bool> TransferPlayback(User user, string deviceId)
         {
             if (user == null)
             {
@@ -127,29 +128,16 @@ namespace api.Services
                 throw new ArgumentNullException(nameof(deviceId));
             }
 
-            if (string.IsNullOrWhiteSpace(deviceName))
-            {
-                throw new ArgumentNullException(nameof(deviceName));
-            }
-
             if (user.SpotifyRefreshToken == null)
             {
                 throw new SpotifyPlaybackException("Cannot transfer playback - User not authorized with Spotify");
             }
 
-            if (user.CurrentDevice.DeviceId != deviceId)
+            if (user.CurrentDevice.DeviceId == deviceId)
             {
-                await TransferSpotifyPlayback(user, deviceId);
+                return false;
             }
-
-            user.CurrentDevice.DeviceId = deviceId;
-            user.CurrentDevice.Name = deviceName;
-
-            await _userService.Update(user);
-        }
-
-        private async Task TransferSpotifyPlayback(User user, string deviceId)
-        {
+            
             var accessToken = await GetUserAccessToken(user);
 
             var request = new TransferPlaybackRequest()
@@ -158,8 +146,17 @@ namespace api.Services
                 Play = true
             };
 
-            // Transfer Spotify playback to given device
-            await _spotifyClient.PutAsUser<string>("/me/player", accessToken.AccessToken, request);
+            //Attempt transfer Spotify playback to given device
+            try
+            {
+                await _spotifyClient.PutAsUser<string>("/me/player", accessToken.AccessToken, request);
+                return true;
+            }
+            catch (SpotifyException e)
+            {
+                return false;
+            }
+            
         }
 
         public async Task<PlaybackState> GetPlaybackState(User user)

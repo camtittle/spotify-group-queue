@@ -5,6 +5,7 @@ import { ApiService } from './api.service';
 import { SpotifyAccessToken } from '../models/spotify/spotify-access-token.model';
 import { HttpClient } from '@angular/common/http';
 import { SpotifyDevice, SpotifyDevicesResponse } from '../models/spotify/spotify-device.model';
+import { SetDeviceResponse } from '../models/set-device-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -146,6 +147,7 @@ export class SpotifyService {
   }
 
   public async getDevices(): Promise<SpotifyDevice[]> {
+    console.log('GET devices');
     const response = await this.get<SpotifyDevicesResponse>('/me/player/devices');
     return response ? response.devices : [];
   }
@@ -155,12 +157,12 @@ export class SpotifyService {
     return response;
   }
 
-  public async setPlaybackDevice(device: SpotifyDevice) {
+  public async setPlaybackDevice(device: SpotifyDevice): Promise<SetDeviceResponse> {
     const body = {
       deviceName: device.name,
       deviceId: device.id
     };
-    await this.apiService.post('/spotify/device', body).toPromise();
+    return await this.apiService.post<SetDeviceResponse>('/spotify/device', body).toPromise();
   }
 
   private async get<ReturnType>(endpoint: string): Promise<ReturnType> {

@@ -57,11 +57,12 @@ button.btn {
 }
 
 .list-group-flush .list-group-item.list-group-item-action {
-  transition: color 0.15s;
-}
+  transition: color 0.3s;
+  cursor: pointer;
 
-.list-group-flush .list-group-item.list-group-item-action:hover {
-  color: #9c9c9c;
+  &.disabled {
+    color: #bbbbbb;
+  }
 }
 
 .clickable {

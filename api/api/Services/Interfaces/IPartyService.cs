@@ -21,7 +21,7 @@ namespace api.Services.Interfaces
         Task<Party> LoadFull(Party party);
         Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request);
         Task RemoveQueueItem(User user, string queueItemId);
-        Task UpdateDevice(Party party, string deviceId, string deviceName);
+        Task<SpotifyDevice> UpdateDevice(Party party, string deviceId, string deviceName);
         Task UpdatePlaybackState(Party party, PlaybackState state, User[] dontNotifyUsers = null);
         Task SendPlaybackStatusUpdate(Party party, User[] exceptUsers = null);
         PlaybackStatusUpdate GetPlaybackStatusUpdate(Party party, bool includeAdminFields = false);

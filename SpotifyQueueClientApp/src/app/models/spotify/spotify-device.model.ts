@@ -4,9 +4,9 @@ export interface SpotifyDevicesResponse {
 
 export interface SpotifyDevice {
   id: string;
-  is_active: boolean;
-  is_restricted: boolean;
+  is_active?: boolean;
+  is_restricted?: boolean;
   name: string;
-  type: string;
-  volume_percent: number;
+  type?: string;
+  volume_percent?: number;
 }

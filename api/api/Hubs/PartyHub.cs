@@ -224,7 +224,10 @@ namespace api.Hubs
             }
 
             var members = party.Members.Except(exceptUsers).Select(x => x.Id).ToList();
-            await _hubContext.Clients.Users(members).SendAsync("playbackStatusUpdate", partialUpdate);
+            members.ForEach(async member =>
+            {
+                await _hubContext.Clients.User(member).SendAsync("playbackStatusUpdate", partialUpdate);
+            });
 
             if (!exceptUsers.Contains(party.Owner))
             {

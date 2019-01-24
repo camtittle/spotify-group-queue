@@ -11,6 +11,7 @@ using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Polly;
 using Spotify.Models;
 using SQLitePCL;
 using PlaybackState = Spotify.Models.PlaybackState;
@@ -258,7 +259,7 @@ namespace api.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateDevice(Party party, string deviceId, string deviceName)
+        public async Task<SpotifyDevice> UpdateDevice(Party party, string deviceId, string deviceName)
         {
             if (party == null)
             {
@@ -267,23 +268,48 @@ namespace api.Services
 
             party = await LoadFull(party);
 
-            if (deviceId == party.Owner.CurrentDevice.DeviceId)
+            var owner = party.Owner;
+
+            if (deviceId == owner.CurrentDevice.DeviceId)
             {
-                return;
+                return owner.CurrentDevice;
             }
 
-            await _spotifyService.UpdateDevice(party.Owner, deviceId, deviceName);
+            if (deviceId == null)
+            {
+                return await SavePlaybackDevice(party, deviceId, deviceName);
+            }
 
+            var success = await _spotifyService.TransferPlayback(owner, deviceId);
+
+            if (!success)
+            {
+                return owner.CurrentDevice;
+            }
+
+            // Poll Spotify a few times to see if playback device actually changed
+            var retryPolicy = Policy
+                .HandleResult<PlaybackState>(state => state?.Device?.Id != deviceId)
+                .WaitAndRetryAsync(
+                    4,
+                    count => TimeSpan.FromSeconds(1));
+
+            var finalState = await retryPolicy.ExecuteAsync(async () => await _spotifyService.GetPlaybackState(owner));
+
+            return await SavePlaybackDevice(party, finalState.Device.Id, finalState.Device.Name);
+        }
+
+        private async Task<SpotifyDevice> SavePlaybackDevice(Party party, string id, string name)
+        {
             party.Owner.CurrentDevice = new SpotifyDevice()
             {
-                DeviceId = deviceId,
-                Name = deviceName
+                DeviceId = id,
+                Name = name
             };
 
-            // Notify clients
-            await SendPlaybackStatusUpdate(party);
-
             await _context.SaveChangesAsync();
+
+            return party.Owner.CurrentDevice;
         }
 
         public async Task UpdatePlaybackState(Party party, PlaybackState state, User[] dontNotifyUsers = null)
