@@ -69,9 +69,9 @@ namespace api.Services
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (user.SpotifyAccessToken == null || user.SpotifyRefreshToken == null || user.SpotifyTokenExpiry == null)
+            if (user.SpotifyRefreshToken == null || user.SpotifyTokenExpiry == null)
             {
-                throw new SpotifyAuthenticationException("Unable to refresh token without an existing access token");
+                throw new SpotifyAuthenticationException("Unable to refresh token without an existing refresh token and expiry");
             }
             
             // Check if existing token is still valid
@@ -174,6 +174,31 @@ namespace api.Services
             var accessToken = await GetUserAccessToken(user);
 
             return await _spotifyClient.GetAsUser<PlaybackState>("/me/player", accessToken.AccessToken);
+        }
+
+        // ToDo: Remove this temporary method
+
+        public async Task PlayTrack(User user, string[] uris, int startAtMillis = 0)
+        {
+            if (uris == null || uris.Length < 1)
+            {
+                throw new ArgumentNullException(nameof(uris));
+            }
+
+            if (startAtMillis < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startAtMillis));
+            }
+
+            var accessToken = await GetUserAccessToken(user);
+
+            var body = new
+            {
+                uris = uris,
+                position_ms = startAtMillis
+            };
+
+            await _spotifyClient.PutAsUser<string>("/me/player/play", accessToken.AccessToken, body);
         }
 
     }

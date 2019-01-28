@@ -13,5 +13,6 @@ namespace api.Services.Interfaces
         Task UpdateUserTokens(User user, string accessToken, string refreshToken, int expiresIn);
         Task<bool> TransferPlayback(User user, string deviceId);
         Task<PlaybackState> GetPlaybackState(User user);
+        Task PlayTrack(User user, string[] uris, int startAtMillis = 0);
     }
 }
