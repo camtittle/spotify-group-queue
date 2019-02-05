@@ -22,16 +22,18 @@ namespace api.Hubs
         private readonly IPartyService _partyService;
         private readonly ISpotifyClient _spotifyClient;
         private readonly ISpotifyService _spotifyService;
+        private readonly IPlaybackService _playbackService;
 
         private static readonly string ADMIN_GROUP_SUFFIX = "ADMIN";
 
-        public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService, ISpotifyClient spotifyClient, ISpotifyService spotifyService)
+        public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService, ISpotifyClient spotifyClient, ISpotifyService spotifyService, IPlaybackService playbackService)
         {
             _hubContext = hubContext;
             _userService = userService;
             _partyService = partyService;
             _spotifyClient = spotifyClient;
             _spotifyService = spotifyService;
+            _playbackService = playbackService;
         }
 
         public override async Task OnConnectedAsync()
@@ -176,12 +178,15 @@ namespace api.Hubs
             await SendPartyStatusUpdate(party);
         }
 
+        [Authorize]
         public async Task RemoveTrackFromQueue(string queueItemId)
         {
             if (string.IsNullOrWhiteSpace(queueItemId))
             {
                 throw new ArgumentException("Missing request paramaters", nameof(queueItemId));
             }
+
+            // ToDo: Gracefully handle when user is not the owner
 
             var user = await _userService.GetFromClaims(Context.User);
 
@@ -195,11 +200,39 @@ namespace api.Hubs
         /*
          * Called on client to search for tracks on Spotify based on a query string
          */
+        [Authorize]
         public async Task<TrackSearchResponse> SearchSpotifyTracks(string query)
         {
             var result = await _spotifyClient.Search(query);
 
             return result;
+        }
+
+        /*
+         * Called on client to activate queue playback
+         */
+        [Authorize]
+        public async Task<bool> ActivateQueuePlayback()
+        {
+            var user = await _userService.GetFromClaims(Context.User);
+
+            if (!user.IsOwner)
+            {
+                return false;
+            }
+
+            var party = _userService.GetParty(user);
+
+            try
+            {
+                await _playbackService.StartOrResume(party);
+                return true;
+            }
+            catch
+            {
+                // ToDo: log exception
+                return false;
+            }
         }
 
         /*

@@ -176,7 +176,10 @@ namespace api.Services
             return await _spotifyClient.GetAsUser<PlaybackState>("/me/player", accessToken.AccessToken);
         }
 
-        // ToDo: Remove this temporary method
+        public async Task PlayTrack(User user, string uri, int startAtMillis = 0)
+        {
+            await PlayTrack(user, new[] { uri }, startAtMillis);
+        }
 
         public async Task PlayTrack(User user, string[] uris, int startAtMillis = 0)
         {
@@ -194,7 +197,7 @@ namespace api.Services
 
             var body = new
             {
-                uris = uris,
+                uris,
                 position_ms = startAtMillis
             };
 

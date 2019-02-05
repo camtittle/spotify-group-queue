@@ -10,6 +10,7 @@ using api.Hubs.Models;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.EntityFrameworkCore;
 using Polly;
 using Spotify.Models;
@@ -357,6 +358,36 @@ namespace api.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task UpdatePlaybackState(Party party, QueueItem queueItem, bool isPlaying, User[] dontNotifyUsers = null)
+        {
+            if (party == null)
+            {
+                throw new ArgumentNullException(nameof(party));
+            }
+
+            if (queueItem == null)
+            {
+                throw new ArgumentNullException(nameof(queueItem));
+            }
+
+            party = await LoadFull(party);
+
+            party.CurrentTrack = new Models.Track()
+            {
+                Uri = queueItem.SpotifyUri,
+                Title = queueItem.Title,
+                Artist = queueItem.Artist,
+                DurationMillis = (int) queueItem.DurationMillis
+            };
+
+            party.Playback = isPlaying ? Playback.PLAYING : Playback.PAUSED;
+
+            // Notify clients
+            await SendPlaybackStatusUpdate(party, dontNotifyUsers);
+
+            await _context.SaveChangesAsync();
+        }
+
         public PlaybackStatusUpdate GetPlaybackStatusUpdate(Party party, bool includeAdminFields = false)
         {
             var update = new PlaybackStatusUpdate()
@@ -386,6 +417,27 @@ namespace api.Services
             var fullUpdate = GetPlaybackStatusUpdate(party, true);
 
             await PartyHub.SendPlaybackStatusUpdate(party, fullUpdate, partialUpdate, exceptUsers);
+        }
+
+        public async Task<QueueItem> RemoveNextQueueItem(Party party)
+        {
+            if (party.QueueItems == null)
+            {
+                party = await LoadFull(party);
+            }
+
+            if (party.QueueItems.Count > 0)
+            {
+                var queueItem = party.QueueItems.OrderBy(x => x.Index).First();
+
+                party.QueueItems.Remove(queueItem);
+
+                await _context.SaveChangesAsync();
+
+                return queueItem;
+            }
+
+            return null;
         }
     }
 }
