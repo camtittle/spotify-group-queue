@@ -1,64 +1,36 @@
 ﻿using System;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
+using Api.Domain.Entities;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
 
-namespace api.Business.Services
+namespace Api.Business.Services
 {
     public class UserService : IUserService
     {
-        private readonly apiContext _context;
+        private readonly IUserRepository _userRepository;
 
-        public UserService(apiContext context)
+        public UserService(IUserRepository userRepository)
         {
-            _context = context;
+            _userRepository = userRepository;
         }
 
-        public async Task<User> GetFromClaims(ClaimsPrincipal claimsPrincipal)
+        public async Task<User> Create(string username)
         {
-            var userId = claimsPrincipal.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
-            var user = await Find(userId);
-            return user;
-        }
-
-        public User Create(string username)
-        {
-            // validation
             if (string.IsNullOrWhiteSpace(username))
+            {
                 throw new ArgumentNullException(nameof(username));
-            
-            if (_context.Users.Any(x => x.Username == username))
+            }
+
+            if (_userRepository.GetByUsername(username) != null)
+            {
                 throw new ArgumentException($"Username {username} is already taken");
+            }
 
-            var user = new User
-            {
-                Username = username,
-                Id = Guid.NewGuid().ToString()
-            };
+            var user = new User(username);
+            var result = await _userRepository.Add(user);
 
-            return user;
+            return result;
         }
-
-        public Party GetParty(User user)
-        {
-            if (user.IsMember)
-            {
-                return user.CurrentParty;
-            }
-
-            if (user.IsOwner)
-            {
-                return user.OwnedParty;
-            }
-
-            if (user.IsPendingMember)
-            {
-                return user.PendingParty;
-            }
-
-            return null;
-        }
-
-        
     }
 }

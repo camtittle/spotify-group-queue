@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace api.Migrations
+namespace Api.Infrastructure.Migrations
 {
     public partial class UserJoinedPartyDateTime : Migration
     {

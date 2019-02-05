@@ -1,7 +1,6 @@
 ﻿using System.Security.Claims;
-using Microsoft.AspNetCore.SignalR;
 
-namespace api.Providers
+namespace Api.Business.Providers
 {
     public class MyUserIdProvider : IUserIdProvider
     {

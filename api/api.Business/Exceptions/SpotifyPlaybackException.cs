@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace api.Exceptions
+namespace Api.Business.Exceptions
 {
     public class SpotifyPlaybackException : Exception
     {

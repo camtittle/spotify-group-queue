@@ -1,4 +1,4 @@
-﻿namespace api.Business
+﻿namespace Api.Business
 {
     public class DiRegister
     {

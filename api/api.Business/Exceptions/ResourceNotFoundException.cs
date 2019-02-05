@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
-
-namespace api.Exceptions
+﻿namespace Api.Business.Exceptions
 {
-    public class ResourceNotFoundException : APIException
+    public class ResourceNotFoundException : ApiException
     {
         public ResourceNotFoundException(string message) : base(message)
         {

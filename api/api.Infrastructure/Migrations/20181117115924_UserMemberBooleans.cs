@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace api.Migrations
+namespace Api.Infrastructure.Migrations
 {
     public partial class UserMemberBooleans : Migration
     {

@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace api.Exceptions
+namespace Api.Business.Exceptions
 {
-    public class APIException : Exception
+    public class ApiException : Exception
     {
-        public APIException(string message) : base(message)
+        public ApiException(string message) : base(message)
         {
         }
     }

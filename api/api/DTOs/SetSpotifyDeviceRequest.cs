@@ -1,6 +1,6 @@
 ﻿using Microsoft.Build.Framework;
 
-namespace api.Controllers.Models
+namespace Api.DTOs
 {
     public class SetSpotifyDeviceRequest
     {

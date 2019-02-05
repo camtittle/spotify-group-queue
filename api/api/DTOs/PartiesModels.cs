@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace api.Controllers.Models
+namespace Api.DTOs
 {
     public class CreatePartyRequest
     {

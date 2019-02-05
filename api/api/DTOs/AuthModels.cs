@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using api.Models;
 
-namespace api.Controllers.Models
+namespace Api.DTOs
 {
     public class TokenRequest
     {

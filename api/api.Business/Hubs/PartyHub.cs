@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using api.Exceptions;
-using api.Hubs.Models;
-using api.Models;
-using api.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
-using Spotify.Interfaces;
-using Spotify.Models;
+using Api.Business.Exceptions;
+using Api.Domain.DTOs;
 
-
-namespace api.Hubs
+namespace Api.Business.Hubs
 {
     public class PartyHub : Hub
     {

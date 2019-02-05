@@ -1,12 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using api.Controllers.Models;
-using api.Services.Interfaces;
+using Api.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Spotify.Exceptions;
 
-namespace api.Controllers
+namespace Api.Controllers
 {
     [Route("api/v1/[controller]")]
     public class SpotifyController : Controller

@@ -1,7 +1,7 @@
-﻿using api.Domain.Entities;
+﻿using Api.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace api.Infrastructure.DbContexts
+namespace Api.Infrastructure.DbContexts
 {
     public class SpotifyAppContext : DbContext
     {

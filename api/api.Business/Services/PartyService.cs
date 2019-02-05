@@ -2,33 +2,38 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using api.Domain.DTOs;
-using api.Domain.Entities;
-using api.Domain.Enums;
-using api.Domain.Interfaces.Services;
-using PlaybackState = Spotify.Models.PlaybackState;
+using Api.Business.Exceptions;
+using Api.Domain.DTOs;
+using Api.Domain.Entities;
+using Api.Domain.Enums;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
 
-namespace api.Business.Services
+namespace Api.Business.Services
 {
     public class PartyService : IPartyService
     {
-        private readonly IUserService _userService;
+        private readonly IPartyRepository _partyRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IMembershipService _membershipService;
         private readonly ISpotifyService _spotifyService;
 
-        public PartyService(IUserService userService, ISpotifyService spotifyService)
+        public PartyService(IPartyRepository partyRepository, IUserRepository userRepository, IMembershipService membershipService, ISpotifyService spotifyService)
         {
-            _userService = userService;
+            _partyRepository = partyRepository;
+            _userRepository = userRepository;
+            _membershipService = membershipService;
             _spotifyService = spotifyService;
         }
 
         public async Task<Party> Create(User owner, string name)
         {
-            if (String.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentNullException(name);
             }
 
-            if (_context.Parties.Any(p => p.Name == name))
+            if (_partyRepository.GetByName(name) != null)
             {
                 throw new ArgumentException("Party name taken");
             }
@@ -38,21 +43,10 @@ namespace api.Business.Services
                 throw new ArgumentNullException(nameof(owner));
             }
 
-            // Leave any exisiting parties
-            await Leave(owner);
+            await _membershipService.Leave(owner);
+            var result = await _partyRepository.Add(new Party { Name = name, Owner = owner });
 
-            var party = new Party
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = name,
-                Members = new List<User>(),
-                PendingMembers = new List<User>(),
-                Owner = owner,
-                QueueItems = new List<QueueItem>(),
-                Playback = Playback.NOT_ACTIVE,
-                CurrentTrack = new Models.Track()
-            };
-            return party;
+            return result;
         }
 
         public async Task Delete(Party party)
@@ -62,164 +56,17 @@ namespace api.Business.Services
                 throw new ArgumentNullException(nameof(party));
             }
 
-            party = await LoadFull(party);
+            party = await _partyRepository.GetWithAllProperties(party);
 
             party.Owner = null;
             party.Members?.ForEach(m => m.CurrentParty = null);
             party.PendingMembers?.ForEach(m => m.PendingParty = null);
-            _context.SaveChanges();
 
-            _context.Parties.Remove(party);
-            _context.SaveChanges();
+            await _partyRepository.Update(party);
+            await _partyRepository.Delete(party);
         }
 
-        public async Task Leave(User user)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            user.CurrentParty = null;
-            user.PendingParty = null;
-            user.OwnedParty = null;
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task RequestToJoin(Party party, User user)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            // Verify not an owner of a party
-            if (user.IsOwner || user.IsMember)
-            {
-                throw new JoiningPartyException("User already in a party - cannot join another party");
-            }
-
-            user.PendingParty = party ?? throw new ArgumentNullException(nameof(party));
-            user.JoinedPartyDateTime = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-
-            // Notify admin of pending request
-            await PartyHub.NotifyAdminNewPendingMember(user, party);
-        }
-
-        public async Task AddPendingMember(Party party, User user)
-        {
-            if (party == null)
-            {
-                throw new ArgumentNullException(nameof(party));
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            // Verify they are not already in the party
-            if (user.CurrentParty?.Id == party.Id)
-            {
-                return;
-            }
-
-            user.CurrentParty = party;
-            user.PendingParty = null;
-            user.OwnedParty = null;
-            user.JoinedPartyDateTime = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task RemovePendingMember(Party party, User user)
-        {
-            if (party == null)
-            {
-                throw new ArgumentNullException(nameof(party));
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            user.PendingParty = null;
-
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<CurrentParty> GetCurrentParty(Party party, bool partial = false)
-        {
-            if (party == null)
-            {
-                return null;
-            }
-
-            party = await LoadFull(party);
-
-            return new CurrentParty(party, partial);
-        }
-
-        public async Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request)
-        {
-            if (!user.IsOwner && !user.IsMember)
-            {
-                throw new PartyQueueException("Cannot add request to queue - not a member of a party");
-            }
-
-            var party = await LoadFull(_userService.GetParty(user));
-            if (party == null)
-            {
-                throw new PartyQueueException("Cannot add request to queue - party not found");
-            }
-
-            var newIndex = party.QueueItems.Count > 0 ? party.QueueItems.Max(x => x.Index) + 1 : 1;
-
-            // TODO: limit number of tracks in queue per user
-            var queueItem = new QueueItem()
-            {
-                AddedByUser = user,
-                ForParty = party,
-                SpotifyUri = request.SpotifyUri,
-                Title = request.Title,
-                Artist = request.Artist,
-                DurationMillis = request.DurationMillis,
-                Index = newIndex
-            };
-
-            _context.QueueItems.Add(queueItem);
-
-            await _context.SaveChangesAsync();
-
-            return queueItem;
-        }
-
-        public async Task RemoveQueueItem(User user, string queueItemId)
-        {
-            if (!user.IsOwner)
-            {
-                throw new PartyQueueException("Cannot remove from queue - not owner of party");
-            }
-
-            var party = await LoadFull(_userService.GetParty(user));
-            if (party == null)
-            {
-                throw new PartyQueueException("Cannot remove track from queue - party not found");
-            }
-
-            var queueItem = await _context.QueueItems.FindAsync(queueItemId);
-            if (queueItem == null)
-            {
-                throw new PartyQueueException("Cannot remove track from queue - queue item with ID not found");
-            }
-
-            _context.QueueItems.Remove(queueItem);
-
-            await _context.SaveChangesAsync();
-        }
-
+        // ToDo: rename to "SetPlaybackDevice" or similar
         public async Task<SpotifyDevice> UpdateDevice(Party party, string deviceId, string deviceName)
         {
             if (party == null)
@@ -268,7 +115,7 @@ namespace api.Business.Services
                 Name = name
             };
 
-            await _context.SaveChangesAsync();
+            await _userRepository.Update(party.Owner);
 
             return party.Owner.CurrentDevice;
         }

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace api.Business.Services
+namespace Api.Business.Services
 {
     public class PlaybackService : IPlaybackService
     {

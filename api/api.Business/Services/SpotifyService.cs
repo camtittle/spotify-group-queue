@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using PlaybackState = Spotify.Models.PlaybackState;
 
-namespace api.Business.Services
+namespace Api.Business.Services
 {
     public class SpotifyService : ISpotifyService
     {

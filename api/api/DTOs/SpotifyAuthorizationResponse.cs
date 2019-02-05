@@ -1,4 +1,4 @@
-﻿namespace api.Controllers.Models
+﻿namespace Api.DTOs
 {
     public class SpotifyAuthorizationResponse
     {

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using api.Domain.Entities;
-using api.Domain.Interfaces.Repositories;
-using api.Infrastructure.DbContexts;
+using Api.Domain.Entities;
+using Api.Domain.Interfaces.Repositories;
+using Api.Infrastructure.DbContexts;
 using Microsoft.EntityFrameworkCore;
 
-namespace api.Infrastructure.Repositories
+namespace Api.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
@@ -17,17 +17,15 @@ namespace api.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<User> Add(User user)
+        public async Task Add(User user)
         {
             if (user == null)
             {
                 throw new ArgumentNullException();
             }
 
-            var result = _context.Users.Add(user);
+           _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
-            return result.Entity;
         }
 
         public async Task<User> GetById(string id)

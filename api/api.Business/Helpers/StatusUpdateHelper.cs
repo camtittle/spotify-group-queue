@@ -1,4 +1,4 @@
-﻿namespace api.Business.Helpers
+﻿namespace Api.Business.Helpers
 {
     public class StatusUpdateHelper
     {

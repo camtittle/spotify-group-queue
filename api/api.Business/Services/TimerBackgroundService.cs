@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace api.Business.Services
+namespace Api.Business.Services
 {
     public class TimerBackgroundService : IHostedService
     {

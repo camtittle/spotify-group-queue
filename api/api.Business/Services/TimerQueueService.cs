@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace api.Business.Services
+namespace Api.Business.Services
 {
     public class TimerQueueService : ITimerQueueService
     {

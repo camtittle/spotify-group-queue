@@ -1,4 +1,4 @@
-﻿namespace api.Business.Services
+﻿namespace Api.Business.Services
 {
     public static class ServiceExtensions
     {

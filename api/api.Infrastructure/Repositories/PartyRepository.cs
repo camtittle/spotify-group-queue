@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using api.Domain.Entities;
-using api.Domain.Interfaces.Repositories;
-using api.Infrastructure.DbContexts;
+using Api.Domain.Entities;
+using Api.Domain.Interfaces.Repositories;
+using Api.Infrastructure.DbContexts;
 using Microsoft.EntityFrameworkCore;
 
-namespace api.Infrastructure.Repositories
+namespace Api.Infrastructure.Repositories
 {
     public class PartyRepository : IPartyRepository
     {
@@ -18,17 +18,15 @@ namespace api.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Party> Add(Party party)
+        public async Task Add(Party party)
         {
             if (party == null)
             {
                 throw new ArgumentNullException();
             }
 
-            var result = _context.Parties.Add(party);
+            _context.Parties.Add(party);
             await _context.SaveChangesAsync();
-
-            return result.Entity;
         }
 
         public async Task<List<Party>> GetAll()
@@ -40,7 +38,7 @@ namespace api.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Party> get(string id)
+        public async Task<Party> Get(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -48,6 +46,20 @@ namespace api.Infrastructure.Repositories
             }
 
             return await _context.Parties.Where(p => p.Id == id)
+                .Include(p => p.Owner)
+                .Include(p => p.Members)
+                .Include(p => p.PendingMembers)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Party> GetByName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException();
+            }
+
+            return await _context.Parties.Where(p => p.Name == name)
                 .Include(p => p.Owner)
                 .Include(p => p.Members)
                 .Include(p => p.PendingMembers)
