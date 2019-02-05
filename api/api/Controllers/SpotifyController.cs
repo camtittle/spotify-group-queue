@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using api.Controllers.Models;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -96,6 +97,45 @@ namespace api.Controllers
             }
 
             return Ok(user.CurrentDevice);
+        }
+
+        [HttpPost("testTimer")]
+        [Authorize]
+        public async Task<IActionResult> TestTimerPlayback()
+        {
+            var playForMillis = 20000;
+            var startAfterMillis = playForMillis;
+
+            // the sound - 1975
+            var uri1 = "spotify:track:7h6lpVuSGPW6RNjDXKpYDh";
+            var duration1 = 248879;
+
+            // don't go - smokin jack hill
+            var uri2 = "spotify:track:4InZWL62blQGzduWwQusYX";
+            var duration2 = 240000;
+
+            // true - digital farm animals
+            var uri3 = "spotify:track:4OeW3FtleS18prcxVpNAVX";
+            var duration3 = 193946;
+
+            // be the one - dua lipa
+            var uri4 = "spotify:track:1ixphys4A3NEXp6MDScfih";
+
+            var user = await _userService.GetFromClaims(User);
+
+            if (user.SpotifyRefreshToken == null)
+            {
+                return BadRequest("Not connected to spotify");
+            }
+
+            // Trigger playback of a Spotify track
+            await _spotifyService.PlayTrack(user, new []{uri3, uri4}, duration3 - playForMillis);
+
+            // Set up a timer to play another song when that one finishes
+            var timer = new Timer(state => { _spotifyService.PlayTrack(user, new []{uri2}); }, null, playForMillis, Timeout.Infinite);
+
+            return Ok();
+
         }
     }
 }
