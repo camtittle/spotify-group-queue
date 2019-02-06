@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Api.Domain.DTOs;
 using Api.Domain.Interfaces.Repositories;
 using Api.Domain.Interfaces.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Spotify.Exceptions;
 
@@ -12,19 +13,19 @@ namespace Api.Business.Services
 {
     public class TimerBackgroundService : IHostedService
     {
-        private readonly IPartyRepository _partyRepository;
-
-        private readonly ISpotifyService _spotifyService;
-        private readonly TimerQueueService _timerQueueService;
+        private IPartyRepository _partyRepository;
+        private ISpotifyService _spotifyService;
+        private readonly ITimerQueueService _timerQueueService;
 
         private readonly Dictionary<string, Timer> _timers;
 
         private CancellationTokenSource _tokenSource;
 
-        public TimerBackgroundService(TimerQueueService timerQueueService, ISpotifyService spotifyService, IPartyRepository partyRepository)
+        public IServiceProvider Services { get; }
+
+        public TimerBackgroundService(IServiceProvider services, ITimerQueueService timerQueueService)
         {
-            _spotifyService = spotifyService;
-            _partyRepository = partyRepository;
+            Services = services;
             _timerQueueService = timerQueueService;
             _timers = new Dictionary<string, Timer>();
         }
@@ -33,6 +34,18 @@ namespace Api.Business.Services
         {
             _tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
+            using (var scope = Services.CreateScope())
+            {
+                _spotifyService = scope.ServiceProvider.GetRequiredService<ISpotifyService>();
+                _partyRepository = scope.ServiceProvider.GetRequiredService<IPartyRepository>();
+
+                Listen();
+            }
+
+        }
+
+        private void Listen()
+        {
             while (!_tokenSource.IsCancellationRequested)
             {
                 try
