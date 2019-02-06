@@ -1,23 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
-using api.Hubs;
+using Api.Business;
+using Api.Business.Hubs;
+using Api.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
-using api.Models;
-using api.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
-namespace api
+namespace Api
 {
     public class Startup
     {
@@ -74,10 +69,12 @@ namespace api
 
             services.AddOptions();
 
-            services.RegisterServices(Configuration); // Register all our API servies
+            // Register services in Api.Infrastructure
+            services.RegisterInfrastructureServices(Configuration);
 
-            services.AddDbContext<apiContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("apiContext")));
+            //Register services in Api.Business
+            services.RegisterBusinessServices(Configuration);
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

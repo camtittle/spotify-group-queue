@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Api.Business.Providers
 {

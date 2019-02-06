@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Spotify.Models
+﻿namespace Api.Domain.Settings
 {
     public class SpotifySettings
     {

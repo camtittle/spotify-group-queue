@@ -43,13 +43,13 @@ namespace Api.Domain.Entities
         {
             if (obj is User user)
             {
-                return user.Id == this.Id;
+                return user.Id == Id;
             }
 
             return false;
         }
 
-        public Party GetCurrentParty()
+        public Party GetActiveParty()
         {
             if (IsMember)
             {

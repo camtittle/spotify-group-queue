@@ -5,7 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\api.Core\api.Domain.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
+    <PackageReference Include="Polly" Version="6.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Api.Domain\Api.Domain.csproj" />
+    <ProjectReference Include="..\Api.Infrastructure\Api.Infrastructure.csproj" />
+    <ProjectReference Include="..\Spotify\Spotify.csproj" />
   </ItemGroup>
 
 </Project>

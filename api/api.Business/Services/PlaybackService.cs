@@ -1,40 +1,127 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Api.Business.Hubs;
+using Api.Domain.DTOs;
+using Api.Domain.Entities;
+using Api.Domain.Enums;
+using Api.Domain.Interfaces.Helpers;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
 
 namespace Api.Business.Services
 {
     public class PlaybackService : IPlaybackService
     {
-        private readonly ITimerQueueService _timerQueueService;
-        private readonly ISpotifyService _spotifyService;
-        private readonly IPartyService _partyService;
+        private readonly IPartyRepository _partyRepository;
 
-        public PlaybackService(ITimerQueueService timerQueueService, ISpotifyService spotifyService, IPartyService partyService)
+        private readonly IQueueService _queueService;
+        private readonly ISpotifyService _spotifyService;
+        private readonly ITimerQueueService _timerQueueService;
+        
+        private readonly IStatusUpdateHelper _statusUpdateHelper;
+
+        public PlaybackService(IPartyRepository partyRepository, IQueueService queueService, ISpotifyService spotifyService, ITimerQueueService timerQueueService, IStatusUpdateHelper statusUpdateHelper)
         {
-            _timerQueueService = timerQueueService;
+            _partyRepository = partyRepository;
+            _queueService = queueService;
             _spotifyService = spotifyService;
-            _partyService = partyService;
+            _timerQueueService = timerQueueService;
+            _statusUpdateHelper = statusUpdateHelper;
+        }
+
+        public async Task UpdatePlaybackState(Party party, SpotifyPlaybackState state, User[] dontNotifyUsers = null)
+        {
+            if (party == null)
+            {
+                throw new ArgumentNullException(nameof(party));
+            }
+
+            party = await _partyRepository.GetWithAllProperties(party);
+
+            if (state == null)
+            {
+                party.CurrentTrack = new Track();
+
+                party.Playback = Playback.NotActive;
+
+                party.Owner.CurrentDevice = new SpotifyDevice();
+            }
+            else
+            {
+                party.CurrentTrack = new Track()
+                {
+                    Uri = state.Item.Uri,
+                    Title = state.Item.Title,
+                    Artist = state.Item.Artist,
+                    DurationMillis = state.Item.DurationMillis
+                };
+
+                if (party.Playback != Playback.NotActive)
+                {
+                    party.Playback = state.IsPlaying ? Playback.Playing : Playback.Paused;
+                }
+
+                party.Owner.CurrentDevice = new SpotifyDevice()
+                {
+                    DeviceId = state.Device?.DeviceId,
+                    Name = state.Device?.Name
+                };
+            }
+
+            await _partyRepository.Update(party);
+
+            // Notify clients
+            await SendPlaybackStatusUpdate(party, dontNotifyUsers);
+        }
+
+        public async Task UpdatePlaybackState(Party party, QueueItem queueItem, bool isPlaying, User[] dontNotifyUsers = null)
+        {
+            if (party == null)
+            {
+                throw new ArgumentNullException(nameof(party));
+            }
+
+            if (queueItem == null)
+            {
+                throw new ArgumentNullException(nameof(queueItem));
+            }
+
+            party = await _partyRepository.GetWithAllProperties(party);
+            party.CurrentTrack = new Track()
+            {
+                Uri = queueItem.SpotifyUri,
+                Title = queueItem.Title,
+                Artist = queueItem.Artist,
+                DurationMillis = (int)queueItem.DurationMillis
+            };
+            party.Playback = isPlaying ? Playback.Playing : Playback.Paused;
+
+            await _partyRepository.Update(party);
+
+            // Notify clients
+            await SendPlaybackStatusUpdate(party, dontNotifyUsers);
         }
 
         public async Task StartOrResume(Party party)
         {
-            party = await _partyService.LoadFull(party);
+            party = await _partyRepository.GetWithAllProperties(party);
 
             switch (party.Playback)
             {
-                case Playback.NOT_ACTIVE:
+                case Playback.NotActive:
                 {
-                    var queueItem = await _partyService.RemoveNextQueueItem(party);
+                    var queueItem = await _queueService.RemoveNextQueueItem(party);
                     if (queueItem == null)
                     {
                         break;
                     }
 
                     await _spotifyService.PlayTrack(party.Owner, queueItem.SpotifyUri);
-                    await _partyService.UpdatePlaybackState(party, queueItem, true);
+                    await UpdatePlaybackState(party, queueItem, true);
                     await StartTimerForNextQueueItem(party);
                     break;
                 }
-                case Playback.PAUSED:
+                case Playback.Paused:
                 {
                     break;
                 }
@@ -47,7 +134,7 @@ namespace Api.Business.Services
         
         private async Task StartTimerForNextQueueItem(Party party)
         {
-            var nextQueueItem = await _partyService.RemoveNextQueueItem(party);
+            var nextQueueItem = await _queueService.RemoveNextQueueItem(party);
             if (nextQueueItem != null)
             {
                 var timerDetails = new TimerDetails()
@@ -60,6 +147,14 @@ namespace Api.Business.Services
             }
         }
 
+        public async Task SendPlaybackStatusUpdate(Party party, User[] exceptUsers = null)
+        {
+            party = await _partyRepository.GetWithAllProperties(party);
 
+            var partialUpdate = _statusUpdateHelper.GeneratePlaybackStatusUpdate(party);
+            var fullUpdate = _statusUpdateHelper.GeneratePlaybackStatusUpdate(party, true);
+
+            await PartyHub.SendPlaybackStatusUpdate(party, fullUpdate, partialUpdate, exceptUsers);
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Api.Domain.Entities;
 
 namespace Api.Domain.Interfaces.Services

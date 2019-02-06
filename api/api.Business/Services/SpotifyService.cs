@@ -1,6 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Api.Business.Exceptions;
+using Api.Domain.DTOs;
+using Api.Domain.Entities;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
+using Spotify.Exceptions;
+using Spotify.Interfaces;
+using Spotify.Models;
 using PlaybackState = Spotify.Models.PlaybackState;
+using Track = Api.Domain.Entities.Track;
 
 namespace Api.Business.Services
 {
@@ -8,13 +19,12 @@ namespace Api.Business.Services
     {
 
         private readonly ISpotifyClient _spotifyClient;
-        private readonly IUserService _userService;
+        private readonly IUserRepository _userRepository;
 
-        public SpotifyService(ISpotifyClient spotifyClient,
-                              IUserService userService)
+        public SpotifyService(ISpotifyClient spotifyClient, IUserRepository userRepository)
         {
             _spotifyClient = spotifyClient;
-            _userService = userService;
+            _userRepository = userRepository;
         }
 
         /*
@@ -37,10 +47,9 @@ namespace Api.Business.Services
             {
                 // Attempt to exchange code for access token 
                 var result = await _spotifyClient.GetClientToken(code);
-                
                 await UpdateUserTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
 
-                return new SpotifyAccessToken(result);
+                return new SpotifyAccessToken(result.AccessToken, result.ExpiresIn);
             }
             catch (Exception e)
             {
@@ -76,10 +85,9 @@ namespace Api.Business.Services
 
             // Get a new token
             var result = await _spotifyClient.GetClientToken(user.SpotifyRefreshToken, true);
-
             await UpdateUserTokens(user, result.AccessToken, result.RefreshToken, result.ExpiresIn);
 
-            return new SpotifyAccessToken(result);
+            return new SpotifyAccessToken(result.AccessToken, result.ExpiresIn);
         }
 
         public async Task UpdateUserTokens(User user, string accessToken, string refreshToken, int expiresIn)
@@ -103,7 +111,7 @@ namespace Api.Business.Services
                 user.SpotifyRefreshToken = refreshToken;
             }
 
-            await _userService.Update(user);
+            await _userRepository.Update(user);
         }
 
         public async Task<bool> TransferPlayback(User user, string deviceId)
@@ -142,14 +150,14 @@ namespace Api.Business.Services
                 await _spotifyClient.PutAsUser<string>("/me/player", accessToken.AccessToken, request);
                 return true;
             }
-            catch (SpotifyException e)
+            catch (SpotifyException)
             {
                 return false;
             }
             
         }
 
-        public async Task<PlaybackState> GetPlaybackState(User user)
+        public async Task<SpotifyPlaybackState> GetPlaybackState(User user)
         {
             if (user == null)
             {
@@ -162,8 +170,36 @@ namespace Api.Business.Services
             }
 
             var accessToken = await GetUserAccessToken(user);
+            var response = await _spotifyClient.GetAsUser<PlaybackState>("/me/player", accessToken.AccessToken);
 
-            return await _spotifyClient.GetAsUser<PlaybackState>("/me/player", accessToken.AccessToken);
+            if (response == null)
+            {
+                return null;
+            }
+
+            var playbackState = new SpotifyPlaybackState();
+
+            if (response.Device != null)
+            {
+                playbackState.Device = new SpotifyDevice
+                {
+                    DeviceId = response.Device.Id,
+                    Name = response.Device.Name
+                };
+            }
+
+            if (response.Item != null)
+            {
+                playbackState.Item = new Track
+                {
+                    Artist = Spotify.Utils.ArtistsToCommaSeparatedString(response.Item.Artists),
+                    DurationMillis = response.Item.DurationMillis,
+                    Title = response.Item.Name,
+                    Uri = response.Item.Uri
+                };
+            }
+
+            return playbackState;
         }
 
         public async Task PlayTrack(User user, string uri, int startAtMillis = 0)
@@ -192,6 +228,24 @@ namespace Api.Business.Services
             };
 
             await _spotifyClient.PutAsUser<string>("/me/player/play", accessToken.AccessToken, body);
+        }
+
+        public async Task<List<Track>> Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                throw new ArgumentNullException();
+            }
+
+            var response = await _spotifyClient.Search(query);
+
+            return new List<Track>(response.Tracks.Items.Select(t => new Track()
+            {
+                Artist = Spotify.Utils.ArtistsToCommaSeparatedString(t.Artists),
+                DurationMillis = t.DurationMillis,
+                Title = t.Name,
+                Uri = t.Uri
+            }));
         }
 
     }

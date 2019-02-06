@@ -4,10 +4,12 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Api.Infrastructure.DbContexts;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Api.Infrastructure.Migrations
 {
-    [DbContext(typeof(apiContext))]
+    [DbContext(typeof(SpotifyAppContext))]
     [Migration("20190118105159_PlaybackState")]
     partial class PlaybackState
     {

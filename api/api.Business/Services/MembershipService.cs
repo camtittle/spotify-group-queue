@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Api.Business.Exceptions;
+using Api.Business.Hubs;
 using Api.Domain.Entities;
 using Api.Domain.Interfaces.Repositories;
 using Api.Domain.Interfaces.Services;
@@ -10,14 +11,10 @@ namespace Api.Business.Services
     public class MembershipService : IMembershipService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPartyRepository _partyRepository;
-        private readonly INotifyService _notifyService;
 
-        public MembershipService(IUserRepository userRepository, IPartyRepository partyRepository, INotifyService notifyService)
+        public MembershipService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
-            _partyRepository = partyRepository;
-            _notifyService = notifyService;
         }
 
         public async Task Leave(User user)
@@ -51,7 +48,7 @@ namespace Api.Business.Services
             await _userRepository.Update(user);
 
             // Notify admin of pending request
-            await _notifyService.NewPendingMember(user, party);
+            await PartyHub.NotifyAdminNewPendingMember(user, party);
         }
 
         public async Task AddPendingMember(Party party, User user)

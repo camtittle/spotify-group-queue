@@ -26,7 +26,7 @@ namespace Api.Business.Services
                 throw new PartyQueueException("Cannot add request to queue - not a member of a party");
             }
 
-            var party = await _partyRepository.GetWithAllProperties(user.GetCurrentParty());
+            var party = await _partyRepository.GetWithAllProperties(user.GetActiveParty());
             if (party == null)
             {
                 throw new PartyQueueException("Cannot add request to queue - party not found");
@@ -58,7 +58,7 @@ namespace Api.Business.Services
                 throw new PartyQueueException("Cannot remove from queue - not owner of party");
             }
 
-            var party = await _partyRepository.GetWithAllProperties(user.GetCurrentParty());
+            var party = await _partyRepository.GetWithAllProperties(user.GetActiveParty());
             if (party == null)
             {
                 throw new PartyQueueException("Cannot remove track from queue - party not found");
@@ -73,5 +73,26 @@ namespace Api.Business.Services
             await _queueItemRepository.Delete(queueItem);
         }
 
+        public async Task<QueueItem> RemoveNextQueueItem(Party party)
+        {
+            if (party.QueueItems == null)
+            {
+                party = await _partyRepository.GetWithAllProperties(party);
+            }
+
+            if (party.QueueItems.Count > 0)
+            {
+                var queueItem = party.QueueItems.OrderBy(x => x.Index).First();
+
+                party.QueueItems.Remove(queueItem);
+
+                await _partyRepository.Update(party);
+                await _queueItemRepository.Delete(queueItem);
+
+                return queueItem;
+            }
+
+            return null;
+        }
     }
 }

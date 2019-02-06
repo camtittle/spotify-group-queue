@@ -1,4 +1,6 @@
-﻿namespace Api.Domain.Entities
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Api.Domain.Entities
 {
     [Owned]
     public class SpotifyDevice

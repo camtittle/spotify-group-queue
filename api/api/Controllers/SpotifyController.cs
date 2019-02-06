@@ -1,9 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Api.Domain.Interfaces.Helpers;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
 using Api.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Spotify.Exceptions;
 
 namespace Api.Controllers
 {
@@ -11,15 +13,21 @@ namespace Api.Controllers
     public class SpotifyController : Controller
     {
 
-        private readonly ISpotifyService _spotifyService;
-        private readonly IUserService _userService;
-        private readonly IPartyService _partyService;
+        private readonly IUserRepository _userRepository;
 
-        public SpotifyController(ISpotifyService spotifyService, IUserService userService, IPartyService partyService)
+        private readonly ISpotifyService _spotifyService;
+        private readonly IPartyService _partyService;
+        private readonly IPlaybackService _playbackService;
+
+        private readonly IJwtHelper _jwtHelper;
+
+        public SpotifyController(IUserRepository userRepository, ISpotifyService spotifyService, IPartyService partyService, IPlaybackService playbackService, IJwtHelper jwtHelper)
         {
+            _userRepository = userRepository;
             _spotifyService = spotifyService;
-            _userService = userService;
             _partyService = partyService;
+            _playbackService = playbackService;
+            _jwtHelper = jwtHelper;
         }
 
         [HttpPost("authorize")]
@@ -30,8 +38,9 @@ namespace Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-
-            var user = await _userService.GetFromClaims(User);
+            
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
 
             // Attempt to exchange the code for an access token
             var token = await _spotifyService.AuthorizeClient(user, request.Code);
@@ -42,7 +51,8 @@ namespace Api.Controllers
 
                 if (playbackState != null)
                 {
-                    await _partyService.UpdatePlaybackState(user.OwnedParty, playbackState);
+                    // ToDo: This shouldn't be done in the controller, move to a service
+                    await _playbackService.UpdatePlaybackState(user.OwnedParty, playbackState);
                 }
             }
 
@@ -55,7 +65,8 @@ namespace Api.Controllers
         [Authorize]
         public async Task<IActionResult> RefreshToken()
         {
-            var user = await _userService.GetFromClaims(User);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
 
             if (user.SpotifyRefreshToken == null)
             {
@@ -68,6 +79,7 @@ namespace Api.Controllers
         }
 
         // TODO: lock down to party owners
+        // ToDo: why is this an endpoint and not a hub method?
         [HttpPost("device")]
         [Authorize]
         public async Task<IActionResult> SetPlaybackDevice([FromBody] SetSpotifyDeviceRequest request)
@@ -77,20 +89,21 @@ namespace Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _userService.GetFromClaims(User);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
 
             if (!user.IsOwner)
             {
-                throw new SpotifyException("Cannot set playback device - User not owner of any party");
+                return Forbid("Cannot set playback device - User not owner of any party");
             }
 
-            var party = _userService.GetParty(user);
+            var party = user.GetActiveParty();
 
             if (user.CurrentDevice.DeviceId != request.DeviceId)
             {
                 var device = await _partyService.UpdateDevice(party, request.DeviceId, request.DeviceName);
 
-                await _partyService.SendPlaybackStatusUpdate(party);
+                await _playbackService.SendPlaybackStatusUpdate(party);
 
                 return Ok(device);
             }
@@ -120,7 +133,8 @@ namespace Api.Controllers
             // be the one - dua lipa
             var uri4 = "spotify:track:1ixphys4A3NEXp6MDScfih";
 
-            var user = await _userService.GetFromClaims(User);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
 
             if (user.SpotifyRefreshToken == null)
             {

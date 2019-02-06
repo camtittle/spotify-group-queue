@@ -3,12 +3,12 @@
     public enum Playback
     {
         // Playback not yet been invoked in client
-        NOT_ACTIVE = 0,
+        NotActive = 0,
 
         // Playback invoked and currently playing
-        PLAYING = 1,
+        Playing = 1,
 
         // Playback invoked but currently paused
-        PAUSED = 2
+        Paused = 2
     }
 }

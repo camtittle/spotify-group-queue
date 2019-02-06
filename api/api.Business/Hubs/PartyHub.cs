@@ -1,42 +1,60 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Api.Business.Exceptions;
 using Api.Domain.DTOs;
+using Api.Domain.Entities;
+using Api.Domain.Interfaces.Helpers;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Track = Api.Domain.Entities.Track;
 
 namespace Api.Business.Hubs
 {
     public class PartyHub : Hub
     {
         private static IHubContext<PartyHub> _hubContext;
-        private readonly IUserService _userService;
-        private readonly IPartyService _partyService;
-        private readonly ISpotifyClient _spotifyClient;
+
+        private readonly IUserRepository _userRepository;
+        private readonly IPartyRepository _partyRepository;
+
         private readonly ISpotifyService _spotifyService;
         private readonly IPlaybackService _playbackService;
+        private readonly IMembershipService _membershipService;
+        private readonly IQueueService _queueService;
 
-        private static readonly string ADMIN_GROUP_SUFFIX = "ADMIN";
+        private readonly IJwtHelper _jwtHelper;
+        private readonly IStatusUpdateHelper _statusUpdateHelper;
 
-        public PartyHub(IHubContext<PartyHub> hubContext, IUserService userService, IPartyService partyService, ISpotifyClient spotifyClient, ISpotifyService spotifyService, IPlaybackService playbackService)
+        private const string AdminGroupSuffix = "ADMIN";
+
+        public PartyHub(IHubContext<PartyHub> hubContext, IUserRepository userRepository, IQueueService queueService, IMembershipService membershipService, IPartyRepository partyRepository, ISpotifyService spotifyService, IPlaybackService playbackService, IJwtHelper jwtHelper, IStatusUpdateHelper statusUpdateHelper)
         {
-            _hubContext = hubContext;
-            _userService = userService;
-            _partyService = partyService;
-            _spotifyClient = spotifyClient;
+            _userRepository = userRepository;
+            _partyRepository = partyRepository;
             _spotifyService = spotifyService;
             _playbackService = playbackService;
+            _hubContext = hubContext;
+            _membershipService = membershipService;
+            _queueService = queueService;
+            _jwtHelper = jwtHelper;
+            _statusUpdateHelper = statusUpdateHelper;
         }
 
         public override async Task OnConnectedAsync()
         {
-            var user = await _userService.GetFromClaims(Context.User);
-            var party = _userService.GetParty(user);
+            var userId = _jwtHelper.GetUserIdFromToken(Context.User);
+            var user = await _userRepository.GetById(userId);
+            var party = user.GetActiveParty();
 
             // Add user to a Group with members
             await Groups.AddToGroupAsync(Context.ConnectionId, party.Id);
 
             // If the user is the owner of the party, add to an Admin Group
-            var groupName = party.Id + ADMIN_GROUP_SUFFIX;
+            var groupName = party.Id + AdminGroupSuffix;
             if (user.IsOwner)
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
@@ -45,13 +63,14 @@ namespace Api.Business.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var user = await _userService.GetFromClaims(Context.User);
-            var party = _userService.GetParty(user);
+            var userId = _jwtHelper.GetUserIdFromToken(Context.User);
+            var user = await _userRepository.GetById(userId);
+            var party = user.GetActiveParty();
 
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, party.Id);
             if (user.IsOwner)
             {
-                var groupName = party.Id + ADMIN_GROUP_SUFFIX;
+                var groupName = party.Id + AdminGroupSuffix;
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
             }
         }
@@ -59,7 +78,7 @@ namespace Api.Business.Hubs
         public static async Task NotifyAdminNewPendingMember(User user, Party party)
         {
             var userModel = new OtherUser(user);
-            var adminGroupName = party.Id + ADMIN_GROUP_SUFFIX;
+            var adminGroupName = party.Id + AdminGroupSuffix;
             await _hubContext.Clients.Group(adminGroupName).SendAsync("onPendingMemberRequest", userModel);
         }
 
@@ -69,9 +88,9 @@ namespace Api.Business.Hubs
         [Authorize]
         public async Task<PlaybackStatusUpdate> GetCurrentPlaybackState()
         {
-            var user = await _userService.GetFromClaims(Context.User);
-
-            var party = _userService.GetParty(user);
+            var userId = _jwtHelper.GetUserIdFromToken(Context.User);
+            var user = await _userRepository.GetById(userId);
+            var party = user.GetActiveParty();
 
             if (party == null)
             {
@@ -83,14 +102,14 @@ namespace Api.Business.Hubs
                 throw new PartyHubException("Cannot get playback state - Party not connected to Spotify");
             }
 
-            party = await _partyService.LoadFull(party);
+            party = await _partyRepository.GetWithAllProperties(party);
 
             // Get latest playback state from Spotify
             var status = await _spotifyService.GetPlaybackState(party.Owner);
 
-            await _partyService.UpdatePlaybackState(party, status, new[] {user});
+            await _playbackService.UpdatePlaybackState(party, status, new[] {user});
 
-            return _partyService.GetPlaybackStatusUpdate(party, user.IsOwner);
+            return _statusUpdateHelper.GeneratePlaybackStatusUpdate(party, user.IsOwner);
         }
 
 
@@ -106,7 +125,7 @@ namespace Api.Business.Hubs
                 throw new ArgumentNullException(nameof(pendingUserId));
             }
 
-            var pendingUser = await _userService.Find(pendingUserId);
+            var pendingUser = await _userRepository.GetById(pendingUserId);
             if (pendingUser == null)
             {
                 throw new ArgumentException("User does not exist", nameof(pendingUserId));
@@ -119,7 +138,8 @@ namespace Api.Business.Hubs
             }
 
             // Verify that the authorized user is the owner of the party, and user is a pending member of the party
-            var owner = await _userService.GetFromClaims(Context.User);
+            var ownerId = _jwtHelper.GetUserIdFromToken(Context.User);
+            var owner = await _userRepository.GetById(ownerId);
             if (!owner.IsOwner || party.Owner.Id != owner.Id)
             {
                 // TODO throw an exception?
@@ -128,11 +148,11 @@ namespace Api.Business.Hubs
 
             if (accept)
             {
-                await _partyService.AddPendingMember(party, pendingUser);
+                await _membershipService.AddPendingMember(party, pendingUser);
             }
             else
             {
-                await _partyService.RemovePendingMember(party, pendingUser);
+                await _membershipService.RemovePendingMember(party, pendingUser);
             }
 
             // Notify pending member
@@ -159,13 +179,14 @@ namespace Api.Business.Hubs
                 throw new ArgumentException("Missing request paramaters", nameof(requestModel));
             }
 
-            var user = await _userService.GetFromClaims(Context.User);
+            var userId = _jwtHelper.GetUserIdFromToken(Context.User);
+            var user = await _userRepository.GetById(userId);
 
             // TODO: do something with the result?
-            var queueItem = await _partyService.AddQueueItem(user, requestModel);
+            await _queueService.AddQueueItem(user, requestModel);
 
             // Notify other users
-            var party = _userService.GetParty(user);
+            var party = user.GetActiveParty();
             await SendPartyStatusUpdate(party);
         }
 
@@ -179,12 +200,13 @@ namespace Api.Business.Hubs
 
             // ToDo: Gracefully handle when user is not the owner
 
-            var user = await _userService.GetFromClaims(Context.User);
+            var userId = _jwtHelper.GetUserIdFromToken(Context.User);
+            var user = await _userRepository.GetById(userId);
 
-            await _partyService.RemoveQueueItem(user, queueItemId);
+            await _queueService.RemoveQueueItem(user, queueItemId);
 
             // Notify other users
-            var party = _userService.GetParty(user);
+            var party = user.GetActiveParty();
             await SendPartyStatusUpdate(party);
         }
 
@@ -192,9 +214,9 @@ namespace Api.Business.Hubs
          * Called on client to search for tracks on Spotify based on a query string
          */
         [Authorize]
-        public async Task<TrackSearchResponse> SearchSpotifyTracks(string query)
+        public async Task<List<Track>> SearchSpotifyTracks(string query)
         {
-            var result = await _spotifyClient.Search(query);
+            var result = await _spotifyService.Search(query);
 
             return result;
         }
@@ -205,14 +227,15 @@ namespace Api.Business.Hubs
         [Authorize]
         public async Task<bool> ActivateQueuePlayback()
         {
-            var user = await _userService.GetFromClaims(Context.User);
+            var userId = _jwtHelper.GetUserIdFromToken(Context.User);
+            var user = await _userRepository.GetById(userId);
 
             if (!user.IsOwner)
             {
                 return false;
             }
 
-            var party = _userService.GetParty(user);
+            var party = user.GetActiveParty();
 
             try
             {
@@ -231,9 +254,10 @@ namespace Api.Business.Hubs
          */
         private async Task SendPartyStatusUpdate(Party party)
         {
-            party = await _partyService.LoadFull(party);
-            var fullModel = await _partyService.GetCurrentParty(party);
-            var partialModel = await _partyService.GetCurrentParty(party, true);
+            party = await _partyRepository.GetWithAllProperties(party);
+            
+            var fullModel = new PartyStatus(party);
+            var partialModel = new PartyStatus(party, true);
 
             await Clients.Users(party.Members.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", fullModel);
             await Clients.Users(party.PendingMembers.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", partialModel);

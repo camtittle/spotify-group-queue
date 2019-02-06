@@ -4,10 +4,12 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Api.Infrastructure.DbContexts;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Api.Infrastructure.Migrations
 {
-    [DbContext(typeof(apiContext))]
+    [DbContext(typeof(SpotifyAppContext))]
     [Migration("20190110143217_UserSpotifyTokenDetails")]
     partial class UserSpotifyTokenDetails
     {

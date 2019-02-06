@@ -2,6 +2,10 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Api.Domain.DTOs;
+using Api.Domain.Interfaces.Helpers;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
 using Api.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,17 +17,22 @@ namespace Api.Controllers
     [Route("api/v1/[controller]")]
     public class PartiesController : Controller
     {
-        private readonly apiContext _context;
-        private readonly IPartyService _partyService;
-        private readonly IUserService _userService;
 
-        public PartiesController(apiContext     context,
-                                 IPartyService  partyService,
-                                 IUserService   userService)
+        private readonly IPartyRepository _partyRepository;
+        private readonly IUserRepository _userRepository;
+
+        private readonly IPartyService _partyService;
+        private readonly IMembershipService _membershipService;
+
+        private readonly IJwtHelper _jwtHelper;
+
+        public PartiesController(IPartyRepository partyRepository, IUserRepository userRepository, IPartyService partyService, IMembershipService membershipService, IJwtHelper jwtHelper)
         {
-            _context = context;
+            _partyRepository = partyRepository;
+            _userRepository = userRepository;
             _partyService = partyService;
-            _userService = userService;
+            _membershipService = membershipService;
+            _jwtHelper = jwtHelper;
         }
 
         [HttpGet]
@@ -31,7 +40,7 @@ namespace Api.Controllers
         public async Task<IActionResult> GetAllParties()
         {
             // For nwo we just return all the active parties
-            var parties = await _partyService.GetAll();
+            var parties = await _partyRepository.GetAll();
 
             var response = parties.Select(x => new GetPartiesResponse
             {
@@ -50,16 +59,16 @@ namespace Api.Controllers
         public async Task<IActionResult> GetParty()
         {
             var userId = User.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
-            var user = await _userService.Find(userId);
-            var party = _userService.GetParty(user);
+            var user = await _userRepository.GetById(userId);
+            var party = user.GetActiveParty();
 
             if (party == null)
             {
                 return NoContent();
             }
 
-            var partialResponse = user.IsPendingMember;
-            var response = await _partyService.GetCurrentParty(party, partialResponse);
+            party = await _partyRepository.GetWithAllProperties(party);
+            var response = new PartyStatus(party, user.IsPendingMember);
 
             return Ok(response);
         }
@@ -74,7 +83,9 @@ namespace Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _userService.GetFromClaims(User);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
+
             if (user.IsOwner)
             {
                 return BadRequest("Already member of a party. Leave that party first");
@@ -99,12 +110,13 @@ namespace Api.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteParty()
         {
-            var user = await _userService.GetFromClaims(User);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
 
             // User is owner of party
             if (user.IsOwner)
             {
-                var ownedParty = _userService.GetParty(user);
+                var ownedParty = user.GetActiveParty();
                 await _partyService.Delete(ownedParty);
                 return Ok();
             }
@@ -116,8 +128,9 @@ namespace Api.Controllers
         [Authorize]
         public async Task<IActionResult> LeaveParty()
         {
-            var user = await _userService.GetFromClaims(User);
-            var party = _userService.GetParty(user);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
+            var party = user.GetActiveParty();
 
             // If user is owner, this is same as deleting the party
             if (user.IsOwner)
@@ -125,7 +138,7 @@ namespace Api.Controllers
                 await _partyService.Delete(party);
             } else if (party != null)
             {
-                await _partyService.Leave(user);
+                await _membershipService.Leave(user);
             }
 
             return Ok();
@@ -141,15 +154,16 @@ namespace Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _userService.GetFromClaims(User);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
 
-            var party = await _partyService.Find(request.PartyId);
+            var party = await _partyRepository.Get(request.PartyId);
             if (party == null)
             {
                 return BadRequest("Party not found");
             }
 
-            await _partyService.RequestToJoin(party, user);
+            await _membershipService.RequestToJoin(party, user);
             return Ok();
         }
         

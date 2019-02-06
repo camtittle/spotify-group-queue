@@ -28,7 +28,7 @@ namespace Api.Domain.Entities
             Members = new List<User>();
             PendingMembers = new List<User>();
             QueueItems = new List<QueueItem>();
-            Playback = Playback.NOT_ACTIVE;
+            Playback = Playback.NotActive;
             CurrentTrack = new Track();
         }
     }

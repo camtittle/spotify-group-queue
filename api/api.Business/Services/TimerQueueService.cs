@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using Api.Domain.DTOs;
+using Api.Domain.Interfaces.Services;
 
 namespace Api.Business.Services
 {

@@ -8,5 +8,6 @@ namespace Api.Domain.Interfaces.Services
     {
         Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request);
         Task RemoveQueueItem(User user, string queueItemId);
+        Task<QueueItem> RemoveNextQueueItem(Party party);
     }
 }

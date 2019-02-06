@@ -3,10 +3,12 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Api.Infrastructure.DbContexts;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Api.Infrastructure.Migrations
 {
-    [DbContext(typeof(apiContext))]
+    [DbContext(typeof(SpotifyAppContext))]
     partial class apiContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

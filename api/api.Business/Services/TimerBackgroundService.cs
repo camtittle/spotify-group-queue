@@ -2,24 +2,30 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Api.Domain.DTOs;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
+using Microsoft.Extensions.Hosting;
+using Spotify.Exceptions;
 
 namespace Api.Business.Services
 {
     public class TimerBackgroundService : IHostedService
     {
+        private readonly IPartyRepository _partyRepository;
 
-        private readonly TimerQueueService _timerQueueService;
         private readonly ISpotifyService _spotifyService;
-        private readonly IPartyService _partyService;
+        private readonly TimerQueueService _timerQueueService;
+
         private readonly Dictionary<string, Timer> _timers;
 
         private CancellationTokenSource _tokenSource;
 
-        public TimerBackgroundService(TimerQueueService timerQueueService, ISpotifyService spotifyService, IPartyService partyService)
+        public TimerBackgroundService(TimerQueueService timerQueueService, ISpotifyService spotifyService, IPartyRepository partyRepository)
         {
-            _timerQueueService = timerQueueService;
             _spotifyService = spotifyService;
-            _partyService = partyService;
+            _partyRepository = partyRepository;
+            _timerQueueService = timerQueueService;
             _timers = new Dictionary<string, Timer>();
         }
 
@@ -73,7 +79,7 @@ namespace Api.Business.Services
 
             _timers[key] = new Timer(async state =>
             {
-                var party = await _partyService.LoadFull(timerDetails.Party);
+                var party = await _partyRepository.GetWithAllProperties(timerDetails.Party);
 
                 await _spotifyService.PlayTrack(party.Owner, new[] {timerDetails.TrackUri});
 

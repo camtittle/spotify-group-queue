@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Api.Domain.DTOs;
 
 namespace Api.DTOs
 {
@@ -20,9 +21,9 @@ namespace Api.DTOs
         [Required] public string AuthToken { get; set; }
         [Required] public string Username { get; set; }
         [Required] public string Id { get; set; }
-        public CurrentParty CurrentParty { get; set; }
+        public PartyStatus CurrentParty { get; set; }
 
-        public RegisterResponse(string id, string username, string authToken, CurrentParty currentParty)
+        public RegisterResponse(string id, string username, string authToken, PartyStatus currentParty)
         {
             AuthToken = authToken;
             Username = username;

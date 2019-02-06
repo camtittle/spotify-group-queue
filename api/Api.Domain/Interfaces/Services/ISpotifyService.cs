@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Api.Domain.DTOs;
 using Api.Domain.Entities;
-using PlaybackState = Spotify.Models.PlaybackState;
 
 namespace Api.Domain.Interfaces.Services
 {
@@ -11,8 +11,9 @@ namespace Api.Domain.Interfaces.Services
         Task<SpotifyAccessToken> GetUserAccessToken(User user);
         Task UpdateUserTokens(User user, string accessToken, string refreshToken, int expiresIn);
         Task<bool> TransferPlayback(User user, string deviceId);
-        Task<PlaybackState> GetPlaybackState(User user);
+        Task<SpotifyPlaybackState> GetPlaybackState(User user);
         Task PlayTrack(User user, string uri, int startAtMillis = 0);
         Task PlayTrack(User user, string[] uris, int startAtMillis = 0);
+        Task<List<Track>> Search(string query);
     }
 }

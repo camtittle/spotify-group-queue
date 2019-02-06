@@ -28,9 +28,9 @@ namespace Api.Business.Services
             }
 
             var user = new User(username);
-            var result = await _userRepository.Add(user);
+            await _userRepository.Add(user);
 
-            return result;
+            return user;
         }
     }
 }

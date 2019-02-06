@@ -6,7 +6,7 @@ namespace Api.Domain.Interfaces.Repositories
 {
     public interface IPartyRepository
     {
-        Task<Party> Add(Party party);
+        Task Add(Party party);
         Task<List<Party>> GetAll();
         Task<Party> Get(string id);
         Task<Party> GetByName(string name);
