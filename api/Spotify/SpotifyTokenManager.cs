@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Api.Domain.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Spotify.Exceptions;
@@ -25,7 +26,7 @@ namespace Spotify
         {
             _settings = spotifySettings.Value;
             var credentialsBytes = System.Text.Encoding.UTF8.GetBytes(_settings.ClientId + ":" + _settings.ClientSecret);
-            _credentialsBase64 = System.Convert.ToBase64String(credentialsBytes);
+            _credentialsBase64 = Convert.ToBase64String(credentialsBytes);
         }
 
         /*

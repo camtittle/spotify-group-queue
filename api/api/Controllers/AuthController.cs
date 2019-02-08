@@ -3,34 +3,41 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using api.Controllers.Models;
-using api.Exceptions;
-using api.Models;
-using api.Services.Interfaces;
+using Api.Domain.DTOs;
+using Api.Domain.Interfaces.Helpers;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
+using Api.DTOs;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace api.Controllers
+namespace Api.Controllers
 {
     [Route("api/v1/[controller]")]
     public class AuthController : Controller
     {
 
         private readonly IConfiguration   _configuration;
-        private readonly IUserService     _userService;
-        private readonly IPartyService    _partyService;
 
-        public AuthController(IConfiguration   configuration,
-                              IUserService     userService,
-                              IPartyService    partyService)
+        private readonly IUserRepository _userRepository;
+        private readonly IPartyRepository _partyRepository;
+
+        private readonly IStatusUpdateHelper _statusUpdateHelper;
+
+        private readonly IUserService     _userService;
+
+        public AuthController(IConfiguration configuration, IUserRepository userRepository, IPartyRepository partyRepository, IStatusUpdateHelper statusUpdateHelper, IUserService userService)
         {
-            _configuration   = configuration;
-            _userService     = userService;
-            _partyService    = partyService;
+            _configuration = configuration;
+            _userRepository = userRepository;
+            _partyRepository = partyRepository;
+            _statusUpdateHelper = statusUpdateHelper;
+            _userService = userService;
         }
+
+        
 
         // Register user with this username and get token
         [HttpPost("register")]
@@ -46,7 +53,7 @@ namespace api.Controllers
             // Attempt to create the new user
             try
             {
-                var user = _userService.Create(request.Username);
+                var user = await _userService.Create(request.Username);
 
                 // TODO: verification eg different IP and user agent? (prevent spamming)
 
@@ -69,10 +76,7 @@ namespace api.Controllers
 
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-                var party = _userService.GetParty(user);
-                var currentPartyModel = await _partyService.GetCurrentParty(party);
-
-                return Ok(new RegisterResponse(user.Id, user.Username, tokenString, currentPartyModel));
+                return Ok(new RegisterResponse(user.Id, user.Username, tokenString, null));
             }
             catch (ArgumentException e)
             {
@@ -97,40 +101,34 @@ namespace api.Controllers
             }
 
             // Attempt to find user and generate token
-            try
+            var user = await _userRepository.GetByUsername(request.Username);
+
+            if (user == null) return BadRequest("User does not exist");
+
+            var claims = new[]
             {
-                User user = await _userService.FindByUsername(request.Username);
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.PrimarySid, user.Id)
+            };
 
-                if (user == null) return BadRequest("User does not exist");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTSecretKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                var claims = new[]
-                {
-                    new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.PrimarySid, user.Id)
-                };
+            var token = new JwtSecurityToken(
+                issuer: "spotifyparty.dev",
+                audience: "spotifyparty.dev",
+                claims: claims,
+                expires: DateTime.Now.AddHours(6),
+                signingCredentials: creds);
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTSecretKey"]));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-                var token = new JwtSecurityToken(
-                    issuer: "spotifyparty.dev",
-                    audience: "spotifyparty.dev",
-                    claims: claims,
-                    expires: DateTime.Now.AddHours(6),
-                    signingCredentials: creds);
+            var party = user.GetActiveParty();
+            party = await _partyRepository.GetWithAllProperties(party);
+            _statusUpdateHelper.CreatePartyStatusUpdate(party, out var fullMemberStatus, out var pendingMemberStatus);
+            var currentPartyModel = user.IsPendingMember ? pendingMemberStatus : fullMemberStatus;
 
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-                var party = _userService.GetParty(user);
-                var currentPartyModel = await _partyService.GetCurrentParty(party);
-
-                return Ok(new RegisterResponse(user.Id, user.Username, tokenString, currentPartyModel));
-            }
-            catch (APIException e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e);
-            }
-
+            return Ok(new RegisterResponse(user.Id, user.Username, tokenString, currentPartyModel));
         }
 
     }

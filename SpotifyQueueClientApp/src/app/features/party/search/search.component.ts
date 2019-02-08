@@ -2,11 +2,12 @@ import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnI
 import { AuthenticationService } from '../../../services';
 import { from, fromEvent, Observable } from 'rxjs';
 import { distinctUntilChanged, filter, map, switchMap, tap, throttleTime } from 'rxjs/operators';
-import { QueueTrack, TrackSearchResult, SpotifyTrack } from '../../../models';
+import { QueueTrack, TrackSearchResult } from '../../../models';
 import { PartyHubService } from '../../../services/party-hub.service';
 import { Router } from '@angular/router';
 import { BasePartyScreen } from '../base-party-screen';
 import { SpotifyService } from '../../../services/spotify.service';
+import { Track } from '../../../models/track.model';
 
 @Component({
   selector: 'app-search',
@@ -18,9 +19,9 @@ export class SearchComponent extends BasePartyScreen implements OnInit, OnDestro
   @ViewChild('searchInput') searchInput: ElementRef;
 
   public searchInputValue: string;
-  public results: SpotifyTrack[];
+  public results: Track[];
 
-  private typeahead: Observable<SpotifyTrack[]>;
+  private typeahead: Observable<Track[]>;
 
   constructor(protected authService: AuthenticationService,
               protected partyHubService: PartyHubService,
@@ -38,7 +39,7 @@ export class SearchComponent extends BasePartyScreen implements OnInit, OnDestro
       filter(query => query.length > 0),
       tap(query => console.log(query)),
       distinctUntilChanged(),
-      switchMap(query => this.searchSpotify(query))
+      switchMap(query => this.searchSpotify(query)),
     );
 
     this.typeahead.subscribe(result => {
@@ -57,13 +58,11 @@ export class SearchComponent extends BasePartyScreen implements OnInit, OnDestro
   protected onSpotifyAuthorization() {
   }
 
-  private searchSpotify(query: string): Observable<SpotifyTrack[]> {
-    return from<TrackSearchResult>(this.partyHubService.invoke('searchSpotifyTracks', query)).pipe(
-      map(response => response.tracks.items)
-    );
+  private searchSpotify(query: string): Observable<Track[]> {
+    return from<Track[]>(this.partyHubService.invoke('searchSpotifyTracks', query));
   }
 
-  public async onTrackClick(track: SpotifyTrack) {
+  public async onTrackClick(track: Track) {
     if (!this.currentUser || !this.currentUser.username) {
       console.error('Cannot add track to queue - no current user');
       return;
@@ -71,9 +70,9 @@ export class SearchComponent extends BasePartyScreen implements OnInit, OnDestro
 
     const queueTrack = <QueueTrack> {
       spotifyUri: track.uri,
-      title: track.name,
-      artist: track.artists.map(x => x.name).join(', '),
-      durationMillis: track.duration_ms
+      title: track.title,
+      artist: track.artist,
+      durationMillis: track.durationMillis
     };
 
     await this.partyHubService.invoke('addTrackToQueue', queueTrack);

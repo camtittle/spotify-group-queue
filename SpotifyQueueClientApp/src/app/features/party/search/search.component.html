@@ -22,10 +22,10 @@
       <button *ngFor="let track of results"
               class="track list-group-item list-group-item-action"
               (click)="onTrackClick(track)">
-        <div>{{ track.name }}</div>
+        <div>{{ track.title }}</div>
         <div class="track-subheading d-flex justify-content-between">
-          {{ track.artists | joinArtistNames }}
-          <span>{{ track.duration_ms | formatMillisDuration }}</span>
+          {{ track.artist }}
+          <span>{{ track.durationMillis | formatMillisDuration }}</span>
         </div>
       </button>
     </ul>

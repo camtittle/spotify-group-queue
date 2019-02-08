@@ -7,7 +7,9 @@
 
     <div *ngIf="showPlaybackControls" class="playback-controls mb-2">
       <div *ngIf="playbackState?.playbackState === Playback.NOT_ACTIVE" class="activate-playback-controls d-flex justify-content-center">
-        <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center"><span class="ic ic-play-button mr-2"></span>Play Queue</button>
+        <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center" (click)="onClickPlayQueue()">
+          <span class="ic ic-play-button mr-2"></span>Play Queue
+        </button>
       </div>
       <!--<div class="play-control ic-play-button"></div>-->
     </div>

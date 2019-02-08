@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Api.Domain.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Spotify.Exceptions;
@@ -117,7 +117,7 @@ namespace Spotify
 
                     return JsonConvert.DeserializeObject<T>(response);
                 }
-                catch (HttpRequestException e)
+                catch (HttpRequestException)
                 {
                     return default(T);
                 }
@@ -148,7 +148,7 @@ namespace Spotify
                     
                     return JsonConvert.DeserializeObject<T>(responseString);
                 }
-                catch (HttpRequestException e)
+                catch (HttpRequestException)
                 {
                     return default(T);
                 }

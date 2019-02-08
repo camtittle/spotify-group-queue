@@ -1,37 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using api.Controllers.Models;
-using api.Exceptions;
-using api.Hubs;
+using Api.Domain.DTOs;
+using Api.Domain.Interfaces.Helpers;
+using Api.Domain.Interfaces.Repositories;
+using Api.Domain.Interfaces.Services;
+using Api.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using api.Models;
-using api.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
 
-namespace api.Controllers
+namespace Api.Controllers
 {
     [Produces("application/json")]
     [Route("api/v1/[controller]")]
     public class PartiesController : Controller
     {
-        private readonly apiContext _context;
-        private readonly IPartyService _partyService;
-        private readonly IUserService _userService;
 
-        public PartiesController(apiContext     context,
-                                 IPartyService  partyService,
-                                 IUserService   userService)
+        private readonly IPartyRepository _partyRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IPlaybackService _playbackService;
+
+        private readonly IPartyService _partyService;
+        private readonly IMembershipService _membershipService;
+
+        private readonly IStatusUpdateHelper _statusUpdateHelper;
+        private readonly IJwtHelper _jwtHelper;
+
+        public PartiesController(IPartyRepository partyRepository, IUserRepository userRepository, IPlaybackService playbackService, IPartyService partyService, IMembershipService membershipService, IStatusUpdateHelper statusUpdateHelper, IJwtHelper jwtHelper)
         {
-            _context = context;
+            _partyRepository = partyRepository;
+            _userRepository = userRepository;
+            _playbackService = playbackService;
             _partyService = partyService;
-            _userService = userService;
+            _membershipService = membershipService;
+            _statusUpdateHelper = statusUpdateHelper;
+            _jwtHelper = jwtHelper;
         }
 
         [HttpGet]
@@ -39,7 +44,7 @@ namespace api.Controllers
         public async Task<IActionResult> GetAllParties()
         {
             // For nwo we just return all the active parties
-            var parties = await _partyService.GetAll();
+            var parties = await _partyRepository.GetAll();
 
             var response = parties.Select(x => new GetPartiesResponse
             {
@@ -58,16 +63,18 @@ namespace api.Controllers
         public async Task<IActionResult> GetParty()
         {
             var userId = User.Claims.Single(c => c.Type == ClaimTypes.PrimarySid).Value;
-            var user = await _userService.Find(userId);
-            var party = _userService.GetParty(user);
+            var user = await _userRepository.GetById(userId);
+            var party = user.GetActiveParty();
 
             if (party == null)
             {
                 return NoContent();
             }
 
-            var partialResponse = user.IsPendingMember;
-            var response = await _partyService.GetCurrentParty(party, partialResponse);
+            party = await _partyRepository.GetWithAllProperties(party);
+
+            _statusUpdateHelper.CreatePartyStatusUpdate(party, out var fullMemberStatus, out var pendingMemberStatus);
+            var response = user.IsPendingMember ? pendingMemberStatus : fullMemberStatus;
 
             return Ok(response);
         }
@@ -82,7 +89,9 @@ namespace api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _userService.GetFromClaims(User);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
+
             if (user.IsOwner)
             {
                 return BadRequest("Already member of a party. Leave that party first");
@@ -107,12 +116,13 @@ namespace api.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteParty()
         {
-            var user = await _userService.GetFromClaims(User);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
 
             // User is owner of party
             if (user.IsOwner)
             {
-                var ownedParty = _userService.GetParty(user);
+                var ownedParty = user.GetActiveParty();
                 await _partyService.Delete(ownedParty);
                 return Ok();
             }
@@ -124,8 +134,9 @@ namespace api.Controllers
         [Authorize]
         public async Task<IActionResult> LeaveParty()
         {
-            var user = await _userService.GetFromClaims(User);
-            var party = _userService.GetParty(user);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
+            var party = user.GetActiveParty();
 
             // If user is owner, this is same as deleting the party
             if (user.IsOwner)
@@ -133,7 +144,7 @@ namespace api.Controllers
                 await _partyService.Delete(party);
             } else if (party != null)
             {
-                await _partyService.Leave(user);
+                await _membershipService.Leave(user);
             }
 
             return Ok();
@@ -149,17 +160,30 @@ namespace api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _userService.GetFromClaims(User);
+            var id = _jwtHelper.GetUserIdFromToken(User);
+            var user = await _userRepository.GetById(id);
 
-            var party = await _partyService.Find(request.PartyId);
+            var party = await _partyRepository.Get(request.PartyId);
             if (party == null)
             {
                 return BadRequest("Party not found");
             }
 
-            await _partyService.RequestToJoin(party, user);
+            await _membershipService.RequestToJoin(party, user);
             return Ok();
         }
+
+        // TODO remove this
+        //[HttpPost("resetplayback")]
+        //[Authorize]
+        //public async Task<IActionResult> ResetPlaybackState()
+        //{
+        //    var id = _jwtHelper.GetUserIdFromToken(User);
+        //    var user = await _userRepository.GetById(id);
+
+        //    await _playbackService.ResetPlaybackState
+
+        //}
         
     }
 }
