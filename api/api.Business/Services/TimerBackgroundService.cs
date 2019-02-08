@@ -54,7 +54,7 @@ namespace Api.Business.Services
                     var timerDetails = _timerQueueService.Dequeue();
 
                     // Indicates a request to remove any timer for the user
-                    if (timerDetails.QueueItem == null)
+                    if (timerDetails.Instruction == TimerInstruction.CancelExistingTimer)
                     {
                         RemoveTimer(timerDetails);
                     }
@@ -75,14 +75,14 @@ namespace Api.Business.Services
             }
         }
 
-        private void AddOrReplaceTimer(TimerDetails timerDetails)
+        private void AddOrReplaceTimer(TimerSpecification timerSpecification)
         {
-            if (timerDetails.Party == null)
+            if (timerSpecification.Party == null)
             {
                 throw new ArgumentException("Could not set timer: Party was null in timer details");
             }
 
-            var key = timerDetails.Party.Id;
+            var key = timerSpecification.Party.Id;
 
             // Cancel existing timer
             if (_timers.ContainsKey(key))
@@ -90,24 +90,45 @@ namespace Api.Business.Services
                 _timers[key]?.Dispose();
             }
 
-            _timers[key] = new Timer(async state =>
+            if (timerSpecification.Instruction == TimerInstruction.PlayQueueItem)
             {
-                var party = await _partyRepository.GetWithAllProperties(timerDetails.Party);
-                
-                await _playbackService.PlayQueueItem(party, timerDetails.QueueItem, true);
-                await _playbackService.StartTimerForNextQueueItem(party, timerDetails.QueueItem.DurationMillis);
-
-            }, null, timerDetails.DelayMillis, Timeout.Infinite);
+                AddTimerForQueueItem(key, timerSpecification);
+            } else if (timerSpecification.Instruction == TimerInstruction.DeactivatePlayback)
+            {
+                AddTimerToDeactivatePlayback(key, timerSpecification);
+            }
         }
 
-        private void RemoveTimer(TimerDetails timerDetails)
+        private void AddTimerForQueueItem(string key, TimerSpecification timerSpecification)
         {
-            if (timerDetails.Party == null)
+            Console.WriteLine($"Adding timer to play queue item: {timerSpecification.QueueItem.Title} with delay {timerSpecification.DelayMillis}");
+            _timers[key] = new Timer(async state =>
+            {
+                Console.WriteLine($"Executing timer to play queue item: {timerSpecification.QueueItem.Title} with delay {timerSpecification.DelayMillis}");
+                await _playbackService.PlayQueueItem(timerSpecification.Party, timerSpecification.QueueItem, true);
+
+            }, null, timerSpecification.DelayMillis, Timeout.Infinite);
+        }
+
+        private void AddTimerToDeactivatePlayback(string key, TimerSpecification timerSpecification)
+        {
+            Console.WriteLine($"Adding timer to deactivate playback with delay {timerSpecification.DelayMillis}");
+            _timers[key] = new Timer(async state =>
+            {
+                Console.WriteLine($"Executing timer to deactivate playback with delay {timerSpecification.DelayMillis}");
+                await _playbackService.PlaybackEnded(timerSpecification.Party);
+
+            }, null, timerSpecification.DelayMillis, Timeout.Infinite);
+        }
+
+        private void RemoveTimer(TimerSpecification timerSpecification)
+        {
+            if (timerSpecification.Party == null)
             {
                 throw new ArgumentException("Could not set timer: Party was null in timer details");
             }
 
-            var key = timerDetails.Party.Id;
+            var key = timerSpecification.Party.Id;
 
             // Cancel existing timer
             if (_timers.Remove(key, out var timer))

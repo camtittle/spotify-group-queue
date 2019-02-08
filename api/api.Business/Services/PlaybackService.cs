@@ -71,6 +71,14 @@ namespace Api.Business.Services
             await _realTimeService.SendPlaybackStatusUpdate(party, exemptUsers);
         }
 
+        public async Task PlaybackEnded(Party party)
+        {
+            party = await _partyRepository.GetWithAllProperties(party);
+            party.Playback = Playback.NotActive;
+            await _partyRepository.Update(party);
+            await _realTimeService.SendPlaybackStatusUpdate(party);
+        }
+
         public async Task PlayQueueItem(Party party, QueueItem queueItem, bool isPlaying, User[] exemptUsers = null)
         {
             if (party == null)
@@ -98,6 +106,8 @@ namespace Api.Business.Services
             await _queueService.RemoveQueueItem(queueItem.Id);
             await _partyRepository.Update(party);
 
+            await StartTimerForNextQueueItem(party, queueItem.DurationMillis);
+
             // Notify clients
             await _realTimeService.SendPlaybackStatusUpdate(party, exemptUsers);
             await _realTimeService.SendPartyStatusUpdate(party);
@@ -118,7 +128,6 @@ namespace Api.Business.Services
                     }
 
                     await PlayQueueItem(party, queueItem, true);
-                    await StartTimerForNextQueueItem(party, queueItem.DurationMillis);
                     break;
                 }
                 case Playback.Paused:
@@ -135,16 +144,19 @@ namespace Api.Business.Services
         public async Task StartTimerForNextQueueItem(Party party, long delayMillis)
         {
             var nextQueueItem = await _queueService.GetNextQueueItem(party);
-            if (nextQueueItem != null)
+
+            var instruction = nextQueueItem == null
+                ? TimerInstruction.DeactivatePlayback
+                : TimerInstruction.PlayQueueItem;
+
+            var timerDetails = new TimerSpecification()
             {
-                var timerDetails = new TimerDetails()
-                {
-                    DelayMillis = delayMillis,
-                    Party = party,
-                    QueueItem = nextQueueItem
-                };
-                _timerQueueService.Enqueue(timerDetails);
-            }
+                Instruction = instruction,
+                DelayMillis = delayMillis,
+                Party = party,
+                QueueItem = nextQueueItem
+            };
+            _timerQueueService.Enqueue(timerDetails);
         }
     }
 }

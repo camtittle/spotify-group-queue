@@ -65,8 +65,6 @@ namespace Api.Business.Services
             }
 
             await _queueItemRepository.Delete(queueItem);
-
-            // await _realTimeService.SendPartyStatusUpdate(queueItem.ForParty);
         }
 
         public async Task<QueueItem> GetNextQueueItem(Party party)

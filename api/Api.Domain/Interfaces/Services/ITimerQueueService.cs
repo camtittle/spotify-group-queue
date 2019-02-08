@@ -4,8 +4,8 @@ namespace Api.Domain.Interfaces.Services
 {
     public interface ITimerQueueService
     {
-        void Enqueue(TimerDetails details);
+        void Enqueue(TimerSpecification specification);
 
-        TimerDetails Dequeue();
+        TimerSpecification Dequeue();
     }
 }

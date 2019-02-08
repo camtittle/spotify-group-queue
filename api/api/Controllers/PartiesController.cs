@@ -172,18 +172,6 @@ namespace Api.Controllers
             await _membershipService.RequestToJoin(party, user);
             return Ok();
         }
-
-        // TODO remove this
-        //[HttpPost("resetplayback")]
-        //[Authorize]
-        //public async Task<IActionResult> ResetPlaybackState()
-        //{
-        //    var id = _jwtHelper.GetUserIdFromToken(User);
-        //    var user = await _userRepository.GetById(id);
-
-        //    await _playbackService.ResetPlaybackState
-
-        //}
         
     }
 }

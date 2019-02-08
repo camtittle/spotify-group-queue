@@ -8,6 +8,7 @@ namespace Api.Domain.Interfaces.Services
     {
         Task StartOrResume(Party party);
         Task UpdatePlaybackState(Party party, SpotifyPlaybackState state, User[] exemptUsers = null);
+        Task PlaybackEnded(Party party);
         Task PlayQueueItem(Party party, QueueItem queueItem, bool isPlaying, User[] dontNotifyUsers = null);
         Task StartTimerForNextQueueItem(Party party, long delayMillis);
     }
