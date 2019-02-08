@@ -188,7 +188,8 @@ namespace Api.Business.Hubs
             var userId = _jwtHelper.GetUserIdFromToken(Context.User);
             var user = await _userRepository.GetById(userId);
 
-            await _queueService.RemoveQueueItem(user, queueItemId);
+            await _queueService.RemoveQueueItem(queueItemId);
+            // Todo send party status update
         }
 
         /*
@@ -217,17 +218,9 @@ namespace Api.Business.Hubs
             }
 
             var party = user.GetActiveParty();
+            await _playbackService.StartOrResume(party);
 
-            try
-            {
-                await _playbackService.StartOrResume(party);
-                return true;
-            }
-            catch
-            {
-                // ToDo: log exception
-                return false;
-            }
+            return true;
         }
     }
 }

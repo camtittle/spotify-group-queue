@@ -14,7 +14,7 @@ namespace Api.Business.Services
     public class TimerBackgroundService : IHostedService
     {
         private IPartyRepository _partyRepository;
-        private ISpotifyService _spotifyService;
+        private IPlaybackService _playbackService;
         private readonly ITimerQueueService _timerQueueService;
 
         private readonly Dictionary<string, Timer> _timers;
@@ -36,7 +36,7 @@ namespace Api.Business.Services
 
             using (var scope = Services.CreateScope())
             {
-                _spotifyService = scope.ServiceProvider.GetRequiredService<ISpotifyService>();
+                _playbackService = scope.ServiceProvider.GetRequiredService<IPlaybackService>();
                 _partyRepository = scope.ServiceProvider.GetRequiredService<IPartyRepository>();
 
                 Listen();
@@ -54,7 +54,7 @@ namespace Api.Business.Services
                     var timerDetails = _timerQueueService.Dequeue();
 
                     // Indicates a request to remove any timer for the user
-                    if (timerDetails.TrackUri == null)
+                    if (timerDetails.QueueItem == null)
                     {
                         RemoveTimer(timerDetails);
                     }
@@ -93,10 +93,10 @@ namespace Api.Business.Services
             _timers[key] = new Timer(async state =>
             {
                 var party = await _partyRepository.GetWithAllProperties(timerDetails.Party);
+                
+                await _playbackService.PlayQueueItem(party, timerDetails.QueueItem, true);
+                await _playbackService.StartTimerForNextQueueItem(party, timerDetails.QueueItem.DurationMillis);
 
-                await _spotifyService.PlayTrack(party.Owner, new[] {timerDetails.TrackUri});
-
-                // TODO: create a new timer for the next song in queue
             }, null, timerDetails.DelayMillis, Timeout.Infinite);
         }
 

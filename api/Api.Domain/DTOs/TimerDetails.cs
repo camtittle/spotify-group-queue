@@ -6,8 +6,8 @@ namespace Api.Domain.DTOs
     {
         public Party Party { get; set; }
 
-        public string TrackUri { get; set; }
+        public QueueItem QueueItem { get; set; }
 
-        public int DelayMillis { get; set; }
+        public long DelayMillis { get; set; }
     }
 }

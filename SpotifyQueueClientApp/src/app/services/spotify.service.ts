@@ -6,6 +6,7 @@ import { SpotifyAccessToken } from '../models/spotify/spotify-access-token.model
 import { HttpClient } from '@angular/common/http';
 import { SpotifyDevice, SpotifyDevicesResponse } from '../models/spotify/spotify-device.model';
 import { SetDeviceResponse } from '../models/set-device-response.model';
+import { PartyHubService } from './party-hub.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,9 @@ export class SpotifyService {
   private expiry: Date;
 
   constructor(private httpClient: HttpClient,
-              private apiService: ApiService) {
+              private apiService: ApiService,
+              private partyHubService: PartyHubService) {
+    console.log(apiService);
     this.checkAuthorizationStatus();
   }
 
@@ -172,5 +175,10 @@ export class SpotifyService {
 
   private getUrl(endpoint: string) {
     return environment.spotify.baseApiUri + endpoint;
+  }
+
+  public async initializePlayback() {
+    console.log(this.partyHubService);
+    await this.partyHubService.invoke('activateQueuePlayback');
   }
 }

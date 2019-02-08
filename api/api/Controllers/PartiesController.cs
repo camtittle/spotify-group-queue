@@ -20,6 +20,7 @@ namespace Api.Controllers
 
         private readonly IPartyRepository _partyRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IPlaybackService _playbackService;
 
         private readonly IPartyService _partyService;
         private readonly IMembershipService _membershipService;
@@ -27,10 +28,11 @@ namespace Api.Controllers
         private readonly IStatusUpdateHelper _statusUpdateHelper;
         private readonly IJwtHelper _jwtHelper;
 
-        public PartiesController(IPartyRepository partyRepository, IUserRepository userRepository, IPartyService partyService, IMembershipService membershipService, IStatusUpdateHelper statusUpdateHelper, IJwtHelper jwtHelper)
+        public PartiesController(IPartyRepository partyRepository, IUserRepository userRepository, IPlaybackService playbackService, IPartyService partyService, IMembershipService membershipService, IStatusUpdateHelper statusUpdateHelper, IJwtHelper jwtHelper)
         {
             _partyRepository = partyRepository;
             _userRepository = userRepository;
+            _playbackService = playbackService;
             _partyService = partyService;
             _membershipService = membershipService;
             _statusUpdateHelper = statusUpdateHelper;
@@ -170,6 +172,18 @@ namespace Api.Controllers
             await _membershipService.RequestToJoin(party, user);
             return Ok();
         }
+
+        // TODO remove this
+        //[HttpPost("resetplayback")]
+        //[Authorize]
+        //public async Task<IActionResult> ResetPlaybackState()
+        //{
+        //    var id = _jwtHelper.GetUserIdFromToken(User);
+        //    var user = await _userRepository.GetById(id);
+
+        //    await _playbackService.ResetPlaybackState
+
+        //}
         
     }
 }

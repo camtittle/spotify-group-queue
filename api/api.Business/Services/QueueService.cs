@@ -56,19 +56,8 @@ namespace Api.Business.Services
             return queueItem;
         }
 
-        public async Task RemoveQueueItem(User user, string queueItemId)
+        public async Task RemoveQueueItem(string queueItemId)
         {
-            if (!user.IsOwner)
-            {
-                throw new PartyQueueException("Cannot remove from queue - not owner of party");
-            }
-
-            var party = await _partyRepository.GetWithAllProperties(user.GetActiveParty());
-            if (party == null)
-            {
-                throw new PartyQueueException("Cannot remove track from queue - party not found");
-            }
-
             var queueItem = await _queueItemRepository.Get(queueItemId);
             if (queueItem == null)
             {
@@ -77,10 +66,10 @@ namespace Api.Business.Services
 
             await _queueItemRepository.Delete(queueItem);
 
-            await _realTimeService.SendPartyStatusUpdate(party);
+            // await _realTimeService.SendPartyStatusUpdate(queueItem.ForParty);
         }
 
-        public async Task<QueueItem> RemoveNextQueueItem(Party party)
+        public async Task<QueueItem> GetNextQueueItem(Party party)
         {
             if (party.QueueItems == null)
             {
@@ -89,16 +78,7 @@ namespace Api.Business.Services
 
             if (party.QueueItems.Count > 0)
             {
-                var queueItem = party.QueueItems.OrderBy(x => x.Index).First();
-
-                party.QueueItems.Remove(queueItem);
-
-                await _partyRepository.Update(party);
-                await _queueItemRepository.Delete(queueItem);
-
-                await _realTimeService.SendPartyStatusUpdate(party);
-
-                return queueItem;
+                return party.QueueItems.OrderBy(x => x.Index).First();
             }
 
             return null;

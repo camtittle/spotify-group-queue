@@ -95,4 +95,10 @@ export class PartyComponent implements OnInit, OnDestroy, DoCheck {
   public onClickAuthorizeSpotify() {
     this.spotifyService.triggerAuthorizationFlow();
   }
+
+  public async onClickPlayQueue() {
+    console.log('init queue playback');
+    await this.partyHubService.invoke('activateQueuePlayback');
+    //await this.spotifyService.initializePlayback();
+  }
 }
