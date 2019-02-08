@@ -13,10 +13,13 @@ namespace Api.Business.Services
         private readonly IQueueItemRepository _queueItemRepository;
         private readonly IPartyRepository _partyRepository;
 
-        public QueueService(IQueueItemRepository queueItemRepository, IPartyRepository partyRepository)
+        private readonly IRealTimeService _realTimeService;
+
+        public QueueService(IQueueItemRepository queueItemRepository, IPartyRepository partyRepository, IRealTimeService realTimeService)
         {
             _queueItemRepository = queueItemRepository;
             _partyRepository = partyRepository;
+            _realTimeService = realTimeService;
         }
 
         public async Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request)
@@ -48,6 +51,8 @@ namespace Api.Business.Services
 
             await _queueItemRepository.Add(queueItem);
 
+            await _realTimeService.SendPartyStatusUpdate(party);
+
             return queueItem;
         }
 
@@ -71,6 +76,8 @@ namespace Api.Business.Services
             }
 
             await _queueItemRepository.Delete(queueItem);
+
+            await _realTimeService.SendPartyStatusUpdate(party);
         }
 
         public async Task<QueueItem> RemoveNextQueueItem(Party party)
@@ -88,6 +95,8 @@ namespace Api.Business.Services
 
                 await _partyRepository.Update(party);
                 await _queueItemRepository.Delete(queueItem);
+
+                await _realTimeService.SendPartyStatusUpdate(party);
 
                 return queueItem;
             }

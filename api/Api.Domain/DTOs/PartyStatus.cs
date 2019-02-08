@@ -10,33 +10,13 @@ namespace Api.Domain.DTOs
 
         public string Name { get; set; }
 
-        public OtherUser Owner { get; set; }
+        public UserPartial Owner { get; set; }
 
-        public List<OtherUser> Members { get; set; }
+        public List<UserPartial> Members { get; set; }
 
-        public List<OtherUser> PendingMembers { get; set; }
+        public List<UserPartial> PendingMembers { get; set; }
 
         public List<PartyStatusQueueItem> QueueItems { get; set; }
-
-        public PartyStatus(Party party, bool pending = false)
-        {
-            Id = party.Id;
-            Name = party.Name;
-            Owner = new OtherUser(party.Owner);
-            PendingMembers = party.PendingMembers?.OrderBy(x => x.JoinedPartyDateTime).Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>();
-
-            if (!pending)
-            {
-                Members = party.Members?.OrderBy(x => x.JoinedPartyDateTime).Select(m => new OtherUser(m)).ToList() ?? new List<OtherUser>();
-                QueueItems = party.QueueItems.OrderBy(x => x.Index).Select(item => new PartyStatusQueueItem(item)).ToList();
-            }
-            else
-            {
-                Members = new List<OtherUser>();
-                QueueItems = new List<PartyStatusQueueItem>();
-            }
-
-        }
     }
 
     public class PartyStatusQueueItem

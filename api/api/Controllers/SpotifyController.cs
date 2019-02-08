@@ -103,8 +103,6 @@ namespace Api.Controllers
             {
                 var device = await _partyService.UpdateDevice(party, request.DeviceId, request.DeviceName);
 
-                await _playbackService.SendPlaybackStatusUpdate(party);
-
                 return Ok(device);
             }
 

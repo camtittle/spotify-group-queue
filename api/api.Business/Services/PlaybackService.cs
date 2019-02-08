@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Api.Business.Hubs;
 using Api.Domain.DTOs;
 using Api.Domain.Entities;
 using Api.Domain.Enums;
-using Api.Domain.Interfaces.Helpers;
 using Api.Domain.Interfaces.Repositories;
 using Api.Domain.Interfaces.Services;
 
@@ -17,19 +15,18 @@ namespace Api.Business.Services
         private readonly IQueueService _queueService;
         private readonly ISpotifyService _spotifyService;
         private readonly ITimerQueueService _timerQueueService;
-        
-        private readonly IStatusUpdateHelper _statusUpdateHelper;
+        private readonly IRealTimeService _realTimeService;
 
-        public PlaybackService(IPartyRepository partyRepository, IQueueService queueService, ISpotifyService spotifyService, ITimerQueueService timerQueueService, IStatusUpdateHelper statusUpdateHelper)
+        public PlaybackService(IPartyRepository partyRepository, IQueueService queueService, ISpotifyService spotifyService, ITimerQueueService timerQueueService, IRealTimeService realTimeService)
         {
             _partyRepository = partyRepository;
             _queueService = queueService;
             _spotifyService = spotifyService;
             _timerQueueService = timerQueueService;
-            _statusUpdateHelper = statusUpdateHelper;
+            _realTimeService = realTimeService;
         }
 
-        public async Task UpdatePlaybackState(Party party, SpotifyPlaybackState state, User[] dontNotifyUsers = null)
+        public async Task UpdatePlaybackState(Party party, SpotifyPlaybackState state, User[] exemptUsers = null)
         {
             if (party == null)
             {
@@ -71,10 +68,10 @@ namespace Api.Business.Services
             await _partyRepository.Update(party);
 
             // Notify clients
-            await SendPlaybackStatusUpdate(party, dontNotifyUsers);
+            await _realTimeService.SendPlaybackStatusUpdate(party, exemptUsers);
         }
 
-        public async Task UpdatePlaybackState(Party party, QueueItem queueItem, bool isPlaying, User[] dontNotifyUsers = null)
+        public async Task UpdatePlaybackState(Party party, QueueItem queueItem, bool isPlaying, User[] exemptUsers = null)
         {
             if (party == null)
             {
@@ -99,7 +96,7 @@ namespace Api.Business.Services
             await _partyRepository.Update(party);
 
             // Notify clients
-            await SendPlaybackStatusUpdate(party, dontNotifyUsers);
+            await _realTimeService.SendPlaybackStatusUpdate(party, exemptUsers);
         }
 
         public async Task StartOrResume(Party party)
@@ -145,16 +142,6 @@ namespace Api.Business.Services
                 };
                 _timerQueueService.Enqueue(timerDetails);
             }
-        }
-
-        public async Task SendPlaybackStatusUpdate(Party party, User[] exceptUsers = null)
-        {
-            party = await _partyRepository.GetWithAllProperties(party);
-
-            var partialUpdate = _statusUpdateHelper.GeneratePlaybackStatusUpdate(party);
-            var fullUpdate = _statusUpdateHelper.GeneratePlaybackStatusUpdate(party, true);
-
-            await PartyHub.SendPlaybackStatusUpdate(party, fullUpdate, partialUpdate, exceptUsers);
         }
     }
 }

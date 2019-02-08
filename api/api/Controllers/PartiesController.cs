@@ -24,14 +24,16 @@ namespace Api.Controllers
         private readonly IPartyService _partyService;
         private readonly IMembershipService _membershipService;
 
+        private readonly IStatusUpdateHelper _statusUpdateHelper;
         private readonly IJwtHelper _jwtHelper;
 
-        public PartiesController(IPartyRepository partyRepository, IUserRepository userRepository, IPartyService partyService, IMembershipService membershipService, IJwtHelper jwtHelper)
+        public PartiesController(IPartyRepository partyRepository, IUserRepository userRepository, IPartyService partyService, IMembershipService membershipService, IStatusUpdateHelper statusUpdateHelper, IJwtHelper jwtHelper)
         {
             _partyRepository = partyRepository;
             _userRepository = userRepository;
             _partyService = partyService;
             _membershipService = membershipService;
+            _statusUpdateHelper = statusUpdateHelper;
             _jwtHelper = jwtHelper;
         }
 
@@ -68,7 +70,9 @@ namespace Api.Controllers
             }
 
             party = await _partyRepository.GetWithAllProperties(party);
-            var response = new PartyStatus(party, user.IsPendingMember);
+
+            _statusUpdateHelper.CreatePartyStatusUpdate(party, out var fullMemberStatus, out var pendingMemberStatus);
+            var response = user.IsPendingMember ? pendingMemberStatus : fullMemberStatus;
 
             return Ok(response);
         }

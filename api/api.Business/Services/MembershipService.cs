@@ -12,9 +12,12 @@ namespace Api.Business.Services
     {
         private readonly IUserRepository _userRepository;
 
-        public MembershipService(IUserRepository userRepository)
+        private readonly IRealTimeService _realTimeService;
+
+        public MembershipService(IUserRepository userRepository, IRealTimeService realTimeService)
         {
             _userRepository = userRepository;
+            _realTimeService = realTimeService;
         }
 
         public async Task Leave(User user)
@@ -46,9 +49,8 @@ namespace Api.Business.Services
             user.PendingParty = party ?? throw new ArgumentNullException(nameof(party));
             user.JoinedPartyDateTime = DateTime.UtcNow;
             await _userRepository.Update(user);
-
-            // Notify admin of pending request
-            await PartyHub.NotifyAdminNewPendingMember(user, party);
+            
+            await _realTimeService.NotifyOwnerOfPendingMember(user, party);
         }
 
         public async Task AddPendingMember(Party party, User user)
@@ -75,6 +77,7 @@ namespace Api.Business.Services
             user.JoinedPartyDateTime = DateTime.UtcNow;
 
             await _userRepository.Update(user);
+            await _realTimeService.SendPartyStatusUpdate(party);
         }
 
         public async Task RemovePendingMember(Party party, User user)
@@ -92,6 +95,7 @@ namespace Api.Business.Services
             user.PendingParty = null;
 
             await _userRepository.Update(user);
+            await _realTimeService.SendPartyStatusUpdate(party);
         }
     }
 }

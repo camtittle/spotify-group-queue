@@ -5,6 +5,7 @@ namespace Api.Domain.Interfaces.Helpers
 {
     public interface IStatusUpdateHelper
     {
-        PlaybackStatusUpdate GeneratePlaybackStatusUpdate(Party party, bool includeAdminFields = false);
+        void CreatePlaybackStatusUpdate(Party party, out PlaybackStatusUpdate memberUpdate, out PlaybackStatusUpdate adminUpdate);
+        void CreatePartyStatusUpdate(Party party, out PartyStatus fullMemberUpdate, out PartyStatus pendingMemberUpdate);
     }
 }

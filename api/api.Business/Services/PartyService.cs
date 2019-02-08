@@ -14,13 +14,15 @@ namespace Api.Business.Services
         private readonly IPartyRepository _partyRepository;
         private readonly IUserRepository _userRepository;
 
+        private readonly IRealTimeService _realTimeService;
         private readonly IMembershipService _membershipService;
         private readonly ISpotifyService _spotifyService;
 
-        public PartyService(IPartyRepository partyRepository, IUserRepository userRepository, IMembershipService membershipService, ISpotifyService spotifyService)
+        public PartyService(IPartyRepository partyRepository, IUserRepository userRepository, IRealTimeService realTimeService, IMembershipService membershipService, ISpotifyService spotifyService)
         {
             _partyRepository = partyRepository;
             _userRepository = userRepository;
+            _realTimeService = realTimeService;
             _membershipService = membershipService;
             _spotifyService = spotifyService;
         }
@@ -104,8 +106,11 @@ namespace Api.Business.Services
                     count => TimeSpan.FromSeconds(1));
 
             var finalState = await retryPolicy.ExecuteAsync(async () => await _spotifyService.GetPlaybackState(owner));
+            var device = await SavePlaybackDevice(party, finalState?.Device?.DeviceId, finalState?.Device?.Name);
 
-            return await SavePlaybackDevice(party, finalState?.Device?.DeviceId, finalState?.Device?.Name);
+            await _realTimeService.SendPlaybackStatusUpdate(party);
+
+            return device;
         }
 
         private async Task<SpotifyDevice> SavePlaybackDevice(Party party, string id, string name)

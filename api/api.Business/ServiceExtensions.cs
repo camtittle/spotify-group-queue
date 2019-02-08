@@ -36,6 +36,7 @@ namespace Api.Business
             services.AddScoped<ISpotifyService, SpotifyService>();
             services.AddScoped<IPlaybackService, PlaybackService>();
             services.AddScoped<IMembershipService, MembershipService>();
+            services.AddScoped<IRealTimeService, RealTimeService>();
 
             services.AddSingleton<ITimerQueueService, TimerQueueService>();
 

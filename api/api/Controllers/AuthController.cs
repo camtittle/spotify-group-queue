@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Api.Domain.DTOs;
+using Api.Domain.Interfaces.Helpers;
 using Api.Domain.Interfaces.Repositories;
 using Api.Domain.Interfaces.Services;
 using Api.DTOs;
@@ -23,15 +24,20 @@ namespace Api.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IPartyRepository _partyRepository;
 
+        private readonly IStatusUpdateHelper _statusUpdateHelper;
+
         private readonly IUserService     _userService;
 
-        public AuthController(IConfiguration configuration, IUserRepository userRepository, IPartyRepository partyRepository, IUserService userService)
+        public AuthController(IConfiguration configuration, IUserRepository userRepository, IPartyRepository partyRepository, IStatusUpdateHelper statusUpdateHelper, IUserService userService)
         {
             _configuration = configuration;
             _userRepository = userRepository;
             _partyRepository = partyRepository;
+            _statusUpdateHelper = statusUpdateHelper;
             _userService = userService;
         }
+
+        
 
         // Register user with this username and get token
         [HttpPost("register")]
@@ -119,7 +125,8 @@ namespace Api.Controllers
 
             var party = user.GetActiveParty();
             party = await _partyRepository.GetWithAllProperties(party);
-            var currentPartyModel = new PartyStatus(party, user.IsPendingMember);
+            _statusUpdateHelper.CreatePartyStatusUpdate(party, out var fullMemberStatus, out var pendingMemberStatus);
+            var currentPartyModel = user.IsPendingMember ? pendingMemberStatus : fullMemberStatus;
 
             return Ok(new RegisterResponse(user.Id, user.Username, tokenString, currentPartyModel));
         }

@@ -6,6 +6,7 @@ using Api.Business.Exceptions;
 using Api.Domain.DTOs;
 using Api.Domain.Entities;
 using Api.Domain.Interfaces.Helpers;
+using Api.Domain.Interfaces.Hubs;
 using Api.Domain.Interfaces.Repositories;
 using Api.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -14,10 +15,8 @@ using Track = Api.Domain.Entities.Track;
 
 namespace Api.Business.Hubs
 {
-    public class PartyHub : Hub
+    public class PartyHub : Hub<IPartyHubClientMethods>
     {
-        private static IHubContext<PartyHub> _hubContext;
-
         private readonly IUserRepository _userRepository;
         private readonly IPartyRepository _partyRepository;
 
@@ -31,13 +30,12 @@ namespace Api.Business.Hubs
 
         private const string AdminGroupSuffix = "ADMIN";
 
-        public PartyHub(IHubContext<PartyHub> hubContext, IUserRepository userRepository, IQueueService queueService, IMembershipService membershipService, IPartyRepository partyRepository, ISpotifyService spotifyService, IPlaybackService playbackService, IJwtHelper jwtHelper, IStatusUpdateHelper statusUpdateHelper)
+        public PartyHub(IUserRepository userRepository, IQueueService queueService, IMembershipService membershipService, IPartyRepository partyRepository, ISpotifyService spotifyService, IPlaybackService playbackService, IJwtHelper jwtHelper, IStatusUpdateHelper statusUpdateHelper)
         {
             _userRepository = userRepository;
             _partyRepository = partyRepository;
             _spotifyService = spotifyService;
             _playbackService = playbackService;
-            _hubContext = hubContext;
             _membershipService = membershipService;
             _queueService = queueService;
             _jwtHelper = jwtHelper;
@@ -75,13 +73,6 @@ namespace Api.Business.Hubs
             }
         }
 
-        public static async Task NotifyAdminNewPendingMember(User user, Party party)
-        {
-            var userModel = new OtherUser(user);
-            var adminGroupName = party.Id + AdminGroupSuffix;
-            await _hubContext.Clients.Group(adminGroupName).SendAsync("onPendingMemberRequest", userModel);
-        }
-
         /*
          * Called from client to request the latest playback state
          */
@@ -109,7 +100,8 @@ namespace Api.Business.Hubs
 
             await _playbackService.UpdatePlaybackState(party, status, new[] {user});
 
-            return _statusUpdateHelper.GeneratePlaybackStatusUpdate(party, user.IsOwner);
+            _statusUpdateHelper.CreatePlaybackStatusUpdate(party, out var memberUpdate, out var adminUpdate);
+            return user.IsOwner ? adminUpdate : memberUpdate;
         }
 
 
@@ -156,10 +148,7 @@ namespace Api.Business.Hubs
             }
 
             // Notify pending member
-            await Clients.User(pendingUserId).SendAsync("pendingMembershipResponse", accept);
-
-            // Notify all users of status update
-            await SendPartyStatusUpdate(party);
+            await Clients.User(pendingUserId).pendingMembershipResponse(accept);
         }
 
         /*
@@ -184,10 +173,6 @@ namespace Api.Business.Hubs
 
             // TODO: do something with the result?
             await _queueService.AddQueueItem(user, requestModel);
-
-            // Notify other users
-            var party = user.GetActiveParty();
-            await SendPartyStatusUpdate(party);
         }
 
         [Authorize]
@@ -204,10 +189,6 @@ namespace Api.Business.Hubs
             var user = await _userRepository.GetById(userId);
 
             await _queueService.RemoveQueueItem(user, queueItemId);
-
-            // Notify other users
-            var party = user.GetActiveParty();
-            await SendPartyStatusUpdate(party);
         }
 
         /*
@@ -248,40 +229,5 @@ namespace Api.Business.Hubs
                 return false;
             }
         }
-
-        /*
-         ********************** Utility methods **************************
-         */
-        private async Task SendPartyStatusUpdate(Party party)
-        {
-            party = await _partyRepository.GetWithAllProperties(party);
-            
-            var fullModel = new PartyStatus(party);
-            var partialModel = new PartyStatus(party, true);
-
-            await Clients.Users(party.Members.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", fullModel);
-            await Clients.Users(party.PendingMembers.Select(x => x.Id).ToList()).SendAsync("partyStatusUpdate", partialModel);
-            await Clients.User(party.Owner.Id).SendAsync("partyStatusUpdate", fullModel);
-        }
-
-        public static async Task SendPlaybackStatusUpdate(Party party, PlaybackStatusUpdate update, PlaybackStatusUpdate partialUpdate, User[] exceptUsers = null)
-        {
-            if (exceptUsers == null)
-            {
-                exceptUsers = new User[] {};
-            }
-
-            var members = party.Members.Except(exceptUsers).Select(x => x.Id).ToList();
-            members.ForEach(async member =>
-            {
-                await _hubContext.Clients.User(member).SendAsync("playbackStatusUpdate", partialUpdate);
-            });
-
-            if (!exceptUsers.Contains(party.Owner))
-            {
-                await _hubContext.Clients.User(party.Owner.Id).SendAsync("playbackStatusUpdate", update);
-            }
-        }
-        
     }
 }

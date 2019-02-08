@@ -2,13 +2,13 @@
 
 namespace Api.Domain.DTOs
 {
-    public class OtherUser
+    public class UserPartial
     {
         public string Id { get; set; }
 
         public string Username { get; set; }
 
-        public OtherUser(User user)
+        public UserPartial(User user)
         {
             Id = user.Id;
             Username = user.Username;
