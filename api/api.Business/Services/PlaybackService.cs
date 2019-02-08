@@ -152,7 +152,7 @@ namespace Api.Business.Services
             var timerDetails = new TimerSpecification()
             {
                 Instruction = instruction,
-                DelayMillis = delayMillis,
+                ScheduledTimeUtc = DateTime.UtcNow.AddMilliseconds(delayMillis),
                 Party = party,
                 QueueItem = nextQueueItem
             };

@@ -13,7 +13,6 @@ namespace Api.Business.Services
 {
     public class TimerBackgroundService : IHostedService
     {
-        private IPartyRepository _partyRepository;
         private IPlaybackService _playbackService;
         private readonly ITimerQueueService _timerQueueService;
 
@@ -37,11 +36,9 @@ namespace Api.Business.Services
             using (var scope = Services.CreateScope())
             {
                 _playbackService = scope.ServiceProvider.GetRequiredService<IPlaybackService>();
-                _partyRepository = scope.ServiceProvider.GetRequiredService<IPartyRepository>();
 
                 Listen();
             }
-
         }
 
         private void Listen()
@@ -101,24 +98,29 @@ namespace Api.Business.Services
 
         private void AddTimerForQueueItem(string key, TimerSpecification timerSpecification)
         {
-            Console.WriteLine($"Adding timer to play queue item: {timerSpecification.QueueItem.Title} with delay {timerSpecification.DelayMillis}");
+            var span = timerSpecification.ScheduledTimeUtc - DateTime.UtcNow;
+            var calcDelayMillis = (int)Math.Abs(span.TotalMilliseconds);
+
+            Console.WriteLine($"Adding timer to play queue item: {timerSpecification.QueueItem.Title} with delay {calcDelayMillis}");
             _timers[key] = new Timer(async state =>
             {
-                Console.WriteLine($"Executing timer to play queue item: {timerSpecification.QueueItem.Title} with delay {timerSpecification.DelayMillis}");
                 await _playbackService.PlayQueueItem(timerSpecification.Party, timerSpecification.QueueItem, true);
 
-            }, null, timerSpecification.DelayMillis, Timeout.Infinite);
+            }, null, calcDelayMillis, Timeout.Infinite);
         }
 
         private void AddTimerToDeactivatePlayback(string key, TimerSpecification timerSpecification)
         {
-            Console.WriteLine($"Adding timer to deactivate playback with delay {timerSpecification.DelayMillis}");
+            var span = timerSpecification.ScheduledTimeUtc - DateTime.UtcNow;
+            var calcDelayMillis = (int)Math.Abs(span.TotalMilliseconds);
+
+            Console.WriteLine($"Adding timer to deactivate playback with delay {calcDelayMillis}");
             _timers[key] = new Timer(async state =>
             {
-                Console.WriteLine($"Executing timer to deactivate playback with delay {timerSpecification.DelayMillis}");
+                Console.WriteLine($"Executing timer to deactivate playback with delay {calcDelayMillis}");
                 await _playbackService.PlaybackEnded(timerSpecification.Party);
 
-            }, null, timerSpecification.DelayMillis, Timeout.Infinite);
+            }, null, calcDelayMillis, Timeout.Infinite);
         }
 
         private void RemoveTimer(TimerSpecification timerSpecification)

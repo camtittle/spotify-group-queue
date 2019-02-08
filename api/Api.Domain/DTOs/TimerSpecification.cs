@@ -1,4 +1,5 @@
-﻿using Api.Domain.Entities;
+﻿using System;
+using Api.Domain.Entities;
 
 namespace Api.Domain.DTOs
 {
@@ -10,7 +11,7 @@ namespace Api.Domain.DTOs
 
         public QueueItem QueueItem { get; set; }
 
-        public long DelayMillis { get; set; }
+        public DateTime ScheduledTimeUtc { get; set; }
     }
 
     public enum TimerInstruction
