@@ -11,15 +11,17 @@ namespace Api.Business.Services
     public class PlaybackService : IPlaybackService
     {
         private readonly IPartyRepository _partyRepository;
+        private readonly IQueueItemRepository _queueItemRepository;
 
         private readonly IQueueService _queueService;
         private readonly ISpotifyService _spotifyService;
         private readonly ITimerQueueService _timerQueueService;
         private readonly IRealTimeService _realTimeService;
 
-        public PlaybackService(IPartyRepository partyRepository, IQueueService queueService, ISpotifyService spotifyService, ITimerQueueService timerQueueService, IRealTimeService realTimeService)
+        public PlaybackService(IPartyRepository partyRepository, IQueueItemRepository queueItemRepository, IQueueService queueService, ISpotifyService spotifyService, ITimerQueueService timerQueueService, IRealTimeService realTimeService)
         {
             _partyRepository = partyRepository;
+            _queueItemRepository = queueItemRepository;
             _queueService = queueService;
             _spotifyService = spotifyService;
             _timerQueueService = timerQueueService;
@@ -103,7 +105,7 @@ namespace Api.Business.Services
             };
             party.Playback = isPlaying ? Playback.Playing : Playback.Paused;
 
-            await _queueService.RemoveQueueItem(queueItem.Id);
+            await _queueItemRepository.Delete(queueItem);
             await _partyRepository.Update(party);
 
             await StartTimerForNextQueueItem(party, queueItem.DurationMillis);

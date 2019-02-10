@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Api.Business.Exceptions;
 using Api.Domain.DTOs;
-using Api.Domain.Entities;
 using Api.Domain.Interfaces.Helpers;
 using Api.Domain.Interfaces.Hubs;
 using Api.Domain.Interfaces.Repositories;
@@ -19,6 +17,7 @@ namespace Api.Business.Hubs
     {
         private readonly IUserRepository _userRepository;
         private readonly IPartyRepository _partyRepository;
+        private readonly IQueueItemRepository _queueItemRepository;
 
         private readonly ISpotifyService _spotifyService;
         private readonly IPlaybackService _playbackService;
@@ -30,10 +29,11 @@ namespace Api.Business.Hubs
 
         private const string AdminGroupSuffix = "ADMIN";
 
-        public PartyHub(IUserRepository userRepository, IQueueService queueService, IMembershipService membershipService, IPartyRepository partyRepository, ISpotifyService spotifyService, IPlaybackService playbackService, IJwtHelper jwtHelper, IStatusUpdateHelper statusUpdateHelper)
+        public PartyHub(IUserRepository userRepository, IPartyRepository partyRepository, IQueueItemRepository queueItemRepository, ISpotifyService spotifyService, IPlaybackService playbackService, IMembershipService membershipService, IQueueService queueService, IJwtHelper jwtHelper, IStatusUpdateHelper statusUpdateHelper)
         {
             _userRepository = userRepository;
             _partyRepository = partyRepository;
+            _queueItemRepository = queueItemRepository;
             _spotifyService = spotifyService;
             _playbackService = playbackService;
             _membershipService = membershipService;
@@ -172,7 +172,7 @@ namespace Api.Business.Hubs
             var user = await _userRepository.GetById(userId);
 
             // TODO: do something with the result?
-            await _queueService.AddQueueItem(user, requestModel);
+            await _queueService.AddQueueItem(user, requestModel, true);
         }
 
         [Authorize]
@@ -187,8 +187,13 @@ namespace Api.Business.Hubs
 
             var userId = _jwtHelper.GetUserIdFromToken(Context.User);
             var user = await _userRepository.GetById(userId);
+            if (!user.IsOwner)
+            {
+                throw new PartyQueueException("Cannot remove queue item - user does not have permission");
+            }
 
-            await _queueService.RemoveQueueItem(queueItemId);
+            var queueItem = await _queueItemRepository.Get(queueItemId);
+            await _queueItemRepository.Delete(queueItem);
             // Todo send party status update
         }
 

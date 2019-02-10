@@ -6,8 +6,7 @@ namespace Api.Domain.Interfaces.Services
 {
     public interface IQueueService
     {
-        Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request);
-        Task RemoveQueueItem(string queueItemId);
+        Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request, bool notifyClients = false);
         Task<QueueItem> GetNextQueueItem(Party party);
     }
 }
