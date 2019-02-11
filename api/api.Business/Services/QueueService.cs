@@ -14,15 +14,17 @@ namespace Api.Business.Services
         private readonly IPartyRepository _partyRepository;
 
         private readonly IRealTimeService _realTimeService;
+        private readonly ITimerQueueService _timerQueueService;
 
-        public QueueService(IQueueItemRepository queueItemRepository, IPartyRepository partyRepository, IRealTimeService realTimeService)
+        public QueueService(IQueueItemRepository queueItemRepository, IPartyRepository partyRepository, IRealTimeService realTimeService, ITimerQueueService timerQueueService)
         {
             _queueItemRepository = queueItemRepository;
             _partyRepository = partyRepository;
             _realTimeService = realTimeService;
+            _timerQueueService = timerQueueService;
         }
 
-        public async Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request)
+        public async Task<QueueItem> AddQueueItem(User user, AddTrackToQueueRequest request, bool notifyClients = false)
         {
             if (!user.IsOwner && !user.IsMember)
             {

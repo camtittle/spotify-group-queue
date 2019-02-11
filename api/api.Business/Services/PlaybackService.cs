@@ -147,13 +147,13 @@ namespace Api.Business.Services
         {
             var nextQueueItem = await _queueService.GetNextQueueItem(party);
 
-            var instruction = nextQueueItem == null
-                ? TimerInstruction.DeactivatePlayback
-                : TimerInstruction.PlayQueueItem;
+            var action = nextQueueItem == null
+                ? TimerAction.DeactivatePlayback
+                : TimerAction.PlayQueueItem;
 
             var timerDetails = new TimerSpecification()
             {
-                Instruction = instruction,
+                Action = action,
                 ScheduledTimeUtc = DateTime.UtcNow.AddMilliseconds(delayMillis),
                 Party = party,
                 QueueItem = nextQueueItem

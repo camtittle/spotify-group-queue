@@ -5,7 +5,7 @@ namespace Api.Domain.DTOs
 {
     public class TimerSpecification
     {
-        public TimerInstruction Instruction { get; set; }
+        public TimerAction Action { get; set; }
 
         public Party Party { get; set; }
 
@@ -14,7 +14,7 @@ namespace Api.Domain.DTOs
         public DateTime ScheduledTimeUtc { get; set; }
     }
 
-    public enum TimerInstruction
+    public enum TimerAction
     {
         PlayQueueItem,
         DeactivatePlayback,
