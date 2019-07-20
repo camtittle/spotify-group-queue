@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Api.Business.Exceptions;
 using Api.Domain.DTOs;
 using Api.Domain.Entities;
+using Api.Domain.Enums;
 using Api.Domain.Interfaces.Repositories;
 using Api.Domain.Interfaces.Services;
 
@@ -53,7 +54,22 @@ namespace Api.Business.Services
 
             await _queueItemRepository.Add(queueItem);
 
-            await _realTimeService.SendPartyStatusUpdate(party);
+            // If this is the first item on the queue, set up a timer
+            if (party.Playback != Playback.NotActive && party.QueueItems.Count == 1)
+            {
+                _timerQueueService.Enqueue(new TimerSpecification
+                {
+                    Action = TimerAction.PlayQueueItem,
+                    Party = party,
+                    QueueItem = queueItem,
+                    ScheduledTimeUtc = party.CurrentTrack.ExpectedFinishTime
+                });
+            }
+
+            if (notifyClients)
+            {
+                await _realTimeService.SendPartyStatusUpdate(party);
+            }
 
             return queueItem;
         }
@@ -61,12 +77,9 @@ namespace Api.Business.Services
         public async Task RemoveQueueItem(string queueItemId)
         {
             var queueItem = await _queueItemRepository.Get(queueItemId);
-            if (queueItem == null)
-            {
-                throw new PartyQueueException("Cannot remove track from queue - queue item with ID not found");
-            }
-
             await _queueItemRepository.Delete(queueItem);
+
+            await _realTimeService.SendPartyStatusUpdate(queueItem.ForParty);
         }
 
         public async Task<QueueItem> GetNextQueueItem(Party party)

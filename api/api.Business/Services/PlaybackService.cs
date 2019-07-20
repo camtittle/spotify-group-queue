@@ -52,7 +52,8 @@ namespace Api.Business.Services
                     Uri = state.Item.Uri,
                     Title = state.Item.Title,
                     Artist = state.Item.Artist,
-                    DurationMillis = state.Item.DurationMillis
+                    DurationMillis = state.Item.DurationMillis,
+                    ExpectedFinishTime = DateTime.UtcNow.AddMilliseconds(state.Item.DurationMillis - state.Item.ProgressMillis)
                 };
 
                 if (party.Playback != Playback.NotActive)
@@ -81,7 +82,7 @@ namespace Api.Business.Services
             await _realTimeService.SendPlaybackStatusUpdate(party);
         }
 
-        public async Task PlayQueueItem(Party party, QueueItem queueItem, bool isPlaying, User[] exemptUsers = null)
+        public async Task PlayQueueItem(Party party, QueueItem queueItem, User[] exemptUsers = null)
         {
             if (party == null)
             {
@@ -94,21 +95,23 @@ namespace Api.Business.Services
             }
             await _spotifyService.PlayTrack(party.Owner, queueItem.SpotifyUri);
 
-            // Todo only continue if play track was successful
+            // Todo check if play request worked
+
             party = await _partyRepository.GetWithAllProperties(party);
             party.CurrentTrack = new Track()
             {
                 Uri = queueItem.SpotifyUri,
                 Title = queueItem.Title,
                 Artist = queueItem.Artist,
-                DurationMillis = (int)queueItem.DurationMillis
+                DurationMillis = (int)queueItem.DurationMillis,
+                ExpectedFinishTime = DateTime.UtcNow.AddMilliseconds(queueItem.DurationMillis)
             };
-            party.Playback = isPlaying ? Playback.Playing : Playback.Paused;
+            party.Playback = Playback.Playing;
 
             await _queueItemRepository.Delete(queueItem);
             await _partyRepository.Update(party);
 
-            await StartTimerForNextQueueItem(party, queueItem.DurationMillis);
+            await StartTimerForNextQueueItem(party);
 
             // Notify clients
             await _realTimeService.SendPlaybackStatusUpdate(party, exemptUsers);
@@ -129,7 +132,7 @@ namespace Api.Business.Services
                         break;
                     }
 
-                    await PlayQueueItem(party, queueItem, true);
+                    await PlayQueueItem(party, queueItem);
                     break;
                 }
                 case Playback.Paused:
@@ -143,7 +146,7 @@ namespace Api.Business.Services
             }
         }
         
-        public async Task StartTimerForNextQueueItem(Party party, long delayMillis)
+        public async Task StartTimerForNextQueueItem(Party party)
         {
             var nextQueueItem = await _queueService.GetNextQueueItem(party);
 
@@ -154,7 +157,7 @@ namespace Api.Business.Services
             var timerDetails = new TimerSpecification()
             {
                 Action = action,
-                ScheduledTimeUtc = DateTime.UtcNow.AddMilliseconds(delayMillis),
+                ScheduledTimeUtc = party.CurrentTrack.ExpectedFinishTime,
                 Party = party,
                 QueueItem = nextQueueItem
             };

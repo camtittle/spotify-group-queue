@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Domain.Entities
 {
@@ -12,5 +13,7 @@ namespace Api.Domain.Entities
         public string Artist { get; set; }
 
         public int DurationMillis { get; set; }
+
+        public DateTime ExpectedFinishTime { get; set; }
     }
 }

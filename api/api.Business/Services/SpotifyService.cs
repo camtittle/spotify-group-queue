@@ -190,10 +190,11 @@ namespace Api.Business.Services
 
             if (response.Item != null)
             {
-                playbackState.Item = new Track
+                playbackState.Item = new SpotifyTrack
                 {
                     Artist = Spotify.Utils.ArtistsToCommaSeparatedString(response.Item.Artists),
                     DurationMillis = response.Item.DurationMillis,
+                    ProgressMillis = response.ProgressMillis,
                     Title = response.Item.Name,
                     Uri = response.Item.Uri
                 };

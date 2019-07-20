@@ -27,8 +27,7 @@ export class PartyHubService {
 
     this.signalRConnectionService.connected$.subscribe(async connected => {
       if (connected) {
-        const state = await this.signalRConnectionService.invoke<PlaybackStatusUpdate>('getCurrentPlaybackState');
-        this.playbackState$.next(state);
+        await this.getPlaybackStatusUpdate();
       }
     });
 
@@ -51,6 +50,11 @@ export class PartyHubService {
     if (party) {
       this.signalRConnectionService.openConnection();
     }
+  }
+
+  public async getPlaybackStatusUpdate() {
+    const state = await this.signalRConnectionService.invoke<PlaybackStatusUpdate>('getCurrentPlaybackState');
+    this.playbackState$.next(state);
   }
 
   private async getCurrentParty(): Promise<CurrentParty> {

@@ -10,7 +10,20 @@ namespace Api.Domain.DTOs
         
         public bool IsPlaying { get; set; }
 
-        public Track Item { get; set; }
+        public SpotifyTrack Item { get; set; }
 
+    }
+
+    public class SpotifyTrack
+    {
+        public string Uri { get; set; }
+
+        public string Title { get; set; }
+
+        public string Artist { get; set; }
+
+        public int ProgressMillis { get; set; }
+
+        public int DurationMillis { get; set; }
     }
 }

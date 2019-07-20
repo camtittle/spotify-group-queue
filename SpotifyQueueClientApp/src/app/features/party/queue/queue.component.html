@@ -28,6 +28,10 @@
         <div class="header-text">Song Queue</div>
         <div class="ic plus-green-circle header-button clickable" (click)="onClickAddTrack()"></div>
       </div>
+
+      <!--debug button-->
+      <button class="btn" (click)="onClickDebug()">Debug</button>
+
       <ul class="queue list-group list-group-flush">
         <li *ngFor="let queueItem of currentParty?.queueItems" class="track list-group-item">
           <div class="track-title">{{ queueItem.title }}</div>

@@ -170,8 +170,7 @@ namespace Api.Business.Hubs
 
             var userId = _jwtHelper.GetUserIdFromToken(Context.User);
             var user = await _userRepository.GetById(userId);
-
-            // TODO: do something with the result?
+            
             await _queueService.AddQueueItem(user, requestModel, true);
         }
 
@@ -183,18 +182,14 @@ namespace Api.Business.Hubs
                 throw new ArgumentException("Missing request paramaters", nameof(queueItemId));
             }
 
-            // ToDo: Gracefully handle when user is not the owner
-
             var userId = _jwtHelper.GetUserIdFromToken(Context.User);
             var user = await _userRepository.GetById(userId);
             if (!user.IsOwner)
             {
-                throw new PartyQueueException("Cannot remove queue item - user does not have permission");
+                return;
             }
 
-            var queueItem = await _queueItemRepository.Get(queueItemId);
-            await _queueItemRepository.Delete(queueItem);
-            // Todo send party status update
+            await _queueService.RemoveQueueItem(queueItemId);
         }
 
         /*

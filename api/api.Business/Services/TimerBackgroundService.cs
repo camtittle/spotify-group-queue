@@ -33,12 +33,7 @@ namespace Api.Business.Services
         {
             _tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-            using (var scope = Services.CreateScope())
-            {
-                _playbackService = scope.ServiceProvider.GetRequiredService<IPlaybackService>();
-
-                Listen();
-            }
+            Listen();
         }
 
         private void Listen()
@@ -48,7 +43,12 @@ namespace Api.Business.Services
                 try
                 {
                     // Blocks if queue is empty
-                    HandleTimerAction(_timerQueueService.Dequeue());
+                    var timerAction = _timerQueueService.Dequeue();
+                    using (var scope = Services.CreateScope())
+                    {
+                        _playbackService = scope.ServiceProvider.GetRequiredService<IPlaybackService>();
+                        HandleTimerAction(timerAction);
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -77,7 +77,11 @@ namespace Api.Business.Services
                 case TimerAction.PlayQueueItem:
                     SetTimer(key, timerSpecification, async state =>
                     {
-                        await _playbackService.PlayQueueItem(timerSpecification.Party, timerSpecification.QueueItem, true);
+                        using (var scope = Services.CreateScope())
+                        {
+                            _playbackService = scope.ServiceProvider.GetRequiredService<IPlaybackService>();
+                            await _playbackService.PlayQueueItem(timerSpecification.Party, timerSpecification.QueueItem);
+                        }
                     });
                     break;
                 case TimerAction.DeactivatePlayback:
@@ -95,6 +99,7 @@ namespace Api.Business.Services
         private void SetTimer(string key, TimerSpecification timerSpecification, TimerCallback callback)
         {
             var span = timerSpecification.ScheduledTimeUtc - DateTime.UtcNow;
+
             var calcDelayMillis = (int)Math.Abs(span.TotalMilliseconds);
 
             Console.WriteLine($"Adding timer with action: {timerSpecification.Action.ToString()} with delay: {calcDelayMillis}ms");
@@ -103,6 +108,7 @@ namespace Api.Business.Services
 
         private void DisposeTimer(string key)
         {
+            Console.WriteLine($"Disposing timer with key: {key}");
             if (_timers.Remove(key, out var timer))
             {
                timer?.Dispose();

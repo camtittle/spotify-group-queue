@@ -2,7 +2,7 @@ import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '
 import { AuthenticationService, PartyService } from '../../../services/index';
 import { BsModalService } from 'ngx-bootstrap';
 import { PendingMemberRequestComponent } from '../../../modals/pending-member-request/pending-member-request.component';
-import { PendingMemberRequest, CurrentParty, CurrentPartyQueueItem } from '../../../models/index';
+import { PendingMemberRequest, CurrentParty, CurrentPartyQueueItem, QueueTrack } from '../../../models/index';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PartyHubService } from '../../../services/party-hub.service';
 import { SpotifyService } from '../../../services/spotify.service';
@@ -84,5 +84,27 @@ export class QueueComponent extends BasePartyScreen implements OnInit {
 
   public onClickRemoveTrack(queueItem: CurrentPartyQueueItem) {
     this.partyHubService.invoke('removeTrackFromQueue', queueItem.id);
+  }
+
+  public async onClickDebug() {
+    // Trigger sequence of actions for debugging
+
+    // Update playback
+    console.log('Debug --> Getting playback status update')
+    await this.partyHubService.getPlaybackStatusUpdate();
+
+    setTimeout(async () => {
+      const queueTrack = <QueueTrack> {
+        spotifyUri: 'spotify:track:6SlZp9UeLRIuw92j96dcjU',
+        title: 'Changing of The Seasons',
+        artist: 'Two Door Cinema Club',
+        durationMillis: 222880
+      };
+
+      console.log('Debug --> Adding queue item')
+      await this.partyHubService.invoke('addTrackToQueue', queueTrack);
+    }, 2000);
+
+
   }
 }
